@@ -57,7 +57,6 @@ namespace Lykke.Service.HFT.WebApi
 			});
 
 
-			var builder = new ContainerBuilder();
 			var appSettings = Environment.IsDevelopment()
 				? Configuration.Get<AppSettings>()
 				: HttpSettingsLoader.Load<AppSettings>(Configuration.GetValue<string>("SettingsUrl"));
@@ -65,6 +64,14 @@ namespace Lykke.Service.HFT.WebApi
 			//todo: JsonStringEmptyException
 			var log = CreateLog(services, appSettings);
 
+			// test init redis cache
+			services.AddDistributedRedisCache(options =>
+			{
+				options.Configuration = appSettings.HighFrequencyTradingService.CacheSettings.RedisConfiguration;
+				options.InstanceName = appSettings.HighFrequencyTradingService.CacheSettings.ApiKeyCacheInstance;
+			});
+
+			var builder = new ContainerBuilder();
 			builder.RegisterModule(new ServiceModule(appSettings.HighFrequencyTradingService, log));
 			builder.Populate(services);
 			ApplicationContainer = builder.Build();
@@ -83,7 +90,7 @@ namespace Lykke.Service.HFT.WebApi
 				app.UseDeveloperExceptionPage();
 			}
 
-			app.UseLykkeMiddleware("RateCalculator", ex => new ErrorResponse { ErrorMessage = "Technical problem" });
+			app.UseLykkeMiddleware(Constants.ComponentName, ex => new ErrorResponse { ErrorMessage = "Technical problem" });
 
 			// Use API Authentication
 			//app.UseLykkeApiAuth(conf =>

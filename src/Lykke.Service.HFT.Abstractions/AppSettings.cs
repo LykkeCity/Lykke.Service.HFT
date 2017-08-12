@@ -32,6 +32,15 @@ namespace Lykke.Service.HFT.Abstractions
 	{
 		public string ApiKeyCacheInstance { get; set; }
 		public string RedisConfiguration { get; set; }
+		public string ApiKeyCacheKeyPattern { get; set; }
+	}
+
+	public static class CacheSettingsExt
+	{
+		public static string GetApiKey(this CacheSettings settings, string apiKey)
+		{
+			return string.Format(settings.ApiKeyCacheKeyPattern, apiKey);
+		}
 	}
 
 }

@@ -6,10 +6,6 @@ using Lykke.MatchingEngine.Connector.Services;
 using Lykke.Service.HFT.Abstractions;
 using Lykke.Service.HFT.Abstractions.Services;
 using Lykke.Service.HFT.Services;
-using Lykke.Service.HFT.WebApi.Middleware.Validator;
-using Lykke.Service.HFT.WebApi.Validator.Middleware;
-using Microsoft.Extensions.Caching.Distributed;
-using Microsoft.Extensions.Caching.Redis;
 
 namespace Lykke.Service.HFT.WebApi.Modules
 {
@@ -26,8 +22,21 @@ namespace Lykke.Service.HFT.WebApi.Modules
 
 		protected override void Load(ContainerBuilder builder)
 		{
-			builder.RegisterType<FixedApiKeyValidator>()
+			var socketLog = new SocketLogDynamic(i => { },
+				str => Console.WriteLine(DateTime.UtcNow.ToIsoDateTime() + ": " + str));
+
+			builder.BindMeClient(_settings.MatchingEngine.IpEndpoint.GetClientIpEndPoint(), socketLog);
+
+			builder.RegisterType<ApiKeyService>()
 				.As<IApiKeyValidator>()
+				.SingleInstance();
+
+			builder.RegisterType<ApiKeyService>()
+				.As<IApiKeyGenerator>()
+				.SingleInstance();
+
+			builder.RegisterType<ApiKeyService>()
+				.As<IClientResolver>()
 				.SingleInstance();
 
 			builder.RegisterInstance(_settings)
@@ -36,27 +45,10 @@ namespace Lykke.Service.HFT.WebApi.Modules
 			builder.RegisterInstance(_log)
 				.As<ILog>()
 				.SingleInstance();
-			
-			builder.RegisterType<HighFrequencyTradingService>()
-				.As<IHighFrequencyTradingService>()
+
+			builder.RegisterType<MatchingEngineAdapter>()
+				.As<IMatchingEngineAdapter>()
 				.SingleInstance();
-
-
-			var socketLog = new SocketLogDynamic(i => { },
-				str => Console.WriteLine(DateTime.UtcNow.ToIsoDateTime() + ": " + str));
-
-			builder.BindMeClient(_settings.MatchingEngine.IpEndpoint.GetClientIpEndPoint(), socketLog);
-
-			var redis = new RedisCache(new RedisCacheOptions
-			{
-				Configuration = _settings.CacheSettings.RedisConfiguration,
-				InstanceName = _settings.CacheSettings.ApiKeyCacheInstance
-			});
-
-			builder.RegisterInstance(redis)
-				.As<IDistributedCache>()
-				.SingleInstance();
-
 		}
 	}
 }
