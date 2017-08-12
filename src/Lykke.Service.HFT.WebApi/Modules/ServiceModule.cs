@@ -8,6 +8,8 @@ using Lykke.Service.HFT.Abstractions.Services;
 using Lykke.Service.HFT.Services;
 using Lykke.Service.HFT.WebApi.Middleware.Validator;
 using Lykke.Service.HFT.WebApi.Validator.Middleware;
+using Microsoft.Extensions.Caching.Distributed;
+using Microsoft.Extensions.Caching.Redis;
 
 namespace Lykke.Service.HFT.WebApi.Modules
 {
@@ -44,6 +46,16 @@ namespace Lykke.Service.HFT.WebApi.Modules
 				str => Console.WriteLine(DateTime.UtcNow.ToIsoDateTime() + ": " + str));
 
 			builder.BindMeClient(_settings.MatchingEngine.IpEndpoint.GetClientIpEndPoint(), socketLog);
+
+			var redis = new RedisCache(new RedisCacheOptions
+			{
+				Configuration = _settings.CacheSettings.RedisConfiguration,
+				InstanceName = _settings.CacheSettings.ApiKeyCacheInstance
+			});
+
+			builder.RegisterInstance(redis)
+				.As<IDistributedCache>()
+				.SingleInstance();
 
 		}
 	}

@@ -11,6 +11,7 @@ namespace Lykke.Service.HFT.Abstractions
 	public class HighFrequencyTradingSettings
 	{
 		public MatchingOrdersSettings MatchingEngine { get; set; }
+		public CacheSettings CacheSettings { get; set; }
 	}
 	public class MatchingOrdersSettings
 	{
@@ -27,4 +28,10 @@ namespace Lykke.Service.HFT.Abstractions
 			return new IPEndPoint(IPAddress.Parse(Host), Port);
 		}
 	}
+	public class CacheSettings
+	{
+		public string ApiKeyCacheInstance { get; set; }
+		public string RedisConfiguration { get; set; }
+	}
+
 }
