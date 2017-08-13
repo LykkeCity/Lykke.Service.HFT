@@ -1,0 +1,29 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>netstandard1.6</TargetFramework>
+    <Version>1.0.1</Version>
+    <Authors>Lykke</Authors>
+    <Company>Lykke</Company>
+    <Product>Lykke.Service.HFT</Product>
+    <Description>Client for Lykke.Service.HFT API</Description>
+    <PackageLicenseUrl>https://github.com/LykkeCity/Lykke.Service.HFT/blob/master/LICENSE</PackageLicenseUrl>
+    <PackageProjectUrl>https://github.com/LykkeCity/Lykke.Service.HFT</PackageProjectUrl>
+    <PackageIconUrl>https://avatars3.githubusercontent.com/u/14153330?v=3&amp;s=200</PackageIconUrl>
+    <RepositoryUrl>https://github.com/LykkeCity/Lykke.Service.HFT.git</RepositoryUrl>
+    <RepositoryType>git</RepositoryType>
+    <PackageTags>Lykke</PackageTags>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Autofac.Extensions.DependencyInjection" Version="4.1.0" />
+    <PackageReference Include="Lykke.Common" Version="1.1.79" />
+    <PackageReference Include="Microsoft.Rest.ClientRuntime" Version="2.3.8" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Folder Include="AutorestClient\" />
+    <Folder Include="Models\" />
+  </ItemGroup>
+
+</Project>

@@ -1,26 +1,33 @@
+﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 15
-VisualStudioVersion = 15.0.26430.16
-MinimumVisualStudioVersion = 15.0.0.0
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "src", "src", "{D585897D-2B4D-484C-AB47-1DD57D13380D}"
+VisualStudioVersion = 15.0.26430.12
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "1. Instrastructure", "1. Instrastructure", "{CC2067D7-1971-47BB-B491-5649EA3C18B2}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Lykke.Service.HFT.Abstractions", "src\Lykke.Service.HFT.Abstractions\Lykke.Service.HFT.Abstractions.csproj", "{CC8B5056-D0DF-4B59-B896-AE9CC61AD5BB}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Lykke.Service.HFT.Core", "src\Lykke.Service.HFT.Core\Lykke.Service.HFT.Core.csproj", "{F5B2F6B8-A8CC-4612-8F1D-C063EB8C8955}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Lykke.Service.HFT.Azure", "src\Lykke.Service.HFT.Azure\Lykke.Service.HFT.Azure.csproj", "{E66F70DD-0DD6-4113-B6D0-161C24191893}"
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "2. Repositories", "2. Repositories", "{BF745453-B940-470E-81BC-43FB67703D4E}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Lykke.Service.HFT.WebApi", "src\Lykke.Service.HFT.WebApi\Lykke.Service.HFT.WebApi.csproj", "{6CA27247-8014-4299-BB1F-3D96B0B2572D}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Lykke.Service.HFT.AzureRepositories", "src\Lykke.Service.HFT.AzureRepositories\Lykke.Service.HFT.AzureRepositories.csproj", "{4BE49E02-AAAD-460B-8D00-57F412A3D181}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Lykke.Service.HFT.WebClient", "src\Lykke.Service.HFT.WebClient\Lykke.Service.HFT.WebClient.csproj", "{AB5EA783-0C3F-4177-81C4-15B0F9B6CEC9}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Lykke.Service.HFT.Services", "src\Lykke.Service.HFT.Services\Lykke.Service.HFT.Services.csproj", "{2D5F52EC-2A27-4045-81ED-72355E2A6325}"
 EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "1. Instrastructure", "1. Instrastructure", "{E89B5B85-2885-4377-A5B8-69BAF5B15A60}"
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution items", "Solution items", "{6CA74DE0-A357-4934-9D8B-FEA3F0A2D690}"
+	ProjectSection(SolutionItems) = preProject
+		.gitignore = .gitignore
+		README.md = README.md
+	EndProjectSection
 EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "2. Repositories", "2. Repositories", "{5EF80235-F4EE-4C0F-8185-0B0C52EBE293}"
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "3. Client", "3. Client", "{C9A2CFDE-EA32-4946-B679-7CE6EFA816B8}"
 EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "3. Client", "3. Client", "{1597395B-D440-4781-9FF6-ACEE0C42FB1D}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Lykke.Service.HFT.Client", "client\Lykke.Service.HFT.Client\Lykke.Service.HFT.Client.csproj", "{3C300C31-97D3-41E8-A627-C53491BDA28B}"
 EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "4. Tests", "4. Tests", "{220FAE59-D7C4-41D4-BA90-806B1C6A7A26}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Lykke.Service.HFT.Tests", "tests\Lykke.Service.HFT.Tests\Lykke.Service.HFT.Tests.csproj", "{A61FFDEE-5725-4650-A788-6E55EE5EFD5B}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Lykke.Service.HFT.Services", "Lykke.Service.HFT.Services\Lykke.Service.HFT.Services.csproj", "{12AFCA78-CEA6-4E4E-8793-34B99E0C6397}"
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "4. Tests", "4. Tests", "{8F9036B1-5106-4C69-B2D2-B78EE52687A0}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Lykke.Service.HFT", "src\Lykke.Service.HFT\Lykke.Service.HFT.csproj", "{E414FDB9-FEEA-4CD0-9BBA-D1541601DF29}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -28,34 +35,39 @@ Global
 		Release|Any CPU = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
-		{CC8B5056-D0DF-4B59-B896-AE9CC61AD5BB}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{CC8B5056-D0DF-4B59-B896-AE9CC61AD5BB}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{CC8B5056-D0DF-4B59-B896-AE9CC61AD5BB}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{CC8B5056-D0DF-4B59-B896-AE9CC61AD5BB}.Release|Any CPU.Build.0 = Release|Any CPU
-		{E66F70DD-0DD6-4113-B6D0-161C24191893}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{E66F70DD-0DD6-4113-B6D0-161C24191893}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{E66F70DD-0DD6-4113-B6D0-161C24191893}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{E66F70DD-0DD6-4113-B6D0-161C24191893}.Release|Any CPU.Build.0 = Release|Any CPU
-		{6CA27247-8014-4299-BB1F-3D96B0B2572D}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{6CA27247-8014-4299-BB1F-3D96B0B2572D}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{6CA27247-8014-4299-BB1F-3D96B0B2572D}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{6CA27247-8014-4299-BB1F-3D96B0B2572D}.Release|Any CPU.Build.0 = Release|Any CPU
-		{AB5EA783-0C3F-4177-81C4-15B0F9B6CEC9}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{AB5EA783-0C3F-4177-81C4-15B0F9B6CEC9}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{AB5EA783-0C3F-4177-81C4-15B0F9B6CEC9}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{AB5EA783-0C3F-4177-81C4-15B0F9B6CEC9}.Release|Any CPU.Build.0 = Release|Any CPU
-		{12AFCA78-CEA6-4E4E-8793-34B99E0C6397}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{12AFCA78-CEA6-4E4E-8793-34B99E0C6397}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{12AFCA78-CEA6-4E4E-8793-34B99E0C6397}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{12AFCA78-CEA6-4E4E-8793-34B99E0C6397}.Release|Any CPU.Build.0 = Release|Any CPU
+		{F5B2F6B8-A8CC-4612-8F1D-C063EB8C8955}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{F5B2F6B8-A8CC-4612-8F1D-C063EB8C8955}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{F5B2F6B8-A8CC-4612-8F1D-C063EB8C8955}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{F5B2F6B8-A8CC-4612-8F1D-C063EB8C8955}.Release|Any CPU.Build.0 = Release|Any CPU
+		{4BE49E02-AAAD-460B-8D00-57F412A3D181}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{4BE49E02-AAAD-460B-8D00-57F412A3D181}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{4BE49E02-AAAD-460B-8D00-57F412A3D181}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{4BE49E02-AAAD-460B-8D00-57F412A3D181}.Release|Any CPU.Build.0 = Release|Any CPU
+		{2D5F52EC-2A27-4045-81ED-72355E2A6325}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{2D5F52EC-2A27-4045-81ED-72355E2A6325}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{2D5F52EC-2A27-4045-81ED-72355E2A6325}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{2D5F52EC-2A27-4045-81ED-72355E2A6325}.Release|Any CPU.Build.0 = Release|Any CPU
+		{3C300C31-97D3-41E8-A627-C53491BDA28B}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{3C300C31-97D3-41E8-A627-C53491BDA28B}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{3C300C31-97D3-41E8-A627-C53491BDA28B}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{3C300C31-97D3-41E8-A627-C53491BDA28B}.Release|Any CPU.Build.0 = Release|Any CPU
+		{A61FFDEE-5725-4650-A788-6E55EE5EFD5B}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{A61FFDEE-5725-4650-A788-6E55EE5EFD5B}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{A61FFDEE-5725-4650-A788-6E55EE5EFD5B}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{A61FFDEE-5725-4650-A788-6E55EE5EFD5B}.Release|Any CPU.Build.0 = Release|Any CPU
+		{E414FDB9-FEEA-4CD0-9BBA-D1541601DF29}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{E414FDB9-FEEA-4CD0-9BBA-D1541601DF29}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{E414FDB9-FEEA-4CD0-9BBA-D1541601DF29}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{E414FDB9-FEEA-4CD0-9BBA-D1541601DF29}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
 	EndGlobalSection
 	GlobalSection(NestedProjects) = preSolution
-		{CC8B5056-D0DF-4B59-B896-AE9CC61AD5BB} = {E89B5B85-2885-4377-A5B8-69BAF5B15A60}
-		{E66F70DD-0DD6-4113-B6D0-161C24191893} = {5EF80235-F4EE-4C0F-8185-0B0C52EBE293}
-		{AB5EA783-0C3F-4177-81C4-15B0F9B6CEC9} = {1597395B-D440-4781-9FF6-ACEE0C42FB1D}
-		{12AFCA78-CEA6-4E4E-8793-34B99E0C6397} = {E89B5B85-2885-4377-A5B8-69BAF5B15A60}
+		{F5B2F6B8-A8CC-4612-8F1D-C063EB8C8955} = {CC2067D7-1971-47BB-B491-5649EA3C18B2}
+		{4BE49E02-AAAD-460B-8D00-57F412A3D181} = {BF745453-B940-470E-81BC-43FB67703D4E}
+		{2D5F52EC-2A27-4045-81ED-72355E2A6325} = {CC2067D7-1971-47BB-B491-5649EA3C18B2}
+		{3C300C31-97D3-41E8-A627-C53491BDA28B} = {C9A2CFDE-EA32-4946-B679-7CE6EFA816B8}
+		{A61FFDEE-5725-4650-A788-6E55EE5EFD5B} = {8F9036B1-5106-4C69-B2D2-B78EE52687A0}
 	EndGlobalSection
 EndGlobal

@@ -58,8 +58,4 @@ _NCrunch_*
 node_modules
 **/launchSettings.json
 **/appsettings.*.json
-**/docker-compose.dev.yml
-**/marginTradingSettings.json
-**/*.ps1
-**/site.min.js
-**/site.min.css
+
