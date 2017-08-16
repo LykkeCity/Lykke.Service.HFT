@@ -1,9 +1,12 @@
 ﻿using System;
+using System.Linq;
 using Autofac;
 using Common;
 using Common.Log;
 using Lykke.MatchingEngine.Connector.Services;
+using Lykke.Service.HFT.AzureRepositories;
 using Lykke.Service.HFT.Core;
+using Lykke.Service.HFT.Core.Domain;
 using Lykke.Service.HFT.Core.Services;
 using Lykke.Service.HFT.Services;
 
@@ -52,6 +55,22 @@ namespace Lykke.Service.HFT.Modules
 
 			builder.RegisterType<MatchingEngineAdapter>()
 				.As<IMatchingEngineAdapter>()
+				.SingleInstance();
+
+
+			builder.RegisterInstance<IAssetPairsRepository>(
+				AzureRepoFactories.CreateAssetPairsRepository(_settings.Db.DictsConnString, _log)
+			).SingleInstance();
+
+			builder.Register(x =>
+			{
+				var ctx = x.Resolve<IComponentContext>();
+				return new CachedDataDictionary<string, IAssetPair>(
+					async () => (await ctx.Resolve<IAssetPairsRepository>().GetAllAsync()).ToDictionary(itm => itm.Id));
+			}).SingleInstance();
+
+			builder.RegisterType<OrderBookService>()
+				.As<IOrderBooksService>()
 				.SingleInstance();
 		}
 	}

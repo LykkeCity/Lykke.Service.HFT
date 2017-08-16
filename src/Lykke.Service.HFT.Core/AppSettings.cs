@@ -11,6 +11,7 @@ namespace Lykke.Service.HFT.Core
 	public class HighFrequencyTradingSettings
 	{
 		public MatchingOrdersSettings MatchingEngine { get; set; }
+		public DbSettings Db { get; set; }
 		public CacheSettings CacheSettings { get; set; }
 	}
 	public class MatchingOrdersSettings
@@ -28,11 +29,21 @@ namespace Lykke.Service.HFT.Core
 			return new IPEndPoint(IPAddress.Parse(Host), Port);
 		}
 	}
+
+	public class DbSettings
+	{
+		public string DictsConnString { get; set; }
+	}
+
 	public class CacheSettings
 	{
-		public string ApiKeyCacheInstance { get; set; }
 		public string RedisConfiguration { get; set; }
+
+		public string ApiKeyCacheInstance { get; set; }
 		public string ApiKeyCacheKeyPattern { get; set; }
+
+		public string FinanceDataCacheInstance { get; set; }
+		public string OrderBooksCacheKeyPattern { get; set; }
 	}
 
 	public static class CacheSettingsExt
@@ -41,6 +52,12 @@ namespace Lykke.Service.HFT.Core
 		{
 			return string.Format(settings.ApiKeyCacheKeyPattern, apiKey);
 		}
+
+		public static string GetOrderBookKey(this CacheSettings settings, string assetPairId, bool isBuy)
+		{
+			return string.Format(settings.OrderBooksCacheKeyPattern, assetPairId, isBuy);
+		}
+
 	}
 
 }
