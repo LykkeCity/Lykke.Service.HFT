@@ -11,11 +11,11 @@ using Swashbuckle.SwaggerGen.Annotations;
 namespace Lykke.Service.HFT.Controllers
 {
 	[Route("api/[controller]")]
-	public class AssetPairController : Controller
+	public class AssetPairsController : Controller
 	{
 		private readonly CachedDataDictionary<string, IAssetPair> _assetPairs;
 
-		public AssetPairController(CachedDataDictionary<string, IAssetPair> assetPairs)
+		public AssetPairsController(CachedDataDictionary<string, IAssetPair> assetPairs)
 		{
 			_assetPairs = assetPairs ?? throw new ArgumentNullException(nameof(assetPairs));
 		}

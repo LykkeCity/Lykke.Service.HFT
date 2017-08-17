@@ -6,6 +6,7 @@ using Common.Log;
 using Lykke.MatchingEngine.Connector.Services;
 using Lykke.Service.HFT.AzureRepositories;
 using Lykke.Service.HFT.Core;
+using Lykke.Service.HFT.Core.Accounts;
 using Lykke.Service.HFT.Core.Domain;
 using Lykke.Service.HFT.Core.Services;
 using Lykke.Service.HFT.Services;
@@ -56,6 +57,10 @@ namespace Lykke.Service.HFT.Modules
 			builder.RegisterType<MatchingEngineAdapter>()
 				.As<IMatchingEngineAdapter>()
 				.SingleInstance();
+
+
+			builder.RegisterInstance<IWalletsRepository>(
+				AzureRepoFactories.CreateAccountsRepository(_settings.Db.BalancesInfoConnString, _log));
 
 
 			builder.RegisterInstance<IAssetPairsRepository>(

@@ -33,6 +33,7 @@ namespace Lykke.Service.HFT.Core
 	public class DbSettings
 	{
 		public string DictsConnString { get; set; }
+		public string BalancesInfoConnString { get; set; }
 	}
 
 	public class CacheSettings

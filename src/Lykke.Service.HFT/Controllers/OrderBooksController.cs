@@ -42,19 +42,19 @@ namespace Lykke.Service.HFT.Controllers
 		[HttpGet("{assetPairId}")]
 		[SwaggerOperation("OrderBooks_id")]
 		[Produces(typeof(IEnumerable<IOrderBook>))]
-		public async Task<IActionResult> GetOrderBooks(string assetPairId)
+		public async Task<IActionResult> GetOrderBook(string assetPairId)
 		{
 			if (!ModelState.IsValid)
 			{
 				return BadRequest(ModelState);
 			}
-			
+
 			var assetPair = await _assetPairs.GetItemAsync(assetPairId);
 			if (assetPair == null)
 			{
 				return NotFound(assetPairId);
 			}
-			
+
 			var orderBooks = await _orderBooksService.GetAsync(assetPairId);
 			return Ok(orderBooks);
 		}

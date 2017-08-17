@@ -4,7 +4,6 @@ using Common;
 using Lykke.Service.HFT.Core.Domain;
 using Lykke.Service.HFT.Core.Services;
 using Lykke.Service.HFT.Helpers;
-using Lykke.Service.HFT.Models;
 using Lykke.Service.HFT.Models.Requests;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -26,31 +25,12 @@ namespace Lykke.Service.HFT.Controllers
 		}
 
 		/// <summary>
-		/// Handle market order.
-		/// </summary>
-		[HttpPost("HandleMarketOrder")]
-		[SwaggerOperation("HandleMarketOrder")]
-		public async Task HandleMarketOrder([FromBody] HandleMarketOrderRequest request)
-		{
-			var clientId = User.GetUserId();
-			var orderAction = request.Volume > 0
-				? OrderAction.Buy
-				: OrderAction.Sell;
-			var volume = Math.Abs(request.Volume);
-			// order.Straight, (double)offchainTransfer.Amount)
-			await _matchingEngineAdapter.HandleMarketOrderAsync(
-				clientId: clientId,
-				assetPairId: request.AssetPair,
-				orderAction: orderAction,
-				volume: volume,
-				straight: request.Straight);
-		}
-
-		/// <summary>
 		/// Place limit order.
 		/// </summary>
+		/// <returns>Request id.</returns>
 		[HttpPost("PlaceLimitOrder")]
 		[SwaggerOperation("PlaceLimitOrder")]
+		[Produces(typeof(string))]
 		public async Task<IActionResult> PlaceLimitOrder([FromBody] LimitOrderRequest order)
 		{
 			if (!ModelState.IsValid)
@@ -58,21 +38,25 @@ namespace Lykke.Service.HFT.Controllers
 				return BadRequest(ModelState);
 			}
 
+			var assetPair = await _assetPairs.GetItemAsync(order.AssetPairId);
+			if (assetPair == null)
+			{
+				return BadRequest(new ResponseModel { Status = StatusCodes.UnknownAsset, Message = $"Unknown asset pair '{order.AssetPairId}'" });
+			}
 
-			//var assetPair = await _assetPairs.GetItemAsync(order.AssetPairId);
-			//if (assetPair == null)
-			//{
-			//	return BadRequest(ModelState);
-			//}
-			
 			var clientId = User.GetUserId();
-			await _matchingEngineAdapter.PlaceLimitOrderAsync(
+			var response = await _matchingEngineAdapter.PlaceLimitOrderAsync(
 				clientId: clientId,
 				assetPairId: order.AssetPairId,
 				orderAction: order.OrderAction,
 				volume: order.Volume,
 				price: order.Price);
-			return Ok();
+			if (response.Status != StatusCodes.Ok)
+			{
+				return BadRequest(response);
+			}
+
+			return Ok(response.Result);
 		}
 
 	}

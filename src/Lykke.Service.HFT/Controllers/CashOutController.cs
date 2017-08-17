@@ -11,20 +11,20 @@ namespace Lykke.Service.HFT.Controllers
 {
 	[Authorize]
 	[Route("api/[controller]")]
-	public class BalanceController : Controller
+	public class CashOutController : Controller
 	{
 		private readonly IMatchingEngineAdapter _matchingEngineAdapter;
 
-		public BalanceController(IMatchingEngineAdapter frequencyTradingService)
+		public CashOutController(IMatchingEngineAdapter frequencyTradingService)
 		{
 			_matchingEngineAdapter = frequencyTradingService ?? throw new ArgumentNullException(nameof(frequencyTradingService));
 		}
-		
+
 
 		/// <summary>
 		/// Cash in / out.
 		/// </summary>
-		[HttpPost("CashOut")]
+		[HttpPost]
 		[SwaggerOperation("CashOut")]
 		public async Task<IActionResult> CashOut([FromBody] CashOutRequest request)
 		{
@@ -41,27 +41,5 @@ namespace Lykke.Service.HFT.Controllers
 				);
 			return Ok();
 		}
-
-		/// <summary>
-		/// Update balance.
-		/// </summary>
-		[HttpPost("Update")]
-		[SwaggerOperation("Update")]
-		public async Task<IActionResult> UpdateBalance([FromBody] UpdateBalanceRequest request)
-		{
-			if (!ModelState.IsValid)
-			{
-				return BadRequest(ModelState);
-			}
-
-			var clientId = User.GetUserId();
-			await _matchingEngineAdapter.UpdateBalanceAsync(
-				clientId: clientId,
-				assetId: request.AssetId,
-				value: request.Balance
-				);
-			return Ok();
-		}
-		
 	}
 }
