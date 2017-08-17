@@ -2,8 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using Common;
-using Lykke.Service.HFT.Core.Domain;
+using Lykke.Service.HFT.Core.Services;
 using Lykke.Service.HFT.Models;
 using Microsoft.AspNetCore.Mvc;
 using Swashbuckle.SwaggerGen.Annotations;
@@ -13,11 +12,11 @@ namespace Lykke.Service.HFT.Controllers
 	[Route("api/[controller]")]
 	public class AssetPairsController : Controller
 	{
-		private readonly CachedDataDictionary<string, IAssetPair> _assetPairs;
+		private readonly IAssetPairsManager _assetPairsManager;
 
-		public AssetPairsController(CachedDataDictionary<string, IAssetPair> assetPairs)
+		public AssetPairsController(IAssetPairsManager assetPairsManager)
 		{
-			_assetPairs = assetPairs ?? throw new ArgumentNullException(nameof(assetPairs));
+			_assetPairsManager = assetPairsManager ?? throw new ArgumentNullException(nameof(assetPairsManager));
 		}
 
 		/// <summary>
@@ -29,7 +28,7 @@ namespace Lykke.Service.HFT.Controllers
 		[Produces(typeof(IEnumerable<ApiAssetPairModel>))]
 		public async Task<IActionResult> GetAssetPairs()
 		{
-			var assetPairs = await _assetPairs.Values();
+			var assetPairs = await _assetPairsManager.GetAllEnabledAsync();
 			return Ok(assetPairs.Select(x => x.ConvertToApiModel()).ToArray());
 		}
 	}

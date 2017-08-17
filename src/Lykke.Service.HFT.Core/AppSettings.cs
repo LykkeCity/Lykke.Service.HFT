@@ -1,4 +1,5 @@
-﻿using System.Net;
+﻿using System;
+using System.Net;
 
 namespace Lykke.Service.HFT.Core
 {
@@ -13,6 +14,7 @@ namespace Lykke.Service.HFT.Core
 		public MatchingOrdersSettings MatchingEngine { get; set; }
 		public DbSettings Db { get; set; }
 		public CacheSettings CacheSettings { get; set; }
+		public DictionariesSettings Dictionaries { get; set; }
 	}
 	public class MatchingOrdersSettings
 	{
@@ -34,6 +36,12 @@ namespace Lykke.Service.HFT.Core
 	{
 		public string DictsConnString { get; set; }
 		public string BalancesInfoConnString { get; set; }
+	}
+
+	public class DictionariesSettings
+	{
+		public string AssetsServiceUrl { get; set; }
+		public TimeSpan CacheExpirationPeriod { get; set; }
 	}
 
 	public class CacheSettings

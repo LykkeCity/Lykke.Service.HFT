@@ -19,17 +19,17 @@ namespace Lykke.Service.HFT.Services
 
 		public bool IsConnected => _matchingEngineClient.IsConnected;
 
-		public async Task CancelLimitOrderAsync(string limitOrderId)
+		public async Task<ResponseModel> CancelLimitOrderAsync(string limitOrderId)
 		{
 			var response = await _matchingEngineClient.CancelLimitOrderAsync(limitOrderId);
-			ConvertToApiModel(response);
+			return ConvertToApiModel(response);
 		}
 
-		public async Task CashInOutAsync(string clientId, string assetId, double amount)
+		public async Task<ResponseModel> CashInOutAsync(string clientId, string assetId, double amount)
 		{
 			var id = GetNextRequestId();
 			var response = await _matchingEngineClient.CashInOutAsync(id, clientId, assetId, amount);
-			ConvertToApiModel(response);
+			return ConvertToApiModel(response);
 		}
 
 		public async Task HandleMarketOrderAsync(string clientId, string assetPairId, Core.Domain.OrderAction orderAction, double volume,
@@ -49,18 +49,18 @@ namespace Lykke.Service.HFT.Services
 			return ConvertToApiModel<string>(response);
 		}
 
-		public async Task SwapAsync(string clientId1, string assetId1, double amount1, string clientId2, string assetId2, double amount2)
+		public async Task<ResponseModel> SwapAsync(string clientId1, string assetId1, double amount1, string clientId2, string assetId2, double amount2)
 		{
 			var id = GetNextRequestId();
 			var response = await _matchingEngineClient.SwapAsync(id, clientId1, assetId1, amount1, clientId2, assetId2, amount2);
-			ConvertToApiModel(response);
+			return ConvertToApiModel(response);
 		}
 
-		public async Task TransferAsync(string fromClientId, string toClientId, string assetId, double amount)
+		public async Task<ResponseModel> TransferAsync(string fromClientId, string toClientId, string assetId, double amount)
 		{
 			var id = GetNextRequestId();
 			var response = await _matchingEngineClient.TransferAsync(id, fromClientId, toClientId, assetId, amount);
-			ConvertToApiModel(response);
+			return ConvertToApiModel(response);
 		}
 
 		public async Task UpdateBalanceAsync(string clientId, string assetId, double value)

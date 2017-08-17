@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
-using Common;
 using Lykke.Service.HFT.Core.Domain;
 using Lykke.Service.HFT.Core.Services;
 using Microsoft.AspNetCore.Mvc;
@@ -13,12 +12,12 @@ namespace Lykke.Service.HFT.Controllers
 	public class OrderBooksController : Controller
 	{
 		private readonly IOrderBooksService _orderBooksService;
-		private readonly CachedDataDictionary<string, IAssetPair> _assetPairs;
+		private readonly IAssetPairsManager _assetPairsManager;
 
-		public OrderBooksController(IOrderBooksService apiKeyGenerator, CachedDataDictionary<string, IAssetPair> assetPairs)
+		public OrderBooksController(IOrderBooksService apiKeyGenerator, IAssetPairsManager assetPairsManager)
 		{
-			_assetPairs = assetPairs ?? throw new ArgumentNullException(nameof(assetPairs));
 			_orderBooksService = apiKeyGenerator ?? throw new ArgumentNullException(nameof(apiKeyGenerator));
+			_assetPairsManager = assetPairsManager ?? throw new ArgumentNullException(nameof(assetPairsManager));
 		}
 
 		/// <summary>
@@ -49,7 +48,7 @@ namespace Lykke.Service.HFT.Controllers
 				return BadRequest(ModelState);
 			}
 
-			var assetPair = await _assetPairs.GetItemAsync(assetPairId);
+			var assetPair = await _assetPairsManager.TryGetEnabledPairAsync(assetPairId);
 			if (assetPair == null)
 			{
 				return NotFound(assetPairId);

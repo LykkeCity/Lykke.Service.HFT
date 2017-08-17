@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Threading.Tasks;
 using Common;
+using Lykke.Service.Assets.Client.Custom;
 using Lykke.Service.HFT.Core.Domain;
 using Lykke.Service.HFT.Core.Services;
 using Lykke.Service.HFT.Helpers;
@@ -16,12 +17,12 @@ namespace Lykke.Service.HFT.Controllers
 	public class OrdersController : Controller
 	{
 		private readonly IMatchingEngineAdapter _matchingEngineAdapter;
-		private readonly CachedDataDictionary<string, IAssetPair> _assetPairs;
+		private readonly IAssetPairsManager _assetPairsManager;
 
-		public OrdersController(IMatchingEngineAdapter frequencyTradingService, CachedDataDictionary<string, IAssetPair> assetPairs)
+		public OrdersController(IMatchingEngineAdapter frequencyTradingService, IAssetPairsManager assetPairsManager)
 		{
-			_assetPairs = assetPairs ?? throw new ArgumentNullException(nameof(assetPairs));
 			_matchingEngineAdapter = frequencyTradingService ?? throw new ArgumentNullException(nameof(frequencyTradingService));
+			_assetPairsManager = assetPairsManager ?? throw new ArgumentNullException(nameof(assetPairsManager));
 		}
 
 		/// <summary>
@@ -38,7 +39,7 @@ namespace Lykke.Service.HFT.Controllers
 				return BadRequest(ModelState);
 			}
 
-			var assetPair = await _assetPairs.GetItemAsync(order.AssetPairId);
+			var assetPair = await _assetPairsManager.TryGetEnabledPairAsync(order.AssetPairId);
 			if (assetPair == null)
 			{
 				return BadRequest(new ResponseModel { Status = StatusCodes.UnknownAsset, Message = $"Unknown asset pair '{order.AssetPairId}'" });

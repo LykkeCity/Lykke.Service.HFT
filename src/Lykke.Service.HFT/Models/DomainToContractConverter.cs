@@ -1,4 +1,4 @@
-﻿using Lykke.Service.HFT.Core.Domain;
+﻿using Lykke.Service.Assets.Client.Custom;
 
 namespace Lykke.Service.HFT.Models
 {

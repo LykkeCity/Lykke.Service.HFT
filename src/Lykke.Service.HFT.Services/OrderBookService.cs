@@ -12,22 +12,22 @@ namespace Lykke.Service.HFT.Services
 	public class OrderBookService : IOrderBooksService
 	{
 		private readonly IDistributedCache _distributedCache;
-		private readonly CachedDataDictionary<string, IAssetPair> _assetPairsDict;
+		private readonly IAssetPairsManager _assetPairsManager;
 		private readonly HighFrequencyTradingSettings _settings;
 
 		public OrderBookService(
 			IDistributedCache distributedCache,
-			CachedDataDictionary<string, IAssetPair> assetPairsDict,
+			IAssetPairsManager assetPairsManager,
 			HighFrequencyTradingSettings settings)
 		{
 			_distributedCache = distributedCache;
-			_assetPairsDict = assetPairsDict;
+			_assetPairsManager = assetPairsManager ?? throw new ArgumentNullException(nameof(assetPairsManager));
 			_settings = settings;
 		}
 
 		public async Task<IEnumerable<IOrderBook>> GetAllAsync()
 		{
-			var assetPairs = await _assetPairsDict.Values();
+			var assetPairs = await _assetPairsManager.GetAllEnabledAsync();
 
 			var orderBooks = new List<OrderBook>();
 
