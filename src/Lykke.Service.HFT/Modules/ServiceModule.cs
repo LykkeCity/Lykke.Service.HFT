@@ -9,6 +9,8 @@ using Lykke.Service.HFT.AzureRepositories;
 using Lykke.Service.HFT.Core;
 using Lykke.Service.HFT.Core.Accounts;
 using Lykke.Service.HFT.Core.Services;
+using Lykke.Service.HFT.Core.Services.ApiKey;
+using Lykke.Service.HFT.Core.Services.Assets;
 using Lykke.Service.HFT.Services;
 using Lykke.Service.HFT.Services.Assets;
 using Microsoft.Extensions.DependencyInjection;
@@ -37,6 +39,21 @@ namespace Lykke.Service.HFT.Modules
 				.As<ILog>()
 				.SingleInstance();
 
+			RegisterApiKeyService(builder);
+
+			RegisterMatchingEngine(builder);
+
+			RegisterBalances(builder);
+
+			RegisterOrderBooks(builder);
+
+			RegisterAssets(builder);
+
+			builder.Populate(_services);
+		}
+
+		private static void RegisterApiKeyService(ContainerBuilder builder)
+		{
 			builder.RegisterType<HealthService>()
 				.As<IHealthService>()
 				.SingleInstance();
@@ -52,7 +69,17 @@ namespace Lykke.Service.HFT.Modules
 			builder.RegisterType<ApiKeyService>()
 				.As<IClientResolver>()
 				.SingleInstance();
+		}
 
+		private static void RegisterOrderBooks(ContainerBuilder builder)
+		{
+			builder.RegisterType<OrderBookService>()
+				.As<IOrderBooksService>()
+				.SingleInstance();
+		}
+
+		private void RegisterMatchingEngine(ContainerBuilder builder)
+		{
 			var socketLog = new SocketLogDynamic(i => { },
 				str => Console.WriteLine(DateTime.UtcNow.ToIsoDateTime() + ": " + str));
 
@@ -61,19 +88,12 @@ namespace Lykke.Service.HFT.Modules
 			builder.RegisterType<MatchingEngineAdapter>()
 				.As<IMatchingEngineAdapter>()
 				.SingleInstance();
+		}
 
-
+		private void RegisterBalances(ContainerBuilder builder)
+		{
 			builder.RegisterInstance<IWalletsRepository>(
 				AzureRepoFactories.CreateAccountsRepository(_settings.Db.BalancesInfoConnString, _log));
-			
-
-			builder.RegisterType<OrderBookService>()
-				.As<IOrderBooksService>()
-				.SingleInstance();
-
-			RegisterAssets(builder);
-
-			builder.Populate(_services);
 		}
 
 		private void RegisterAssets(ContainerBuilder builder)

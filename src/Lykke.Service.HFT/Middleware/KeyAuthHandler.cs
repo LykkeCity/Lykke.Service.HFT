@@ -2,6 +2,7 @@
 using System.Security.Claims;
 using System.Threading.Tasks;
 using Lykke.Service.HFT.Core.Services;
+using Lykke.Service.HFT.Core.Services.ApiKey;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.Extensions.Primitives;
 

@@ -1,10 +1,8 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
+﻿using System.Collections.Generic;
 using System.Threading.Tasks;
 using Lykke.Service.Assets.Client.Custom;
 
-namespace Lykke.Service.HFT.Core.Services
+namespace Lykke.Service.HFT.Core.Services.Assets
 {
 	public interface IAssetPairsManager
 	{

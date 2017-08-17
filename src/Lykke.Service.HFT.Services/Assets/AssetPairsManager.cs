@@ -3,6 +3,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using Lykke.Service.Assets.Client.Custom;
 using Lykke.Service.HFT.Core.Services;
+using Lykke.Service.HFT.Core.Services.Assets;
 
 namespace Lykke.Service.HFT.Services.Assets
 {

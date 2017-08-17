@@ -1,8 +1,8 @@
 ﻿using System;
 using System.Threading.Tasks;
-using Common;
 using Lykke.Service.HFT.Core;
 using Lykke.Service.HFT.Core.Services;
+using Lykke.Service.HFT.Core.Services.ApiKey;
 using Microsoft.Extensions.Caching.Distributed;
 
 namespace Lykke.Service.HFT.Services

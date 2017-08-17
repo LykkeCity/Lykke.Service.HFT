@@ -44,7 +44,7 @@ namespace Lykke.Service.HFT.Services
 		{
 			var id = GetNextRequestId();
 			var response = await _matchingEngineClient.PlaceLimitOrderAsync(id, clientId, assetPairId, (OrderAction)orderAction, volume, price, cancelPreviousOrders);
-			if(response.Status == MeStatusCodes.Ok)
+			if (response.Status == MeStatusCodes.Ok)
 				return ResponseModel<string>.CreateOk(id);
 			return ConvertToApiModel<string>(response);
 		}
@@ -74,14 +74,12 @@ namespace Lykke.Service.HFT.Services
 			return Guid.NewGuid().ToString();
 		}
 
-
-		// todo: check 'assetId' and 'assetPairId' for existence in every method 
 		private ResponseModel ConvertToApiModel(MeResponseModel response)
 		{
 			switch (response.Status)
 			{
 				case MeStatusCodes.Ok:
-					return new ResponseModel{Status = StatusCodes.Ok};
+					return new ResponseModel { Status = StatusCodes.Ok };
 				case MeStatusCodes.LowBalance:
 					return new ResponseModel { Status = StatusCodes.LowBalance, Message = "Low balance" };
 				case MeStatusCodes.AlreadyProcessed:
