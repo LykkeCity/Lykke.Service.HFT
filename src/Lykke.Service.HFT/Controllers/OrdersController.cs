@@ -1,15 +1,15 @@
 ﻿using System;
+using System.Linq;
+using System.Net;
 using System.Threading.Tasks;
-using Common;
-using Lykke.Service.Assets.Client.Custom;
 using Lykke.Service.HFT.Core.Domain;
 using Lykke.Service.HFT.Core.Services;
 using Lykke.Service.HFT.Core.Services.Assets;
 using Lykke.Service.HFT.Helpers;
 using Lykke.Service.HFT.Models.Requests;
-using Lykke.Service.HFT.Strings;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.ModelBinding;
 using Swashbuckle.SwaggerGen.Annotations;
 
 namespace Lykke.Service.HFT.Controllers
@@ -34,17 +34,19 @@ namespace Lykke.Service.HFT.Controllers
 		[HttpPost("PlaceLimitOrder")]
 		[SwaggerOperation("PlaceLimitOrder")]
 		[Produces(typeof(string))]
+		[ProducesResponseType(typeof(ResponseModel), (int)HttpStatusCode.BadRequest)]
 		public async Task<IActionResult> PlaceLimitOrder([FromBody] LimitOrderRequest order)
 		{
 			if (!ModelState.IsValid)
 			{
-				return BadRequest(ModelState);
+				return BadRequest(ToResponseModel(ModelState));
 			}
 
 			var assetPair = await _assetPairsManager.TryGetEnabledPairAsync(order.AssetPairId);
 			if (assetPair == null)
 			{
-				return BadRequest(SetResponseMessageBasedOnStatus(new ResponseModel { Status = StatusCodes.UnknownAsset }));
+				var model = ResponseModel.CreateFail(ResponseModel.ErrorCodeType.UnknownAsset);
+				return BadRequest(model);
 			}
 
 			var clientId = User.GetUserId();
@@ -54,50 +56,20 @@ namespace Lykke.Service.HFT.Controllers
 				orderAction: order.OrderAction,
 				volume: order.Volume,
 				price: order.Price);
-			if (response.Status != StatusCodes.Ok)
+			if (response.Error != null)
 			{
-				SetResponseMessageBasedOnStatus(response);
 				return BadRequest(response);
 			}
 
 			return Ok(response.Result);
 		}
 
-		private ResponseModel SetResponseMessageBasedOnStatus(ResponseModel response)
+		private static ResponseModel ToResponseModel(ModelStateDictionary modelState)
 		{
-			switch (response.Status)
-			{
-				case StatusCodes.Ok:
-					break;
-				case StatusCodes.LowBalance:
-					response.Message = Phrases.LowBalance;
-					break;
-				case StatusCodes.AlreadyProcessed:
-					response.Message = Phrases.AlreadyProcessed;
-					break;
-				case StatusCodes.UnknownAsset:
-					response.Message = Phrases.UnknownAsset;
-					break;
-				case StatusCodes.NoLiquidity:
-					response.Message = Phrases.NoLiquidity;
-					break;
-				case StatusCodes.NotEnoughFunds:
-					response.Message = Phrases.NotEnoughFunds;
-					break;
-				case StatusCodes.Dust:
-					response.Message = Phrases.Dust;
-					break;
-				case StatusCodes.ReservedVolumeHigherThanBalance:
-					response.Message = Phrases.ReservedVolumeHigherThanBalance;
-					break;
-				case StatusCodes.NotFound:
-					response.Message = Phrases.NotFound;
-					break;
-				case StatusCodes.RuntimeError:
-					response.Message = Phrases.RuntimeError;
-					break;
-			}
-			return response;
+			var field = modelState.Keys.First();
+			var message = modelState[field].Errors.First().ErrorMessage;
+			return ResponseModel.CreateInvalidFieldError(field, message);
 		}
+
 	}
 }

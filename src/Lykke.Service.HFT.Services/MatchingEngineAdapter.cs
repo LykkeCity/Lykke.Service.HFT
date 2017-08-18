@@ -12,18 +12,18 @@ namespace Lykke.Service.HFT.Services
 	public class MatchingEngineAdapter : IMatchingEngineAdapter
 	{
 		private readonly IMatchingEngineClient _matchingEngineClient;
-		private readonly Dictionary<MeStatusCodes, StatusCodes> _statusCodesMap = new Dictionary<MeStatusCodes, StatusCodes>
+		private readonly Dictionary<MeStatusCodes, ResponseModel.ErrorCodeType> _statusCodesMap = new Dictionary<MeStatusCodes, ResponseModel.ErrorCodeType>
 		{
-			{MeStatusCodes.Ok, StatusCodes.Ok},
-			{MeStatusCodes.LowBalance, StatusCodes.LowBalance},
-			{MeStatusCodes.AlreadyProcessed, StatusCodes.AlreadyProcessed},
-			{MeStatusCodes.UnknownAsset, StatusCodes.UnknownAsset},
-			{MeStatusCodes.NoLiquidity, StatusCodes.NoLiquidity},
-			{MeStatusCodes.NotEnoughFunds, StatusCodes.NotEnoughFunds},
-			{MeStatusCodes.Dust, StatusCodes.Dust},
-			{MeStatusCodes.ReservedVolumeHigherThanBalance, StatusCodes.ReservedVolumeHigherThanBalance},
-			{MeStatusCodes.NotFound, StatusCodes.NotFound},
-			{MeStatusCodes.Runtime, StatusCodes.RuntimeError}
+			{MeStatusCodes.Ok, ResponseModel.ErrorCodeType.Ok},
+			{MeStatusCodes.LowBalance, ResponseModel.ErrorCodeType.LowBalance},
+			{MeStatusCodes.AlreadyProcessed, ResponseModel.ErrorCodeType.AlreadyProcessed},
+			{MeStatusCodes.UnknownAsset, ResponseModel.ErrorCodeType.UnknownAsset},
+			{MeStatusCodes.NoLiquidity, ResponseModel.ErrorCodeType.NoLiquidity},
+			{MeStatusCodes.NotEnoughFunds, ResponseModel.ErrorCodeType.NotEnoughFunds},
+			{MeStatusCodes.Dust, ResponseModel.ErrorCodeType.Dust},
+			{MeStatusCodes.ReservedVolumeHigherThanBalance, ResponseModel.ErrorCodeType.ReservedVolumeHigherThanBalance},
+			{MeStatusCodes.NotFound, ResponseModel.ErrorCodeType.NotFound},
+			{MeStatusCodes.Runtime, ResponseModel.ErrorCodeType.RuntimeError}
 		};
 
 
@@ -91,12 +91,12 @@ namespace Lykke.Service.HFT.Services
 
 		private ResponseModel ConvertToApiModel(MeResponseModel response)
 		{
-			return new ResponseModel { Status = _statusCodesMap[response.Status] };
+			return ResponseModel.CreateFail(_statusCodesMap[response.Status]);
 		}
 
 		private ResponseModel<T> ConvertToApiModel<T>(MeResponseModel response)
 		{
-			return new ResponseModel<T> { Status = _statusCodesMap[response.Status] };
+			return ResponseModel<T>.CreateFail(_statusCodesMap[response.Status]);
 		}
 	}
 }

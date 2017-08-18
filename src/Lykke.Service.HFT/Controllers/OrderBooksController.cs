@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Net;
 using System.Threading.Tasks;
 using Lykke.Service.HFT.Core.Domain;
 using Lykke.Service.HFT.Core.Services;
@@ -42,6 +43,7 @@ namespace Lykke.Service.HFT.Controllers
 		[HttpGet("{assetPairId}")]
 		[SwaggerOperation("OrderBooks_id")]
 		[Produces(typeof(IEnumerable<IOrderBook>))]
+		[ProducesResponseType((int)HttpStatusCode.NotFound)]
 		public async Task<IActionResult> GetOrderBook(string assetPairId)
 		{
 			if (!ModelState.IsValid)
@@ -52,7 +54,7 @@ namespace Lykke.Service.HFT.Controllers
 			var assetPair = await _assetPairsManager.TryGetEnabledPairAsync(assetPairId);
 			if (assetPair == null)
 			{
-				return NotFound(assetPairId);
+				return NotFound();
 			}
 
 			var orderBooks = await _orderBooksService.GetAsync(assetPairId);
