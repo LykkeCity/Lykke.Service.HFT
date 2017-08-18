@@ -1,17 +1,16 @@
 ﻿using System;
+using System.Collections.Generic;
+using AspNetCoreRateLimit;
 using Autofac;
 using Autofac.Extensions.DependencyInjection;
-using AzureStorage.Tables;
 using Common.Log;
 using Lykke.Common.ApiLibrary.Middleware;
 using Lykke.Common.ApiLibrary.Swagger;
-using Lykke.Logs;
 using Lykke.Service.HFT.Core;
 using Lykke.Service.HFT.Infrastructure;
 using Lykke.Service.HFT.Middleware;
 using Lykke.Service.HFT.Modules;
 using Lykke.SettingsReader;
-using Lykke.SlackNotification.AzureQueue;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
@@ -51,6 +50,10 @@ namespace Lykke.Service.HFT
 				options.OperationFilter<ApiKeyHeaderOperationFilter>();
 			});
 
+			services.AddOptions();
+
+			ConfigureRateLimits(services);
+
 			var builder = new ContainerBuilder();
 			var appSettings = Environment.IsDevelopment()
 				? Configuration.Get<AppSettings>()
@@ -79,6 +82,7 @@ namespace Lykke.Service.HFT
 
 			app.UseLykkeMiddleware("HighFrequencyTrading", ex => new { Message = "Technical problem" });
 			app.UseMiddleware<KeyAuthMiddleware>();
+			app.UseMiddleware<CustomThrottlingMiddleware>();
 
 			// Use API Authentication
 			//app.UseLykkeApiAuth(conf =>
@@ -105,6 +109,41 @@ namespace Lykke.Service.HFT
 			var log = logAggregate.CreateLogger();
 
 			return log;
+		}
+
+		private static void ConfigureRateLimits(IServiceCollection services)
+		{
+			services.Configure<IpRateLimitOptions>(options =>
+			{
+				options.EnableEndpointRateLimiting = true;
+				options.ClientIdHeader = KeyAuthOptions.DefaultHeaderName;
+				options.StackBlockedRequests = false;
+				options.RealIpHeader = "X-Real-IP";
+				options.GeneralRules = new List<RateLimitRule>
+				{
+					new RateLimitRule
+					{
+						Endpoint = "*",
+						Limit = 300,
+						Period = "1m"
+					},
+					new RateLimitRule
+					{
+						Endpoint = "get:/api/AssetPairs",
+						Limit = 5,
+						Period = "10m"
+					},
+					new RateLimitRule
+					{
+						Endpoint = "get:/api/Wallets",
+						Limit = 60,
+						Period = "1m"
+					}
+				};
+			});
+
+			services.AddSingleton<IIpPolicyStore, DistributedCacheIpPolicyStore>();
+			services.AddSingleton<IRateLimitCounterStore, DistributedCacheRateLimitCounterStore>();
 		}
 	}
 }

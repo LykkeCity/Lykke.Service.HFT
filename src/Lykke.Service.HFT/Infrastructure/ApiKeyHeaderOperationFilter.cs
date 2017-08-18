@@ -1,5 +1,6 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
+using Lykke.Service.HFT.Middleware;
 using Microsoft.AspNetCore.Mvc.Authorization;
 using Swashbuckle.Swagger.Model;
 using Swashbuckle.SwaggerGen.Generator;
@@ -19,7 +20,7 @@ namespace Lykke.Service.HFT.Infrastructure
                     operation.Parameters = new List<IParameter>();
                 operation.Parameters.Add(new NonBodyParameter
                 {
-                    Name = "api-key",
+                    Name = KeyAuthOptions.DefaultHeaderName,
                     In = "header",
                     Description = "access token",
                     Required = true,
