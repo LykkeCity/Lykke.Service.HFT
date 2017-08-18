@@ -7,6 +7,7 @@ using Lykke.Service.HFT.Core.Services;
 using Lykke.Service.HFT.Core.Services.Assets;
 using Lykke.Service.HFT.Helpers;
 using Lykke.Service.HFT.Models.Requests;
+using Lykke.Service.HFT.Strings;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Swashbuckle.SwaggerGen.Annotations;
@@ -43,7 +44,7 @@ namespace Lykke.Service.HFT.Controllers
 			var assetPair = await _assetPairsManager.TryGetEnabledPairAsync(order.AssetPairId);
 			if (assetPair == null)
 			{
-				return BadRequest(new ResponseModel { Status = StatusCodes.UnknownAsset, Message = $"Unknown asset pair '{order.AssetPairId}'" });
+				return BadRequest(SetResponseMessageBasedOnStatus(new ResponseModel { Status = StatusCodes.UnknownAsset }));
 			}
 
 			var clientId = User.GetUserId();
@@ -55,11 +56,48 @@ namespace Lykke.Service.HFT.Controllers
 				price: order.Price);
 			if (response.Status != StatusCodes.Ok)
 			{
+				SetResponseMessageBasedOnStatus(response);
 				return BadRequest(response);
 			}
 
 			return Ok(response.Result);
 		}
 
+		private ResponseModel SetResponseMessageBasedOnStatus(ResponseModel response)
+		{
+			switch (response.Status)
+			{
+				case StatusCodes.Ok:
+					break;
+				case StatusCodes.LowBalance:
+					response.Message = Phrases.LowBalance;
+					break;
+				case StatusCodes.AlreadyProcessed:
+					response.Message = Phrases.AlreadyProcessed;
+					break;
+				case StatusCodes.UnknownAsset:
+					response.Message = Phrases.UnknownAsset;
+					break;
+				case StatusCodes.NoLiquidity:
+					response.Message = Phrases.NoLiquidity;
+					break;
+				case StatusCodes.NotEnoughFunds:
+					response.Message = Phrases.NotEnoughFunds;
+					break;
+				case StatusCodes.Dust:
+					response.Message = Phrases.Dust;
+					break;
+				case StatusCodes.ReservedVolumeHigherThanBalance:
+					response.Message = Phrases.ReservedVolumeHigherThanBalance;
+					break;
+				case StatusCodes.NotFound:
+					response.Message = Phrases.NotFound;
+					break;
+				case StatusCodes.RuntimeError:
+					response.Message = Phrases.RuntimeError;
+					break;
+			}
+			return response;
+		}
 	}
 }

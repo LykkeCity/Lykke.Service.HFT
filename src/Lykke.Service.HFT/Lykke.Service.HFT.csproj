@@ -60,6 +60,21 @@
     <ProjectReference Include="..\Lykke.Service.HFT.Core\Lykke.Service.HFT.Core.csproj" />
     <ProjectReference Include="..\Lykke.Service.HFT.Services\Lykke.Service.HFT.Services.csproj" />
   </ItemGroup>
+  
+  <ItemGroup>
+    <Compile Update="Strings\Phrases.Designer.cs">
+      <DesignTime>True</DesignTime>
+      <AutoGen>True</AutoGen>
+      <DependentUpon>Phrases.resx</DependentUpon>
+    </Compile>
+  </ItemGroup>
+  
+  <ItemGroup>
+    <EmbeddedResource Update="Strings\Phrases.resx">
+      <Generator>ResXFileCodeGenerator</Generator>
+      <LastGenOutput>Phrases.Designer.cs</LastGenOutput>
+    </EmbeddedResource>
+  </ItemGroup>
 
   <Target Name="PrepublishScript" BeforeTargets="PrepareForPublish">
     <ItemGroup>

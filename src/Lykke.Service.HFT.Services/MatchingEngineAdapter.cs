@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Threading.Tasks;
 using Lykke.MatchingEngine.Connector.Abstractions.Models;
 using Lykke.MatchingEngine.Connector.Abstractions.Services;
@@ -11,6 +12,20 @@ namespace Lykke.Service.HFT.Services
 	public class MatchingEngineAdapter : IMatchingEngineAdapter
 	{
 		private readonly IMatchingEngineClient _matchingEngineClient;
+		private readonly Dictionary<MeStatusCodes, StatusCodes> _statusCodesMap = new Dictionary<MeStatusCodes, StatusCodes>
+		{
+			{MeStatusCodes.Ok, StatusCodes.Ok},
+			{MeStatusCodes.LowBalance, StatusCodes.LowBalance},
+			{MeStatusCodes.AlreadyProcessed, StatusCodes.AlreadyProcessed},
+			{MeStatusCodes.UnknownAsset, StatusCodes.UnknownAsset},
+			{MeStatusCodes.NoLiquidity, StatusCodes.NoLiquidity},
+			{MeStatusCodes.NotEnoughFunds, StatusCodes.NotEnoughFunds},
+			{MeStatusCodes.Dust, StatusCodes.Dust},
+			{MeStatusCodes.ReservedVolumeHigherThanBalance, StatusCodes.ReservedVolumeHigherThanBalance},
+			{MeStatusCodes.NotFound, StatusCodes.NotFound},
+			{MeStatusCodes.Runtime, StatusCodes.RuntimeError}
+		};
+
 
 		public MatchingEngineAdapter(IMatchingEngineClient matchingEngineClient)
 		{
@@ -76,59 +91,12 @@ namespace Lykke.Service.HFT.Services
 
 		private ResponseModel ConvertToApiModel(MeResponseModel response)
 		{
-			switch (response.Status)
-			{
-				case MeStatusCodes.Ok:
-					return new ResponseModel { Status = StatusCodes.Ok };
-				case MeStatusCodes.LowBalance:
-					return new ResponseModel { Status = StatusCodes.LowBalance, Message = "Low balance" };
-				case MeStatusCodes.AlreadyProcessed:
-					return new ResponseModel { Status = StatusCodes.AlreadyProcessed, Message = "Already Processed" };
-				case MeStatusCodes.UnknownAsset:
-					return new ResponseModel { Status = StatusCodes.UnknownAsset, Message = "Unknown asset" };
-				case MeStatusCodes.NoLiquidity:
-					return new ResponseModel { Status = StatusCodes.NoLiquidity, Message = "No liquidity" };
-				case MeStatusCodes.NotEnoughFunds:
-					return new ResponseModel { Status = StatusCodes.NotEnoughFunds, Message = "Not enough funds" };
-				case MeStatusCodes.Dust:
-					return new ResponseModel { Status = StatusCodes.Dust, Message = "Dust" };
-				case MeStatusCodes.ReservedVolumeHigherThanBalance:
-					return new ResponseModel { Status = StatusCodes.ReservedVolumeHigherThanBalance, Message = "Reserved volume higher than balance" };
-				case MeStatusCodes.NotFound:
-					return new ResponseModel { Status = StatusCodes.NotFound, Message = "Not found" };
-				case MeStatusCodes.Runtime:
-					return new ResponseModel { Status = StatusCodes.Runtime, Message = "Runtime error" };
-				default:
-					return new ResponseModel { Status = StatusCodes.Runtime, Message = "Runtime error" };
-			}
+			return new ResponseModel { Status = _statusCodesMap[response.Status] };
 		}
+
 		private ResponseModel<T> ConvertToApiModel<T>(MeResponseModel response)
 		{
-			switch (response.Status)
-			{
-				case MeStatusCodes.Ok:
-					return new ResponseModel<T> { Status = StatusCodes.Ok };
-				case MeStatusCodes.LowBalance:
-					return new ResponseModel<T> { Status = StatusCodes.LowBalance, Message = "Low balance" };
-				case MeStatusCodes.AlreadyProcessed:
-					return new ResponseModel<T> { Status = StatusCodes.AlreadyProcessed, Message = "Already Processed" };
-				case MeStatusCodes.UnknownAsset:
-					return new ResponseModel<T> { Status = StatusCodes.UnknownAsset, Message = "Unknown asset" };
-				case MeStatusCodes.NoLiquidity:
-					return new ResponseModel<T> { Status = StatusCodes.NoLiquidity, Message = "No liquidity" };
-				case MeStatusCodes.NotEnoughFunds:
-					return new ResponseModel<T> { Status = StatusCodes.NotEnoughFunds, Message = "Not enough funds" };
-				case MeStatusCodes.Dust:
-					return new ResponseModel<T> { Status = StatusCodes.Dust, Message = "Dust" };
-				case MeStatusCodes.ReservedVolumeHigherThanBalance:
-					return new ResponseModel<T> { Status = StatusCodes.ReservedVolumeHigherThanBalance, Message = "Reserved volume higher than balance" };
-				case MeStatusCodes.NotFound:
-					return new ResponseModel<T> { Status = StatusCodes.NotFound, Message = "Not found" };
-				case MeStatusCodes.Runtime:
-					return new ResponseModel<T> { Status = StatusCodes.Runtime, Message = "Runtime error" };
-				default:
-					return new ResponseModel<T> { Status = StatusCodes.Runtime, Message = "Runtime error" };
-			}
+			return new ResponseModel<T> { Status = _statusCodesMap[response.Status] };
 		}
 	}
 }
