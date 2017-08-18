@@ -91,6 +91,9 @@ namespace Lykke.Service.HFT.Services
 
 		private ResponseModel ConvertToApiModel(MeResponseModel response)
 		{
+			if (response.Status == MeStatusCodes.Ok)
+				return ResponseModel.CreateOk();
+
 			return ResponseModel.CreateFail(_statusCodesMap[response.Status]);
 		}
 

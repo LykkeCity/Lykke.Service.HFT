@@ -58,10 +58,28 @@ namespace Lykke.Service.HFT.Controllers
 				price: order.Price);
 			if (response.Error != null)
 			{
+				// todo: produce valid http status codes based on ME response 
 				return BadRequest(response);
 			}
 
 			return Ok(response.Result);
+		}
+
+		/// <summary>
+		/// Cancel limit order.
+		/// </summary>
+		[HttpPost("{limitOrderId}/Cancel")]
+		[SwaggerOperation("CancelLimitOrder")]
+		[ProducesResponseType((int)HttpStatusCode.NotFound)]
+		public async Task<IActionResult> CancelLimitOrder(string limitOrderId)
+		{
+			var response = await _matchingEngineAdapter.CancelLimitOrderAsync(limitOrderId);
+			if (response.Error != null)
+			{
+				// todo: produce valid http status codes based on ME response 
+				return NotFound();
+			}
+			return Ok();
 		}
 
 		private static ResponseModel ToResponseModel(ModelStateDictionary modelState)
