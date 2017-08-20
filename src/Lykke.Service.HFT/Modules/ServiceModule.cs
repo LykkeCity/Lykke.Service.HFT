@@ -19,20 +19,23 @@ namespace Lykke.Service.HFT.Modules
 {
 	public class ServiceModule : Module
 	{
-		private readonly HighFrequencyTradingSettings _settings;
+		private readonly AppSettings _settings;
+		private readonly AppSettings.HighFrequencyTradingSettings _serviceSettings;
 		private readonly IServiceCollection _services;
 		private readonly ILog _log;
 
-		public ServiceModule(HighFrequencyTradingSettings settings, ILog log)
+		public ServiceModule(AppSettings settings, ILog log)
 		{
 			_settings = settings;
-			_services = new ServiceCollection();
+			_serviceSettings = _settings.HighFrequencyTradingService;
 			_log = log;
+
+			_services = new ServiceCollection();
 		}
 
 		protected override void Load(ContainerBuilder builder)
 		{
-			builder.RegisterInstance(_settings)
+			builder.RegisterInstance(_serviceSettings)
 				.SingleInstance();
 
 			builder.RegisterInstance(_log)
@@ -48,6 +51,8 @@ namespace Lykke.Service.HFT.Modules
 			RegisterOrderBooks(builder);
 
 			RegisterAssets(builder);
+
+			BindRabbitMq(builder);
 
 			builder.Populate(_services);
 		}
@@ -83,7 +88,7 @@ namespace Lykke.Service.HFT.Modules
 			var socketLog = new SocketLogDynamic(i => { },
 				str => Console.WriteLine(DateTime.UtcNow.ToIsoDateTime() + ": " + str));
 
-			builder.BindMeClient(_settings.MatchingEngine.IpEndpoint.GetClientIpEndPoint(), socketLog);
+			builder.BindMeClient(_settings.MatchingEngineClient.IpEndpoint.GetClientIpEndPoint(), socketLog);
 
 			builder.RegisterType<MatchingEngineAdapter>()
 				.As<IMatchingEngineAdapter>()
@@ -93,20 +98,25 @@ namespace Lykke.Service.HFT.Modules
 		private void RegisterBalances(ContainerBuilder builder)
 		{
 			builder.RegisterInstance<IWalletsRepository>(
-				AzureRepoFactories.CreateAccountsRepository(_settings.Db.BalancesInfoConnString, _log));
+				AzureRepoFactories.CreateAccountsRepository(_serviceSettings.Db.BalancesInfoConnString, _log));
 		}
 
 		private void RegisterAssets(ContainerBuilder builder)
 		{
 			_services.UseAssetsClient(AssetServiceSettings.Create(
-				new Uri(_settings.Dictionaries.AssetsServiceUrl),
-				_settings.Dictionaries.CacheExpirationPeriod));
+				new Uri(_serviceSettings.Dictionaries.AssetsServiceUrl),
+				_serviceSettings.Dictionaries.CacheExpirationPeriod));
 
 			builder.RegisterType<AssetPairsManager>()
 				.As<IAssetPairsManager>()
-				.WithParameter(new TypedParameter(typeof(TimeSpan), _settings.Dictionaries.CacheExpirationPeriod))
+				.WithParameter(new TypedParameter(typeof(TimeSpan), _serviceSettings.Dictionaries.CacheExpirationPeriod))
 				.SingleInstance();
 		}
 
+		private void BindRabbitMq(ContainerBuilder builder)
+		{
+			builder.RegisterType<LimitOrdersConsumer>().SingleInstance().AutoActivate();
+			builder.RegisterInstance(_serviceSettings.LimitOrdersFeed);
+		}
 	}
 }

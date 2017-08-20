@@ -14,12 +14,12 @@ namespace Lykke.Service.HFT.Services
 	{
 		private readonly IDistributedCache _distributedCache;
 		private readonly IAssetPairsManager _assetPairsManager;
-		private readonly HighFrequencyTradingSettings _settings;
+		private readonly AppSettings.HighFrequencyTradingSettings _settings;
 
 		public OrderBookService(
 			IDistributedCache distributedCache,
 			IAssetPairsManager assetPairsManager,
-			HighFrequencyTradingSettings settings)
+			AppSettings.HighFrequencyTradingSettings settings)
 		{
 			_distributedCache = distributedCache;
 			_assetPairsManager = assetPairsManager ?? throw new ArgumentNullException(nameof(assetPairsManager));
@@ -30,7 +30,7 @@ namespace Lykke.Service.HFT.Services
 		{
 			var assetPairs = await _assetPairsManager.GetAllEnabledAsync();
 
-			var orderBooks = new List<OrderBook>();
+			var orderBooks = new List<IOrderBook>();
 
 			foreach (var pair in assetPairs)
 			{

@@ -28,7 +28,7 @@ namespace Lykke.Service.HFT.Controllers
 		}
 
 		/// <summary>
-		/// Place limit order.
+		/// Place a limit order.
 		/// </summary>
 		/// <returns>Request id.</returns>
 		[HttpPost("PlaceLimitOrder")]
@@ -66,7 +66,7 @@ namespace Lykke.Service.HFT.Controllers
 		}
 
 		/// <summary>
-		/// Cancel limit order.
+		/// Cancel the limit order.
 		/// </summary>
 		[HttpPost("{limitOrderId}/Cancel")]
 		[SwaggerOperation("CancelLimitOrder")]
@@ -80,6 +80,22 @@ namespace Lykke.Service.HFT.Controllers
 				return NotFound();
 			}
 			return Ok();
+		}
+
+		/// <summary>
+		/// Get the order info.
+		/// </summary>
+		[HttpGet("{limitOrderId}")]
+		[SwaggerOperation("GetOrderInfo")]
+		[ProducesResponseType((int)HttpStatusCode.NotFound)]
+		public async Task<IActionResult> GetOrderInfo(string limitOrderId)
+		{
+			if (!Services.MatchingEngineAdapter.LimitOrders.TryGetValue(limitOrderId, out Services.Messages.LimitOrderMessage.Order order))
+			{
+				return NotFound();
+			}
+
+			return Ok(order);
 		}
 
 		private static ResponseModel ToResponseModel(ModelStateDictionary modelState)

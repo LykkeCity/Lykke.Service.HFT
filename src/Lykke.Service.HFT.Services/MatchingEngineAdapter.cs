@@ -1,10 +1,12 @@
 ﻿using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using Lykke.MatchingEngine.Connector.Abstractions.Models;
 using Lykke.MatchingEngine.Connector.Abstractions.Services;
 using Lykke.Service.HFT.Core.Domain;
 using Lykke.Service.HFT.Core.Services;
+using Lykke.Service.HFT.Services.Messages;
 using OrderAction = Lykke.MatchingEngine.Connector.Abstractions.Models.OrderAction;
 
 namespace Lykke.Service.HFT.Services
@@ -12,6 +14,8 @@ namespace Lykke.Service.HFT.Services
 	public class MatchingEngineAdapter : IMatchingEngineAdapter
 	{
 		private readonly IMatchingEngineClient _matchingEngineClient;
+		public static readonly ConcurrentDictionary<string, LimitOrderMessage.Order> LimitOrders = new ConcurrentDictionary<string, LimitOrderMessage.Order>();
+
 		private readonly Dictionary<MeStatusCodes, ResponseModel.ErrorCodeType> _statusCodesMap = new Dictionary<MeStatusCodes, ResponseModel.ErrorCodeType>
 		{
 			{MeStatusCodes.Ok, ResponseModel.ErrorCodeType.Ok},
@@ -58,9 +62,12 @@ namespace Lykke.Service.HFT.Services
 			double price, bool cancelPreviousOrders = false)
 		{
 			var id = GetNextRequestId();
+			LimitOrders.TryAdd(id, new LimitOrderMessage.Order());
 			var response = await _matchingEngineClient.PlaceLimitOrderAsync(id, clientId, assetPairId, (OrderAction)orderAction, volume, price, cancelPreviousOrders);
 			if (response.Status == MeStatusCodes.Ok)
+			{
 				return ResponseModel<string>.CreateOk(id);
+			}
 			return ConvertToApiModel<string>(response);
 		}
 

@@ -6,42 +6,56 @@ namespace Lykke.Service.HFT.Core
     public class AppSettings
 	{
 		public HighFrequencyTradingSettings HighFrequencyTradingService { get; set; }
+		public MatchingEngineSettings MatchingEngineClient { get; set; }
 
-	}
-
-	public class HighFrequencyTradingSettings
-	{
-		public MatchingOrdersSettings MatchingEngine { get; set; }
-		public DbSettings Db { get; set; }
-		public CacheSettings CacheSettings { get; set; }
-		public DictionariesSettings Dictionaries { get; set; }
-	}
-	public class MatchingOrdersSettings
-	{
-		public IpEndpointSettings IpEndpoint { get; set; }
-	}
-
-	public class IpEndpointSettings
-	{
-		public string Host { get; set; }
-		public int Port { get; set; }
-
-		public IPEndPoint GetClientIpEndPoint(bool useInternal = false)
+		public class HighFrequencyTradingSettings
 		{
-			return new IPEndPoint(IPAddress.Parse(Host), Port);
+			public DbSettings Db { get; set; }
+			public DictionariesSettings Dictionaries { get; set; }
+			public CacheSettings CacheSettings { get; set; }
+			public RabbitMqSettings LimitOrdersFeed { get; set; }
 		}
-	}
 
-	public class DbSettings
-	{
-		public string DictsConnString { get; set; }
-		public string BalancesInfoConnString { get; set; }
-	}
+		public class RabbitMqSettings
+		{
+			public string ConnectionString { get; set; }
+			public string ExchangeName { get; set; }
+		}
+		public class MatchingEngineSettings
+		{
+			public IpEndpointSettings IpEndpoint { get; set; }
+		}
 
-	public class DictionariesSettings
-	{
-		public string AssetsServiceUrl { get; set; }
-		public TimeSpan CacheExpirationPeriod { get; set; }
+		public class IpEndpointSettings
+		{
+			public string InternalHost { get; set; }
+			public string Host { get; set; }
+			public int Port { get; set; }
+
+			public IPEndPoint GetClientIpEndPoint(bool useInternal = false)
+			{
+				string host = useInternal ? InternalHost : Host;
+
+				IPAddress ipAddress;
+				if (IPAddress.TryParse(host, out ipAddress))
+					return new IPEndPoint(ipAddress, Port);
+
+				var addresses = Dns.GetHostAddressesAsync(host).Result;
+				return new IPEndPoint(addresses[0], Port);
+			}
+		}
+
+		public class DbSettings
+		{
+			public string DictsConnString { get; set; }
+			public string BalancesInfoConnString { get; set; }
+		}
+
+		public class DictionariesSettings
+		{
+			public string AssetsServiceUrl { get; set; }
+			public TimeSpan CacheExpirationPeriod { get; set; }
+		}
 	}
 
 	public class CacheSettings
@@ -68,5 +82,4 @@ namespace Lykke.Service.HFT.Core
 		}
 
 	}
-
 }

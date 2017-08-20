@@ -31,8 +31,8 @@ namespace Lykke.Service.HFT
 				.AddJsonFile("appsettings.json", optional: true, reloadOnChange: true)
 				.AddJsonFile($"appsettings.{env.EnvironmentName}.json", optional: true)
 				.AddEnvironmentVariables();
-			Configuration = builder.Build();
 
+			Configuration = builder.Build();
 			Environment = env;
 		}
 
@@ -66,8 +66,9 @@ namespace Lykke.Service.HFT
 				options.InstanceName = appSettings.HighFrequencyTradingService.CacheSettings.ApiKeyCacheInstance;
 			});
 
-			builder.RegisterModule(new ServiceModule(appSettings.HighFrequencyTradingService, log));
+			builder.RegisterModule(new ServiceModule(appSettings, log));
 			builder.Populate(services);
+
 			ApplicationContainer = builder.Build();
 
 			return new AutofacServiceProvider(ApplicationContainer);

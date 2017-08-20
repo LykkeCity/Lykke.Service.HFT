@@ -10,9 +10,9 @@ namespace Lykke.Service.HFT.Services
 	public class ApiKeyService : IApiKeyValidator, IApiKeyGenerator, IClientResolver
 	{
 		private readonly IDistributedCache _distributedCache;
-		private readonly HighFrequencyTradingSettings _settings;
+		private readonly AppSettings.HighFrequencyTradingSettings _settings;
 
-		public ApiKeyService(IDistributedCache distributedCache, HighFrequencyTradingSettings settings)
+		public ApiKeyService(IDistributedCache distributedCache, AppSettings.HighFrequencyTradingSettings settings)
 		{
 			_settings = settings ?? throw new ArgumentNullException(nameof(settings));
 			_distributedCache = distributedCache ?? throw new ArgumentNullException(nameof(distributedCache));
