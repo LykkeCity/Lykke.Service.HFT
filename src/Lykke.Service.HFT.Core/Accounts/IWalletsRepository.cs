@@ -8,11 +8,13 @@ namespace Lykke.Service.HFT.Core.Accounts
 	{
 		double Balance { get; }
 		string AssetId { get; }
+		double Reserved { get; }
 	}
 
 	public class Wallet : IWallet
 	{
 		public string AssetId { get; set; }
+		public double Reserved { get; set; }
 		public double Balance { get; set; }
 
 		public static Wallet Create(string assetId, double balance = 0)

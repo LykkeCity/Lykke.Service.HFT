@@ -21,6 +21,9 @@ namespace Lykke.Service.HFT.AzureRepositories.Accounts
 			[JsonProperty("asset")]
 			public string AssetId { get; set; }
 
+			[JsonProperty("reserved")]
+			public double Reserved { get; set; }
+
 
 			public static TheWallet Create(string assetId, double balance)
 			{
