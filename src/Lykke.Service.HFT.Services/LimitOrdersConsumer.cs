@@ -4,6 +4,7 @@ using Common.Log;
 using Lykke.RabbitMqBroker;
 using Lykke.RabbitMqBroker.Subscriber;
 using Lykke.Service.HFT.Core;
+using Lykke.Service.HFT.Core.Domain;
 using Lykke.Service.HFT.Services.Messages;
 
 namespace Lykke.Service.HFT.Services
@@ -12,14 +13,16 @@ namespace Lykke.Service.HFT.Services
 	{
 		private readonly ILog _log;
 		private readonly AppSettings.RabbitMqSettings _settings;
+		private readonly IRepository<LimitOrderState> _orderStateRepository;
 		private readonly RabbitMqSubscriber<LimitOrderMessage> _subscriber;
 		private const string QueueName = "highfrequencytrading";
 		private const bool QueueDurable = false;
 
-		public LimitOrdersConsumer(ILog log, AppSettings.RabbitMqSettings settings)
+		public LimitOrdersConsumer(ILog log, AppSettings.RabbitMqSettings settings, IRepository<LimitOrderState> orderStateRepository)
 		{
 			_log = log ?? throw new ArgumentNullException(nameof(log));
 			_settings = settings ?? throw new ArgumentNullException(nameof(settings));
+			_orderStateRepository = orderStateRepository ?? throw new ArgumentNullException(nameof(orderStateRepository));
 
 			try
 			{
@@ -48,21 +51,26 @@ namespace Lykke.Service.HFT.Services
 		{
 			foreach (var order in limitOrder.Orders)
 			{
-				var orderId = order.Order.ExternalId;
-				if (MatchingEngineAdapter.LimitOrders.ContainsKey(orderId))
+				if (Guid.TryParse(order.Order.ExternalId, out Guid orderId))
 				{
-					MatchingEngineAdapter.LimitOrders.AddOrUpdate(orderId, order.Order, (key, value) => order.Order);
+					// todo: use 'update' request only for better performance
+					var orderState = await _orderStateRepository.Get(orderId);
+					if (orderState != null)
+					{
+						// todo: use automapper
+						orderState.Status = order.Order.Status;
+						//orderState.ClientId = order.Order.ClientId;
+						//orderState.AssetPairId = order.Order.AssetPairId;
+						orderState.Volume = order.Order.Volume;
+						//orderState.Price = order.Order.Price;
+						orderState.RemainingVolume = order.Order.RemainingVolume;
+						orderState.LastMatchTime = order.Order.LastMatchTime;
+						orderState.CreatedAt = order.Order.CreatedAt;
+						orderState.Registered = order.Order.Registered;
+						await _orderStateRepository.Update(orderState);
+					}
 				}
 			}
-
-			//try
-			//{
-			//	await _candlesManager.ProcessQuoteAsync(limitOrder);
-			//}
-			//catch (Exception ex)
-			//{
-			//	await _log.WriteErrorAsync(Constants.ComponentName, null, null, ex);
-			//}
 		}
 
 		public void Dispose()

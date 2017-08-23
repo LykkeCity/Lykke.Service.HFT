@@ -1,12 +1,10 @@
 ﻿using System;
-using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using Lykke.MatchingEngine.Connector.Abstractions.Models;
 using Lykke.MatchingEngine.Connector.Abstractions.Services;
 using Lykke.Service.HFT.Core.Domain;
 using Lykke.Service.HFT.Core.Services;
-using Lykke.Service.HFT.Services.Messages;
 using OrderAction = Lykke.MatchingEngine.Connector.Abstractions.Models.OrderAction;
 
 namespace Lykke.Service.HFT.Services
@@ -14,7 +12,7 @@ namespace Lykke.Service.HFT.Services
 	public class MatchingEngineAdapter : IMatchingEngineAdapter
 	{
 		private readonly IMatchingEngineClient _matchingEngineClient;
-		public static readonly ConcurrentDictionary<string, LimitOrderMessage.Order> LimitOrders = new ConcurrentDictionary<string, LimitOrderMessage.Order>();
+		private readonly IRepository<LimitOrderState> _orderStateRepository;
 
 		private readonly Dictionary<MeStatusCodes, ResponseModel.ErrorCodeType> _statusCodesMap = new Dictionary<MeStatusCodes, ResponseModel.ErrorCodeType>
 		{
@@ -31,9 +29,10 @@ namespace Lykke.Service.HFT.Services
 		};
 
 
-		public MatchingEngineAdapter(IMatchingEngineClient matchingEngineClient)
+		public MatchingEngineAdapter(IMatchingEngineClient matchingEngineClient, IRepository<LimitOrderState> orderStateRepository)
 		{
 			_matchingEngineClient = matchingEngineClient ?? throw new ArgumentNullException(nameof(matchingEngineClient));
+			_orderStateRepository = orderStateRepository ?? throw new ArgumentNullException(nameof(orderStateRepository));
 		}
 
 		public bool IsConnected => _matchingEngineClient.IsConnected;
@@ -61,8 +60,9 @@ namespace Lykke.Service.HFT.Services
 		public async Task<ResponseModel<string>> PlaceLimitOrderAsync(string clientId, string assetPairId, Core.Domain.OrderAction orderAction, double volume,
 			double price, bool cancelPreviousOrders = false)
 		{
-			var id = GetNextRequestId();
-			LimitOrders.TryAdd(id, new LimitOrderMessage.Order());
+			var requestId = GetNextRequestGuid();
+			await _orderStateRepository.Add(new LimitOrderState {Id = requestId, ClientId = clientId, AssetPairId = assetPairId, Volume = volume, Price = price});
+			var id = requestId.ToString();
 			var response = await _matchingEngineClient.PlaceLimitOrderAsync(id, clientId, assetPairId, (OrderAction)orderAction, volume, price, cancelPreviousOrders);
 			if (response.Status == MeStatusCodes.Ok)
 			{
@@ -91,6 +91,10 @@ namespace Lykke.Service.HFT.Services
 			await _matchingEngineClient.UpdateBalanceAsync(id, clientId, assetId, value);
 		}
 
+		private Guid GetNextRequestGuid()
+		{
+			return Guid.NewGuid();
+		}
 		private string GetNextRequestId()
 		{
 			return Guid.NewGuid().ToString();

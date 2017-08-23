@@ -14,8 +14,13 @@ namespace Lykke.Service.HFT.Core
 			public DictionariesSettings Dictionaries { get; set; }
 			public CacheSettings CacheSettings { get; set; }
 			public RabbitMqSettings LimitOrdersFeed { get; set; }
+			public MongoSettings MongoSettings { get; set; }
 		}
 
+		public class MongoSettings
+		{
+			public string ConnectionString { get; set; }
+		}
 		public class RabbitMqSettings
 		{
 			public string ConnectionString { get; set; }

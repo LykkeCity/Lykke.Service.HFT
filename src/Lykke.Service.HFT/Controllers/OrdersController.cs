@@ -20,11 +20,13 @@ namespace Lykke.Service.HFT.Controllers
 	{
 		private readonly IMatchingEngineAdapter _matchingEngineAdapter;
 		private readonly IAssetPairsManager _assetPairsManager;
+		private readonly IRepository<LimitOrderState> _orderStateRepository;
 
-		public OrdersController(IMatchingEngineAdapter frequencyTradingService, IAssetPairsManager assetPairsManager)
+		public OrdersController(IMatchingEngineAdapter frequencyTradingService, IAssetPairsManager assetPairsManager, IRepository<LimitOrderState> orderStateRepository)
 		{
 			_matchingEngineAdapter = frequencyTradingService ?? throw new ArgumentNullException(nameof(frequencyTradingService));
 			_assetPairsManager = assetPairsManager ?? throw new ArgumentNullException(nameof(assetPairsManager));
+			_orderStateRepository = orderStateRepository ?? throw new ArgumentNullException(nameof(orderStateRepository));
 		}
 
 		/// <summary>
@@ -87,15 +89,20 @@ namespace Lykke.Service.HFT.Controllers
 		/// </summary>
 		[HttpGet("{limitOrderId}")]
 		[SwaggerOperation("GetOrderInfo")]
+		[Produces(typeof(LimitOrderState))]
 		[ProducesResponseType((int)HttpStatusCode.NotFound)]
 		public async Task<IActionResult> GetOrderInfo(string limitOrderId)
 		{
-			if (!Services.MatchingEngineAdapter.LimitOrders.TryGetValue(limitOrderId, out Services.Messages.LimitOrderMessage.Order order))
+			if (Guid.TryParse(limitOrderId, out Guid orderId))
 			{
-				return NotFound();
+				var order = await _orderStateRepository.Get(orderId);
+				if (order != null)
+				{
+					return Ok(order);
+				}
 			}
 
-			return Ok(order);
+			return NotFound();
 		}
 
 		private static ResponseModel ToResponseModel(ModelStateDictionary modelState)

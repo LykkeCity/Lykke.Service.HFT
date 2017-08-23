@@ -1,4 +1,4 @@
-﻿namespace Lykke.Service.HFT.Services.Messages
+﻿namespace Lykke.Service.HFT.Core.Domain
 {
 	public enum OrderStatus
 	{

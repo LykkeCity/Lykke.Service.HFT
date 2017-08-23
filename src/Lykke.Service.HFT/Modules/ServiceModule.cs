@@ -8,12 +8,16 @@ using Lykke.Service.Assets.Client.Custom;
 using Lykke.Service.HFT.AzureRepositories;
 using Lykke.Service.HFT.Core;
 using Lykke.Service.HFT.Core.Accounts;
+using Lykke.Service.HFT.Core.Domain;
 using Lykke.Service.HFT.Core.Services;
 using Lykke.Service.HFT.Core.Services.ApiKey;
 using Lykke.Service.HFT.Core.Services.Assets;
+using Lykke.Service.HFT.MongoRepositories;
 using Lykke.Service.HFT.Services;
 using Lykke.Service.HFT.Services.Assets;
 using Microsoft.Extensions.DependencyInjection;
+using MongoDB.Bson.Serialization.Conventions;
+using MongoDB.Driver;
 
 namespace Lykke.Service.HFT.Modules
 {
@@ -51,6 +55,8 @@ namespace Lykke.Service.HFT.Modules
 			RegisterOrderBooks(builder);
 
 			RegisterAssets(builder);
+
+			RegisterOrderBookStates(builder);
 
 			BindRabbitMq(builder);
 
@@ -118,5 +124,18 @@ namespace Lykke.Service.HFT.Modules
 			builder.RegisterType<LimitOrdersConsumer>().SingleInstance().AutoActivate();
 			builder.RegisterInstance(_serviceSettings.LimitOrdersFeed);
 		}
+
+		private void RegisterOrderBookStates(ContainerBuilder builder)
+		{
+			var mongoUrl = new MongoUrl(_serviceSettings.MongoSettings.ConnectionString);
+			ConventionRegistry.Register("Ignore extra", new ConventionPack { new IgnoreExtraElementsConvention(true) }, x => true);
+
+			var database = new MongoClient(mongoUrl).GetDatabase(mongoUrl.DatabaseName);
+			builder.RegisterType<MongoRepository<LimitOrderState>>()
+				.As<IRepository<LimitOrderState>>()
+				.WithParameter(new TypedParameter(typeof(IMongoDatabase), database))
+				.SingleInstance();
+		}
+
 	}
 }
