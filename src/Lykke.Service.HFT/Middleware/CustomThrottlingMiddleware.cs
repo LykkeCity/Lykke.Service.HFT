@@ -17,12 +17,6 @@ namespace Lykke.Service.HFT.Middleware
 			_log = log;
 		}
 
-		public override ClientRequestIdentity SetIdentity(HttpContext httpContext)
-		{
-			var clientRequestIdentity = base.SetIdentity(httpContext);
-			return clientRequestIdentity;
-		}
-
 		public override void LogBlockedRequest(HttpContext httpContext, ClientRequestIdentity identity, RateLimitCounter counter, RateLimitRule rule)
 		{
 			_log?.WriteWarningAsync("Middleware", "Throttle", "",

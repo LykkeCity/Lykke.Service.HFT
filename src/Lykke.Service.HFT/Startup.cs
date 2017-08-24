@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
 using AspNetCoreRateLimit;
 using Autofac;
 using Autofac.Extensions.DependencyInjection;
@@ -112,37 +111,9 @@ namespace Lykke.Service.HFT
 			return log;
 		}
 
-		private static void ConfigureRateLimits(IServiceCollection services)
+		private void ConfigureRateLimits(IServiceCollection services)
 		{
-			services.Configure<IpRateLimitOptions>(options =>
-			{
-				options.EnableEndpointRateLimiting = true;
-				options.ClientIdHeader = KeyAuthOptions.DefaultHeaderName;
-				options.StackBlockedRequests = false;
-				options.RealIpHeader = "X-Real-IP";
-				options.GeneralRules = new List<RateLimitRule>
-				{
-					new RateLimitRule
-					{
-						Endpoint = "*",
-						Limit = 300,
-						Period = "1m"
-					},
-					new RateLimitRule
-					{
-						Endpoint = "get:/api/AssetPairs",
-						Limit = 5,
-						Period = "10m"
-					},
-					new RateLimitRule
-					{
-						Endpoint = "get:/api/Wallets",
-						Limit = 60,
-						Period = "1m"
-					}
-				};
-			});
-
+			services.Configure<IpRateLimitOptions>(Configuration.GetSection("IpRateLimiting"));
 			services.AddSingleton<IIpPolicyStore, DistributedCacheIpPolicyStore>();
 			services.AddSingleton<IRateLimitCounterStore, DistributedCacheRateLimitCounterStore>();
 		}
