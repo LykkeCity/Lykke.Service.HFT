@@ -46,12 +46,14 @@ namespace Lykke.Service.HFT
 				.AddJsonOptions(options =>
 				{
 					options.SerializerSettings.ContractResolver = new Newtonsoft.Json.Serialization.DefaultContractResolver();
+					options.SerializerSettings.Converters.Add(new Newtonsoft.Json.Converters.StringEnumConverter());
 				});
 
 			services.AddSwaggerGen(options =>
 			{
 				options.DefaultLykkeConfiguration("v1", "HighFrequencyTrading API");
 				options.OperationFilter<ApiKeyHeaderOperationFilter>();
+				options.DescribeAllEnumsAsStrings();
 			});
 
 			services.AddOptions();
