@@ -2,20 +2,37 @@
 {
 	public enum OrderStatus
 	{
-		Unknown,
-		//Init status, limit order in order book
-		InOrderBook
-		//Partially matched
-		, Processing
-		//Fully matched
-		, Matched
-		//Not enough funds on account
-		, NotEnoughFunds
-		//No liquidity
-		, NoLiquidity
-		//Unknown asset
-		, UnknownAsset
-		//Cancelled
-		, Cancelled
+		/// <summary>
+		/// Init status, limit order is going to be processed.
+		/// </summary>
+		Pending,
+		/// <summary>
+		/// Limit order in order book.
+		/// </summary>
+		InOrderBook,
+		/// <summary>
+		/// Partially matched.
+		/// </summary>
+		Processing,
+		/// <summary>
+		/// Fully matched.
+		/// </summary>
+		Matched,
+		/// <summary>
+		/// Not enough funds on account.
+		/// </summary>
+		NotEnoughFunds,
+		/// <summary>
+		/// No liquidity.
+		/// </summary>
+		NoLiquidity,
+		/// <summary>
+		/// Unknown asset.
+		/// </summary>
+		UnknownAsset,
+		/// <summary>
+		/// Cancelled.
+		/// </summary>
+		Cancelled
 	}
 }

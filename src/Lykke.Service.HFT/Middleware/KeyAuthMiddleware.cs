@@ -1,5 +1,4 @@
 ﻿using System.Text.Encodings.Web;
-using Lykke.Service.HFT.Core.Services;
 using Lykke.Service.HFT.Core.Services.ApiKey;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Http;
