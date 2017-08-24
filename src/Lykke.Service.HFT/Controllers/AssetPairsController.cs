@@ -32,5 +32,24 @@ namespace Lykke.Service.HFT.Controllers
 			var assetPairs = await _assetPairsManager.GetAllEnabledAsync();
 			return Ok(assetPairs.Select(x => x.ConvertToApiModel()).ToArray());
 		}
+
+		/// <summary>
+		/// Get specified asset pair.
+		/// </summary>
+		/// <param name="id">Asset pair ID. Example: AUDUSD</param>
+		/// <returns>Specified asset pair.</returns>
+		[HttpGet("{id}")]
+		[SwaggerOperation("AssetPairs/{id}")]
+		[ProducesResponseType(typeof(ApiAssetPairModel), (int)HttpStatusCode.OK)]
+		[ProducesResponseType((int)HttpStatusCode.NotFound)]
+		public async Task<IActionResult> GetAssetPair(string id)
+		{
+			var assetPair = await _assetPairsManager.TryGetEnabledPairAsync(id);
+			if (assetPair == null)
+			{
+				return NotFound();
+			}
+			return Ok(assetPair.ConvertToApiModel());
+		}
 	}
 }
