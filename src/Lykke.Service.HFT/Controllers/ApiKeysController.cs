@@ -18,6 +18,7 @@ namespace Lykke.Service.HFT.Controllers
 		/// <summary>
 		/// Generate an API key for specified client.
 		/// </summary>
+		/// <param name="clientId">Client ID</param>
 		/// <returns>API key.</returns>
 		[HttpPost("GenerateKey/{clientId}")]
 		public async Task<string> GenerateKey(string clientId)

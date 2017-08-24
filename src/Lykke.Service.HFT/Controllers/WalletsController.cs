@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Net;
 using System.Threading.Tasks;
 using Lykke.Service.HFT.Core.Accounts;
 using Lykke.Service.HFT.Helpers;
@@ -26,12 +27,12 @@ namespace Lykke.Service.HFT.Controllers
 		/// <returns>Client balance.</returns>
 		[HttpGet]
 		[SwaggerOperation("Wallets")]
-		[Produces(typeof(IEnumerable<IWallet>))]
+		[ProducesResponseType(typeof(IEnumerable<IWallet>), (int)HttpStatusCode.OK)]
 		public async Task<IActionResult> GetWallets()
 		{
 			var clientId = User.GetUserId();
 			var wallets = await _walletsRepository.GetAsync(clientId);
-			
+
 			return Ok(wallets);
 		}
 	}

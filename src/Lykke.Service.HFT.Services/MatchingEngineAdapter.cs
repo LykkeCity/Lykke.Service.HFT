@@ -37,9 +37,9 @@ namespace Lykke.Service.HFT.Services
 
 		public bool IsConnected => _matchingEngineClient.IsConnected;
 
-		public async Task<ResponseModel> CancelLimitOrderAsync(string limitOrderId)
+		public async Task<ResponseModel> CancelLimitOrderAsync(Guid limitOrderId)
 		{
-			var response = await _matchingEngineClient.CancelLimitOrderAsync(limitOrderId);
+			var response = await _matchingEngineClient.CancelLimitOrderAsync(limitOrderId.ToString());
 			return ConvertToApiModel(response);
 		}
 
@@ -57,18 +57,17 @@ namespace Lykke.Service.HFT.Services
 			var matchingEngineId = await _matchingEngineClient.HandleMarketOrderAsync(id, clientId, assetPairId, (OrderAction)orderAction, volume, straight, reservedLimitVolume);
 		}
 
-		public async Task<ResponseModel<string>> PlaceLimitOrderAsync(string clientId, string assetPairId, Core.Domain.OrderAction orderAction, double volume,
+		public async Task<ResponseModel<Guid>> PlaceLimitOrderAsync(string clientId, string assetPairId, Core.Domain.OrderAction orderAction, double volume,
 			double price, bool cancelPreviousOrders = false)
 		{
 			var requestId = GetNextRequestGuid();
-			await _orderStateRepository.Add(new LimitOrderState {Id = requestId, ClientId = clientId, AssetPairId = assetPairId, Volume = volume, Price = price});
-			var id = requestId.ToString();
-			var response = await _matchingEngineClient.PlaceLimitOrderAsync(id, clientId, assetPairId, (OrderAction)orderAction, volume, price, cancelPreviousOrders);
+			await _orderStateRepository.Add(new LimitOrderState { Id = requestId, ClientId = clientId, AssetPairId = assetPairId, Volume = volume, Price = price });
+			var response = await _matchingEngineClient.PlaceLimitOrderAsync(requestId.ToString(), clientId, assetPairId, (OrderAction)orderAction, volume, price, cancelPreviousOrders);
 			if (response.Status == MeStatusCodes.Ok)
 			{
-				return ResponseModel<string>.CreateOk(id);
+				return ResponseModel<Guid>.CreateOk(requestId);
 			}
-			return ConvertToApiModel<string>(response);
+			return ConvertToApiModel<Guid>(response);
 		}
 
 		public async Task<ResponseModel> SwapAsync(string clientId1, string assetId1, double amount1, string clientId2, string assetId2, double amount2)

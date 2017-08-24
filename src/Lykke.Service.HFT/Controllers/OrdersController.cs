@@ -35,7 +35,7 @@ namespace Lykke.Service.HFT.Controllers
 		/// <returns>Request id.</returns>
 		[HttpPost("PlaceLimitOrder")]
 		[SwaggerOperation("PlaceLimitOrder")]
-		[Produces(typeof(string))]
+		[ProducesResponseType(typeof(Guid), (int)HttpStatusCode.OK)]
 		[ProducesResponseType(typeof(ResponseModel), (int)HttpStatusCode.BadRequest)]
 		public async Task<IActionResult> PlaceLimitOrder([FromBody] LimitOrderRequest order)
 		{
@@ -70,12 +70,18 @@ namespace Lykke.Service.HFT.Controllers
 		/// <summary>
 		/// Cancel the limit order.
 		/// </summary>
-		[HttpPost("{limitOrderId}/Cancel")]
+		/// <param name="id">Limit order id (Guid)</param>
+		[HttpPost("{id}/Cancel")]
 		[SwaggerOperation("CancelLimitOrder")]
+		[ProducesResponseType((int)HttpStatusCode.OK)]
 		[ProducesResponseType((int)HttpStatusCode.NotFound)]
-		public async Task<IActionResult> CancelLimitOrder(string limitOrderId)
+		public async Task<IActionResult> CancelLimitOrder(Guid id)
 		{
-			var response = await _matchingEngineAdapter.CancelLimitOrderAsync(limitOrderId);
+			if (id == Guid.Empty)
+			{
+				return NotFound();
+			}
+			var response = await _matchingEngineAdapter.CancelLimitOrderAsync(id);
 			if (response.Error != null)
 			{
 				// todo: produce valid http status codes based on ME response 
@@ -87,19 +93,22 @@ namespace Lykke.Service.HFT.Controllers
 		/// <summary>
 		/// Get the order info.
 		/// </summary>
-		[HttpGet("{limitOrderId}")]
+		/// <param name="id">Limit order id (Guid)</param>
+		/// <returns>Order info.</returns>
+		[HttpGet("{id}")]
 		[SwaggerOperation("GetOrderInfo")]
-		[Produces(typeof(LimitOrderState))]
+		[ProducesResponseType(typeof(LimitOrderState), (int)HttpStatusCode.OK)]
 		[ProducesResponseType((int)HttpStatusCode.NotFound)]
-		public async Task<IActionResult> GetOrderInfo(string limitOrderId)
+		public async Task<IActionResult> GetOrderInfo(Guid id)
 		{
-			if (Guid.TryParse(limitOrderId, out Guid orderId))
+			if (id == Guid.Empty)
 			{
-				var order = await _orderStateRepository.Get(orderId);
-				if (order != null)
-				{
-					return Ok(order);
-				}
+				return NotFound();
+			}
+			var order = await _orderStateRepository.Get(id);
+			if (order != null)
+			{
+				return Ok(order);
 			}
 
 			return NotFound();
