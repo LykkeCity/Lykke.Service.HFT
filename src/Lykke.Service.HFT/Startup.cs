@@ -2,14 +2,17 @@
 using AspNetCoreRateLimit;
 using Autofac;
 using Autofac.Extensions.DependencyInjection;
+using AzureStorage.Tables;
 using Common.Log;
 using Lykke.Common.ApiLibrary.Middleware;
 using Lykke.Common.ApiLibrary.Swagger;
+using Lykke.Logs;
 using Lykke.Service.HFT.Core;
 using Lykke.Service.HFT.Infrastructure;
 using Lykke.Service.HFT.Middleware;
 using Lykke.Service.HFT.Modules;
 using Lykke.SettingsReader;
+using Lykke.SlackNotification.AzureQueue;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
@@ -30,9 +33,11 @@ namespace Lykke.Service.HFT
 				.AddJsonFile("appsettings.json", optional: true, reloadOnChange: true)
 				.AddJsonFile($"appsettings.{env.EnvironmentName}.json", optional: true)
 				.AddEnvironmentVariables();
-
 			Configuration = builder.Build();
+
 			Environment = env;
+
+			Console.WriteLine($"ENV_INFO: {System.Environment.GetEnvironmentVariable("ENV_INFO")}");
 		}
 
 		public IServiceProvider ConfigureServices(IServiceCollection services)
@@ -57,7 +62,7 @@ namespace Lykke.Service.HFT
 			var appSettings = Environment.IsDevelopment()
 				? Configuration.Get<AppSettings>()
 				: HttpSettingsLoader.Load<AppSettings>(Configuration.GetValue<string>("SettingsUrl"));
-			var log = CreateLog();
+			var log = CreateLogWithSlack(services, appSettings);
 
 			services.AddDistributedRedisCache(options =>
 			{
@@ -99,16 +104,46 @@ namespace Lykke.Service.HFT
 		}
 
 
-		private static ILog CreateLog()
+		private static ILog CreateLogWithSlack(IServiceCollection services, AppSettings settings)
 		{
-			var logToConsole = new LogToConsole();
-			var logAggregate = new LogAggregate();
+			var consoleLogger = new LogToConsole();
+			var aggregateLogger = new AggregateLogger();
 
-			logAggregate.AddLogger(logToConsole);
+			aggregateLogger.AddLog(consoleLogger);
 
-			var log = logAggregate.CreateLogger();
+			// Creating slack notification service, which logs own azure queue processing messages to aggregate log
+			var slackService = services.UseSlackNotificationsSenderViaAzureQueue(new AzureQueueIntegration.AzureQueueSettings
+			{
+				ConnectionString = settings.SlackNotifications.AzureQueue.ConnectionString,
+				QueueName = settings.SlackNotifications.AzureQueue.QueueName
+			}, aggregateLogger);
 
-			return log;
+			var dbLogConnectionString = settings.HighFrequencyTradingService.Db.LogsConnString;
+
+			// Creating azure storage logger, which logs own messages to concole log
+			if (!string.IsNullOrEmpty(dbLogConnectionString) && !(dbLogConnectionString.StartsWith("${") && dbLogConnectionString.EndsWith("}")))
+			{
+				const string appName = Constants.ComponentName;
+
+				var persistenceManager = new LykkeLogToAzureStoragePersistenceManager(
+					appName,
+					AzureTableStorage<LogEntity>.Create(() => dbLogConnectionString, "HighFrequencyTradingLog", consoleLogger),
+					consoleLogger);
+
+				var slackNotificationsManager = new LykkeLogToAzureSlackNotificationsManager(appName, slackService, consoleLogger);
+
+				var azureStorageLogger = new LykkeLogToAzureStorage(
+					appName,
+					persistenceManager,
+					slackNotificationsManager,
+					consoleLogger);
+
+				azureStorageLogger.Start();
+
+				aggregateLogger.AddLog(azureStorageLogger);
+			}
+
+			return aggregateLogger;
 		}
 
 		private void ConfigureRateLimits(IServiceCollection services)
