@@ -150,7 +150,7 @@ namespace Lykke.Service.HFT
 
 		private void ConfigureRateLimits(IServiceCollection services)
 		{
-			services.Configure<IpRateLimitOptions>(Configuration.GetSection("IpRateLimiting"));
+			services.Configure<IpRateLimitOptions>(Configuration.GetSection("HighFrequencyTradingService:IpRateLimiting"));
 			services.AddSingleton<IIpPolicyStore, DistributedCacheIpPolicyStore>();
 			services.AddSingleton<IRateLimitCounterStore, DistributedCacheRateLimitCounterStore>();
 		}
