@@ -54,7 +54,6 @@ namespace Lykke.Service.HFT.Core
 		public class DbSettings
 		{
 			public string LogsConnString { get; set; }
-			public string DictsConnString { get; set; }
 			public string BalancesInfoConnString { get; set; }
 		}
 
