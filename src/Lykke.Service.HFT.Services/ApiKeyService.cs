@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Threading.Tasks;
 using Lykke.Service.HFT.Core;
-using Lykke.Service.HFT.Core.Services;
 using Lykke.Service.HFT.Core.Services.ApiKey;
 using Microsoft.Extensions.Caching.Distributed;
 
@@ -41,6 +40,10 @@ namespace Lykke.Service.HFT.Services
 			//var apiKeyJson = _distributedCache.GetString(GetCacheKey(apiKey));
 			//var clientId = apiKeyJson?.DeserializeJson<string>();
 			var clientId = await _distributedCache.GetStringAsync(GetCacheKey(apiKey));
+			if (clientId == null && apiKey == _settings.ApiKey)
+			{
+				return _settings.ApiKey;
+			}
 			return clientId;
 		}
 	}

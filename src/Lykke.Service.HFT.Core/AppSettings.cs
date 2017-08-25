@@ -11,6 +11,7 @@ namespace Lykke.Service.HFT.Core
 
 		public class HighFrequencyTradingSettings
 		{
+			public string ApiKey { get; set; }
 			public DbSettings Db { get; set; }
 			public DictionariesSettings Dictionaries { get; set; }
 			public CacheSettings CacheSettings { get; set; }
