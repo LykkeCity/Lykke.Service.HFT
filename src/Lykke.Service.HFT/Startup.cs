@@ -66,12 +66,6 @@ namespace Lykke.Service.HFT
 				: HttpSettingsLoader.Load<AppSettings>(Configuration.GetValue<string>("SettingsUrl"));
 			var log = CreateLogWithSlack(services, appSettings);
 
-			services.AddDistributedRedisCache(options =>
-			{
-				options.Configuration = appSettings.HighFrequencyTradingService.CacheSettings.RedisConfiguration;
-				options.InstanceName = appSettings.HighFrequencyTradingService.CacheSettings.ApiKeyCacheInstance;
-			});
-
 			builder.RegisterModule(new ServiceModule(appSettings, log));
 			builder.Populate(services);
 

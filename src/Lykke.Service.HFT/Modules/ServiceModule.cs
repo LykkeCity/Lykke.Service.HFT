@@ -1,5 +1,6 @@
 ﻿using System;
 using Autofac;
+using Autofac.Core;
 using Autofac.Extensions.DependencyInjection;
 using Common;
 using Common.Log;
@@ -15,6 +16,8 @@ using Lykke.Service.HFT.Core.Services.Assets;
 using Lykke.Service.HFT.MongoRepositories;
 using Lykke.Service.HFT.Services;
 using Lykke.Service.HFT.Services.Assets;
+using Microsoft.Extensions.Caching.Distributed;
+using Microsoft.Extensions.Caching.Redis;
 using Microsoft.Extensions.DependencyInjection;
 using MongoDB.Bson.Serialization.Conventions;
 using MongoDB.Driver;
@@ -58,34 +61,60 @@ namespace Lykke.Service.HFT.Modules
 
 			RegisterOrderBookStates(builder);
 
+			BindRedis(builder);
 			BindRabbitMq(builder);
 
 			builder.Populate(_services);
 		}
 
-		private static void RegisterApiKeyService(ContainerBuilder builder)
+		private void BindRedis(ContainerBuilder builder)
+		{
+			var financeDataRedisCache = new RedisCache(new RedisCacheOptions
+			{
+				Configuration = _settings.HighFrequencyTradingService.CacheSettings.RedisConfiguration,
+				InstanceName = _settings.HighFrequencyTradingService.CacheSettings.FinanceDataCacheInstance
+			});
+			builder.RegisterInstance(financeDataRedisCache)
+				.As<IDistributedCache>()
+				.Keyed<IDistributedCache>("financeData")
+				.SingleInstance();
+
+			var apiKeysRedisCache = new RedisCache(new RedisCacheOptions
+			{
+				Configuration = _settings.HighFrequencyTradingService.CacheSettings.RedisConfiguration,
+				InstanceName = _settings.HighFrequencyTradingService.CacheSettings.ApiKeyCacheInstance
+			});
+			builder.RegisterInstance(apiKeysRedisCache)
+				.As<IDistributedCache>()
+				.Keyed<IDistributedCache>("apiKeys")
+				.SingleInstance();
+		}
+
+		private void RegisterApiKeyService(ContainerBuilder builder)
 		{
 			builder.RegisterType<HealthService>()
 				.As<IHealthService>()
 				.SingleInstance();
 
 			builder.RegisterType<ApiKeyService>()
+				.WithParameter(
+					new ResolvedParameter(
+						(pi, ctx) => pi.ParameterType == typeof(IDistributedCache),
+						(pi, ctx) => ctx.ResolveKeyed<IDistributedCache>("apiKeys")))
 				.As<IApiKeyValidator>()
-				.SingleInstance();
-
-			builder.RegisterType<ApiKeyService>()
 				.As<IApiKeyGenerator>()
-				.SingleInstance();
-
-			builder.RegisterType<ApiKeyService>()
 				.As<IClientResolver>()
 				.SingleInstance();
 		}
 
-		private static void RegisterOrderBooks(ContainerBuilder builder)
+		private void RegisterOrderBooks(ContainerBuilder builder)
 		{
 			builder.RegisterType<OrderBookService>()
 				.As<IOrderBooksService>()
+				.WithParameter(
+					new ResolvedParameter(
+						(pi, ctx) => pi.ParameterType == typeof(IDistributedCache),
+						(pi, ctx) => ctx.ResolveKeyed<IDistributedCache>("financeData")))
 				.SingleInstance();
 		}
 
