@@ -135,6 +135,9 @@
   <data name="NotFound" xml:space="preserve">
     <value>Not found</value>
   </data>
+  <data name="PriceGapTooHigh" xml:space="preserve">
+    <value>Sorry, your order cannot be set. Price deviation is too high.</value>
+  </data>
   <data name="ReservedVolumeHigherThanBalance" xml:space="preserve">
     <value>Reserved volume higher than balance</value>
   </data>

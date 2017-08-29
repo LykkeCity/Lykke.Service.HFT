@@ -16,8 +16,9 @@ namespace Lykke.Service.HFT.Core.Domain
 			{ErrorCodeType.Dust, ErrorMessages.Dust},
 			{ErrorCodeType.ReservedVolumeHigherThanBalance, ErrorMessages.ReservedVolumeHigherThanBalance},
 			{ErrorCodeType.NotFound, ErrorMessages.NotFound},
-			{ErrorCodeType.RuntimeError, ErrorMessages.RuntimeError}
-		};
+			{ErrorCodeType.RuntimeError, ErrorMessages.RuntimeError},
+		    {ErrorCodeType.PriceGapTooHigh, ErrorMessages.PriceGapTooHigh}
+        };
 		public ErrorModel Error { get; set; }
 
 		public enum ErrorCodeType
@@ -32,7 +33,8 @@ namespace Lykke.Service.HFT.Core.Domain
 			Dust = 413,
 			ReservedVolumeHigherThanBalance = 414,
 			NotFound = 415,
-			RuntimeError = 500
+		    PriceGapTooHigh = 491,
+            RuntimeError = 500
 		}
 
 		public class ErrorModel

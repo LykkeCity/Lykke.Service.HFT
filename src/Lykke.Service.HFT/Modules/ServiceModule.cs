@@ -42,7 +42,9 @@ namespace Lykke.Service.HFT.Modules
 
 		protected override void Load(ContainerBuilder builder)
 		{
-			builder.RegisterInstance(_serviceSettings)
+		    builder.RegisterInstance(_settings)
+		        .SingleInstance();
+            builder.RegisterInstance(_serviceSettings)
 				.SingleInstance();
 
 			builder.RegisterInstance(_log)
