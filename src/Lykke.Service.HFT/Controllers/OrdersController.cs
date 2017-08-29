@@ -81,7 +81,18 @@ namespace Lykke.Service.HFT.Controllers
 			{
 				return NotFound();
 			}
-			var response = await _matchingEngineAdapter.CancelLimitOrderAsync(id);
+
+		    var order = await _orderStateRepository.Get(id);
+		    if (order == null)
+		    {
+		        return NotFound();
+            }
+		    if (order.ClientId != User.GetUserId())
+		    {
+		        return Forbid();
+            }
+
+            var response = await _matchingEngineAdapter.CancelLimitOrderAsync(id);
 			if (response.Error != null)
 			{
 				// todo: produce valid http status codes based on ME response 
