@@ -2,6 +2,7 @@
 using System.Linq;
 using System.Net;
 using System.Threading.Tasks;
+using Common;
 using Lykke.Service.HFT.Core.Domain;
 using Lykke.Service.HFT.Core.Services;
 using Lykke.Service.HFT.Core.Services.Assets;
@@ -44,7 +45,7 @@ namespace Lykke.Service.HFT.Controllers
 				return BadRequest(ToResponseModel(ModelState));
 			}
 
-			var assetPair = await _assetPairsManager.TryGetEnabledPairAsync(order.AssetPairId);
+			var assetPair = await _assetPairsManager.TryGetEnabledAssetPairAsync(order.AssetPairId);
 			if (assetPair == null)
 			{
 				var model = ResponseModel.CreateFail(ResponseModel.ErrorCodeType.UnknownAsset);
@@ -56,7 +57,7 @@ namespace Lykke.Service.HFT.Controllers
 				clientId: clientId,
 				assetPairId: order.AssetPairId,
 				orderAction: order.OrderAction,
-				volume: order.Volume,
+				volume: order.Volume.TruncateDecimalPlaces(assetPair.Accuracy),
 				price: order.Price);
 			if (response.Error != null)
 			{

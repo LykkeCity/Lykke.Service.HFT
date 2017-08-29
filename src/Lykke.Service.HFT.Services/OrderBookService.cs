@@ -28,7 +28,7 @@ namespace Lykke.Service.HFT.Services
 
 		public async Task<IEnumerable<IOrderBook>> GetAllAsync()
 		{
-			var assetPairs = await _assetPairsManager.GetAllEnabledAsync();
+			var assetPairs = await _assetPairsManager.GetAllEnabledAssetPairsAsync();
 
 			var orderBooks = new List<IOrderBook>();
 

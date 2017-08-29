@@ -52,7 +52,7 @@ namespace Lykke.Service.HFT.Controllers
 				return BadRequest(ModelState);
 			}
 
-			var assetPair = await _assetPairsManager.TryGetEnabledPairAsync(assetPairId);
+			var assetPair = await _assetPairsManager.TryGetEnabledAssetPairAsync(assetPairId);
 			if (assetPair == null)
 			{
 				return NotFound();
