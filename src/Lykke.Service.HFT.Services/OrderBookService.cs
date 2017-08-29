@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 using Common;
 using Lykke.Service.HFT.Core;
@@ -68,5 +69,28 @@ namespace Lykke.Service.HFT.Services
 
 			return new IOrderBook[] { sellBook, buyBook };
 		}
-	}
+
+	    public async Task<double> GetBestPrice(string assetPair, bool buy)
+	    {
+	        var orderBooks = (await GetAsync(assetPair)).ToList();
+
+	        var price = GetBestPrice(orderBooks, assetPair, buy);
+
+	        if (price > 0)
+	            return price;
+
+	        return GetBestPrice(orderBooks, assetPair, !buy);
+        }
+	    private double GetBestPrice(IEnumerable<IOrderBook> orderBooks, string assetPair, bool buy)
+	    {
+	        var orderBook = orderBooks.First(x => x.AssetPair == assetPair && x.IsBuy == buy);
+	        orderBook.Order();
+
+	        if (orderBook.Prices.Count > 0)
+	            return orderBook.Prices[0].Price;
+
+	        return 0;
+	    }
+
+    }
 }

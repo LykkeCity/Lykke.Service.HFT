@@ -16,9 +16,9 @@ namespace Lykke.Service.HFT.Controllers
 		private readonly IOrderBooksService _orderBooksService;
 		private readonly IAssetPairsManager _assetPairsManager;
 
-		public OrderBooksController(IOrderBooksService apiKeyGenerator, IAssetPairsManager assetPairsManager)
+		public OrderBooksController(IOrderBooksService orderBooksService, IAssetPairsManager assetPairsManager)
 		{
-			_orderBooksService = apiKeyGenerator ?? throw new ArgumentNullException(nameof(apiKeyGenerator));
+			_orderBooksService = orderBooksService ?? throw new ArgumentNullException(nameof(orderBooksService));
 			_assetPairsManager = assetPairsManager ?? throw new ArgumentNullException(nameof(assetPairsManager));
 		}
 

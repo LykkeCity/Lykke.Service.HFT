@@ -10,7 +10,6 @@
 
 namespace Lykke.Service.HFT.Core.Strings {
     using System;
-    using System.Reflection;
     
     
     /// <summary>
@@ -20,7 +19,7 @@ namespace Lykke.Service.HFT.Core.Strings {
     // class via a tool like ResGen or Visual Studio.
     // To add or remove a member, edit your .ResX file then rerun ResGen
     // with the /str option, or rebuild your VS project.
-    [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Resources.Tools.StronglyTypedResourceBuilder", "4.0.0.0")]
+    [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Resources.Tools.StronglyTypedResourceBuilder", "15.0.0.0")]
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
     [global::System.Runtime.CompilerServices.CompilerGeneratedAttribute()]
     internal class ErrorMessages {
@@ -40,7 +39,7 @@ namespace Lykke.Service.HFT.Core.Strings {
         internal static global::System.Resources.ResourceManager ResourceManager {
             get {
                 if (object.ReferenceEquals(resourceMan, null)) {
-                    global::System.Resources.ResourceManager temp = new global::System.Resources.ResourceManager("Lykke.Service.HFT.Core.Strings.ErrorMessages", typeof(ErrorMessages).GetTypeInfo().Assembly);
+                    global::System.Resources.ResourceManager temp = new global::System.Resources.ResourceManager("Lykke.Service.HFT.Core.Strings.ErrorMessages", typeof(ErrorMessages).Assembly);
                     resourceMan = temp;
                 }
                 return resourceMan;
@@ -112,6 +111,15 @@ namespace Lykke.Service.HFT.Core.Strings {
         internal static string NotFound {
             get {
                 return ResourceManager.GetString("NotFound", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Sorry, your order cannot be set. Price deviation is too high..
+        /// </summary>
+        internal static string PriceGapTooHigh {
+            get {
+                return ResourceManager.GetString("PriceGapTooHigh", resourceCulture);
             }
         }
         

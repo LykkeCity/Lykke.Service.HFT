@@ -4,6 +4,7 @@ using System.Linq;
 using System.Net;
 using System.Threading.Tasks;
 using Common;
+using Lykke.Service.HFT.Core;
 using Lykke.Service.HFT.Core.Domain;
 using Lykke.Service.HFT.Core.Services;
 using Lykke.Service.HFT.Core.Services.Assets;
@@ -23,12 +24,21 @@ namespace Lykke.Service.HFT.Controllers
         private readonly IMatchingEngineAdapter _matchingEngineAdapter;
         private readonly IAssetPairsManager _assetPairsManager;
         private readonly IRepository<LimitOrderState> _orderStateRepository;
+        private readonly IOrderBooksService _orderBooksService;
+        private readonly AppSettings _settings;
 
-        public OrdersController(IMatchingEngineAdapter frequencyTradingService, IAssetPairsManager assetPairsManager, IRepository<LimitOrderState> orderStateRepository)
+        public OrdersController(
+            IMatchingEngineAdapter frequencyTradingService, 
+            IAssetPairsManager assetPairsManager, 
+            IRepository<LimitOrderState> orderStateRepository, 
+            IOrderBooksService orderBooksService, 
+            AppSettings settings)
         {
             _matchingEngineAdapter = frequencyTradingService ?? throw new ArgumentNullException(nameof(frequencyTradingService));
             _assetPairsManager = assetPairsManager ?? throw new ArgumentNullException(nameof(assetPairsManager));
             _orderStateRepository = orderStateRepository ?? throw new ArgumentNullException(nameof(orderStateRepository));
+            _orderBooksService = orderBooksService ?? throw new ArgumentNullException(nameof(orderBooksService));
+            _settings = settings ?? throw new ArgumentNullException(nameof(settings));
         }
 
         /// <summary>
@@ -66,6 +76,15 @@ namespace Lykke.Service.HFT.Controllers
             {
                 var model = ResponseModel.CreateFail(ResponseModel.ErrorCodeType.UnknownAsset);
                 return BadRequest(model);
+            }
+
+            var currentTopPrice = (decimal)await _orderBooksService.GetBestPrice(order.AssetPairId, order.OrderAction == OrderAction.Buy);
+            var deviation = _settings.Exchange.MaxLimitOrderDeviationPercent / 100;
+            var price = (decimal) order.Price;
+            if (order.OrderAction == OrderAction.Buy && currentTopPrice * (1 - deviation) > price 
+                || order.OrderAction == OrderAction.Sell && currentTopPrice * (1 + deviation) < price)
+            {
+                return BadRequest(ResponseModel.CreateFail(ResponseModel.ErrorCodeType.PriceGapTooHigh));
             }
 
             var clientId = User.GetUserId();
