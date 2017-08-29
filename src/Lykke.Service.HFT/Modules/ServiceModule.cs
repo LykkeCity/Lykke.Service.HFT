@@ -61,6 +61,7 @@ namespace Lykke.Service.HFT.Modules
 
 			RegisterOrderBookStates(builder);
 
+            BindMongoDb(builder);
 			BindRedis(builder);
 			BindRabbitMq(builder);
 
@@ -105,7 +106,12 @@ namespace Lykke.Service.HFT.Modules
 				.As<IApiKeyGenerator>()
 				.As<IClientResolver>()
 				.SingleInstance();
-		}
+
+
+		    builder.RegisterType<MongoRepository<ApiKey>>()
+		        .As<IRepository<ApiKey>>()
+		        .SingleInstance();
+        }
 
 		private void RegisterOrderBooks(ContainerBuilder builder)
 		{
@@ -154,15 +160,19 @@ namespace Lykke.Service.HFT.Modules
 			builder.RegisterInstance(_serviceSettings.LimitOrdersFeed);
 		}
 
-		private void RegisterOrderBookStates(ContainerBuilder builder)
-		{
-			var mongoUrl = new MongoUrl(_serviceSettings.MongoSettings.ConnectionString);
-			ConventionRegistry.Register("Ignore extra", new ConventionPack { new IgnoreExtraElementsConvention(true) }, x => true);
+	    private void BindMongoDb(ContainerBuilder builder)
+	    {
+	        var mongoUrl = new MongoUrl(_serviceSettings.MongoSettings.ConnectionString);
+	        ConventionRegistry.Register("Ignore extra", new ConventionPack { new IgnoreExtraElementsConvention(true) }, x => true);
 
-			var database = new MongoClient(mongoUrl).GetDatabase(mongoUrl.DatabaseName);
-			builder.RegisterType<MongoRepository<LimitOrderState>>()
+	        var database = new MongoClient(mongoUrl).GetDatabase(mongoUrl.DatabaseName);
+	        builder.RegisterInstance(database);
+	    }
+
+        private void RegisterOrderBookStates(ContainerBuilder builder)
+		{
+            builder.RegisterType<MongoRepository<LimitOrderState>>()
 				.As<IRepository<LimitOrderState>>()
-				.WithParameter(new TypedParameter(typeof(IMongoDatabase), database))
 				.SingleInstance();
 		}
 
