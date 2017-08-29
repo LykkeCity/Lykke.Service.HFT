@@ -6,7 +6,9 @@ namespace Lykke.Service.HFT.Core.Services.Assets
 {
 	public interface IAssetPairsManager
 	{
-		Task<IAssetPair> TryGetEnabledPairAsync(string assetPairId);
-		Task<IEnumerable<IAssetPair>> GetAllEnabledAsync();
-	}
+		Task<IAssetPair> TryGetEnabledAssetPairAsync(string assetPairId);
+		Task<IEnumerable<IAssetPair>> GetAllEnabledAssetPairsAsync();
+	    Task<IAsset> TryGetEnabledAssetAsync(string assetPairId);
+	    Task<IEnumerable<IAsset>> GetAllEnabledAssetsAsync();
+    }
 }

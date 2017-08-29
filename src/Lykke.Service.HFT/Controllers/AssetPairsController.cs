@@ -29,7 +29,7 @@ namespace Lykke.Service.HFT.Controllers
 		[ProducesResponseType(typeof(IEnumerable<ApiAssetPairModel>), (int)HttpStatusCode.OK)]
 		public async Task<IActionResult> GetAssetPairs()
 		{
-			var assetPairs = await _assetPairsManager.GetAllEnabledAsync();
+			var assetPairs = await _assetPairsManager.GetAllEnabledAssetPairsAsync();
 			return Ok(assetPairs.Select(x => x.ConvertToApiModel()).ToArray());
 		}
 
@@ -44,7 +44,7 @@ namespace Lykke.Service.HFT.Controllers
 		[ProducesResponseType((int)HttpStatusCode.NotFound)]
 		public async Task<IActionResult> GetAssetPair(string id)
 		{
-			var assetPair = await _assetPairsManager.TryGetEnabledPairAsync(id);
+			var assetPair = await _assetPairsManager.TryGetEnabledAssetPairAsync(id);
 			if (assetPair == null)
 			{
 				return NotFound();
