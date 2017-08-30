@@ -86,14 +86,20 @@ namespace Lykke.Service.HFT.Controllers
             {
                 return BadRequest(ResponseModel.CreateFail(ResponseModel.ErrorCodeType.PriceGapTooHigh));
             }
+            
+            var asset = await _assetPairsManager.TryGetEnabledAssetAsync(assetPair.BaseAssetId);
+            if (asset == null)
+            {
+              throw new InvalidOperationException($"Base asset '{assetPair.BaseAssetId}' for asset pair '{assetPair.Id}' not found.");
+            }
 
             var clientId = User.GetUserId();
             var response = await _matchingEngineAdapter.PlaceLimitOrderAsync(
                 clientId: clientId,
                 assetPairId: order.AssetPairId,
                 orderAction: order.OrderAction,
-                volume: order.Volume.TruncateDecimalPlaces(assetPair.Accuracy),
-                price: order.Price);
+                volume: order.Volume.TruncateDecimalPlaces(asset.Accuracy),
+                price: order.Price.TruncateDecimalPlaces(assetPair.Accuracy));
             if (response.Error != null)
             {
                 // todo: produce valid http status codes based on ME response 
