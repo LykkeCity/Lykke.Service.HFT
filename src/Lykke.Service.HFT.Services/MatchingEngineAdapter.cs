@@ -50,12 +50,17 @@ namespace Lykke.Service.HFT.Services
 			return ConvertToApiModel(response);
 		}
 
-		public async Task HandleMarketOrderAsync(string clientId, string assetPairId, Core.Domain.OrderAction orderAction, double volume,
+		public async Task<ResponseModel<Guid>> HandleMarketOrderAsync(string clientId, string assetPairId, Core.Domain.OrderAction orderAction, double volume,
 			bool straight, double? reservedLimitVolume = null)
 		{
-			var id = GetNextRequestId();
-			var matchingEngineId = await _matchingEngineClient.HandleMarketOrderAsync(id, clientId, assetPairId, (OrderAction)orderAction, volume, straight, reservedLimitVolume);
-		}
+			var requestId = GetNextRequestGuid();
+			var matchingEngineResponse = await _matchingEngineClient.HandleMarketOrderAsync(requestId.ToString(), clientId, assetPairId, (OrderAction)orderAction, volume, straight, reservedLimitVolume);
+		    if (!string.IsNullOrEmpty(matchingEngineResponse))
+		    {
+		        return ResponseModel<Guid>.CreateFail(ResponseModel.ErrorCodeType.RuntimeError, matchingEngineResponse);
+		    }
+		    return ResponseModel<Guid>.CreateOk(requestId);
+        }
 
 		public async Task<ResponseModel<Guid>> PlaceLimitOrderAsync(string clientId, string assetPairId, Core.Domain.OrderAction orderAction, double volume,
 			double price, bool cancelPreviousOrders = false)
