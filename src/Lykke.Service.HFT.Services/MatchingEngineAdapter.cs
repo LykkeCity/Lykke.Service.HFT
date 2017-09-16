@@ -25,6 +25,8 @@ namespace Lykke.Service.HFT.Services
 			{MeStatusCodes.Dust, ResponseModel.ErrorCodeType.Dust},
 			{MeStatusCodes.ReservedVolumeHigherThanBalance, ResponseModel.ErrorCodeType.ReservedVolumeHigherThanBalance},
 			{MeStatusCodes.NotFound, ResponseModel.ErrorCodeType.NotFound},
+		    {MeStatusCodes.BalanceLowerThanReserved, ResponseModel.ErrorCodeType.BalanceLowerThanReserved},
+		    {MeStatusCodes.LeadToNegativeSpread, ResponseModel.ErrorCodeType.LeadToNegativeSpread},
             {MeStatusCodes.Runtime, ResponseModel.ErrorCodeType.RuntimeError}
 		};
 
