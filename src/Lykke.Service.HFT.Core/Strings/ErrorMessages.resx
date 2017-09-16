@@ -127,30 +127,30 @@
     <value>Dust</value>
   </data>
   <data name="LeadToNegativeSpread" xml:space="preserve">
-    <value>Lead to negative spread</value>
+    <value>The order leads to negative spread</value>
   </data>
-  <data name="UnknownAsset" xml:space="preserve">
-    <value>Unknown asset</value>
-  </data>
-  <data name="RuntimeError" xml:space="preserve">
-    <value>Runtime error</value>
-  </data>
-  <data name="ReservedVolumeHigherThanBalance" xml:space="preserve">
-    <value>Reserved volume higher than balance</value>
-  </data>
-  <data name="PriceGapTooHigh" xml:space="preserve">
-    <value>Sorry, your order cannot be set. Price deviation is too high.</value>
-  </data>
-  <data name="NotFound" xml:space="preserve">
-    <value>Not found</value>
-  </data>
-  <data name="NotEnoughFunds" xml:space="preserve">
-    <value>Not enough funds</value>
+  <data name="LowBalance" xml:space="preserve">
+    <value>Low balance</value>
   </data>
   <data name="NoLiquidity" xml:space="preserve">
     <value>No liquidity</value>
   </data>
-  <data name="LowBalance" xml:space="preserve">
-    <value>Low balance</value>
+  <data name="NotEnoughFunds" xml:space="preserve">
+    <value>Not enough funds</value>
+  </data>
+  <data name="NotFound" xml:space="preserve">
+    <value>Not found</value>
+  </data>
+  <data name="PriceGapTooHigh" xml:space="preserve">
+    <value>Sorry, your order cannot be set. Price deviation is too high.</value>
+  </data>
+  <data name="ReservedVolumeHigherThanBalance" xml:space="preserve">
+    <value>Reserved volume higher than balance</value>
+  </data>
+  <data name="RuntimeError" xml:space="preserve">
+    <value>Runtime error</value>
+  </data>
+  <data name="UnknownAsset" xml:space="preserve">
+    <value>Unknown asset</value>
   </data>
 </root>

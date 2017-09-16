@@ -88,7 +88,7 @@ namespace Lykke.Service.HFT.Core.Strings {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Lead to negative spread.
+        ///   Looks up a localized string similar to The order leads to negative spread.
         /// </summary>
         internal static string LeadToNegativeSpread {
             get {
