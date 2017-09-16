@@ -17,7 +17,9 @@ namespace Lykke.Service.HFT.Core.Domain
 			{ErrorCodeType.ReservedVolumeHigherThanBalance, ErrorMessages.ReservedVolumeHigherThanBalance},
 			{ErrorCodeType.NotFound, ErrorMessages.NotFound},
 			{ErrorCodeType.RuntimeError, ErrorMessages.RuntimeError},
-		    {ErrorCodeType.PriceGapTooHigh, ErrorMessages.PriceGapTooHigh}
+            {ErrorCodeType.BalanceLowerThanReserved, ErrorMessages.BalanceLowerThanReserved},
+            {ErrorCodeType.LeadToNegativeSpread, ErrorMessages.LeadToNegativeSpread},
+            {ErrorCodeType.PriceGapTooHigh, ErrorMessages.PriceGapTooHigh}
         };
 		public ErrorModel Error { get; set; }
 
@@ -33,7 +35,9 @@ namespace Lykke.Service.HFT.Core.Domain
 			Dust = 413,
 			ReservedVolumeHigherThanBalance = 414,
 			NotFound = 415,
-		    PriceGapTooHigh = 491,
+		    BalanceLowerThanReserved = 416,
+		    LeadToNegativeSpread = 417,
+            PriceGapTooHigh = 491,
             RuntimeError = 500
 		}
 

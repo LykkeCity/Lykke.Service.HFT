@@ -70,11 +70,29 @@ namespace Lykke.Service.HFT.Core.Strings {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Balance lower than reserved.
+        /// </summary>
+        internal static string BalanceLowerThanReserved {
+            get {
+                return ResourceManager.GetString("BalanceLowerThanReserved", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Dust.
         /// </summary>
         internal static string Dust {
             get {
                 return ResourceManager.GetString("Dust", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Lead to negative spread.
+        /// </summary>
+        internal static string LeadToNegativeSpread {
+            get {
+                return ResourceManager.GetString("LeadToNegativeSpread", resourceCulture);
             }
         }
         

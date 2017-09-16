@@ -120,31 +120,37 @@
   <data name="AlreadyProcessed" xml:space="preserve">
     <value>Already Processed</value>
   </data>
+  <data name="BalanceLowerThanReserved" xml:space="preserve">
+    <value>Balance lower than reserved</value>
+  </data>
   <data name="Dust" xml:space="preserve">
     <value>Dust</value>
   </data>
-  <data name="LowBalance" xml:space="preserve">
-    <value>Low balance</value>
+  <data name="LeadToNegativeSpread" xml:space="preserve">
+    <value>Lead to negative spread</value>
   </data>
-  <data name="NoLiquidity" xml:space="preserve">
-    <value>No liquidity</value>
-  </data>
-  <data name="NotEnoughFunds" xml:space="preserve">
-    <value>Not enough funds</value>
-  </data>
-  <data name="NotFound" xml:space="preserve">
-    <value>Not found</value>
-  </data>
-  <data name="PriceGapTooHigh" xml:space="preserve">
-    <value>Sorry, your order cannot be set. Price deviation is too high.</value>
-  </data>
-  <data name="ReservedVolumeHigherThanBalance" xml:space="preserve">
-    <value>Reserved volume higher than balance</value>
+  <data name="UnknownAsset" xml:space="preserve">
+    <value>Unknown asset</value>
   </data>
   <data name="RuntimeError" xml:space="preserve">
     <value>Runtime error</value>
   </data>
-  <data name="UnknownAsset" xml:space="preserve">
-    <value>Unknown asset</value>
+  <data name="ReservedVolumeHigherThanBalance" xml:space="preserve">
+    <value>Reserved volume higher than balance</value>
+  </data>
+  <data name="PriceGapTooHigh" xml:space="preserve">
+    <value>Sorry, your order cannot be set. Price deviation is too high.</value>
+  </data>
+  <data name="NotFound" xml:space="preserve">
+    <value>Not found</value>
+  </data>
+  <data name="NotEnoughFunds" xml:space="preserve">
+    <value>Not enough funds</value>
+  </data>
+  <data name="NoLiquidity" xml:space="preserve">
+    <value>No liquidity</value>
+  </data>
+  <data name="LowBalance" xml:space="preserve">
+    <value>Low balance</value>
   </data>
 </root>
