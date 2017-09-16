@@ -25,7 +25,9 @@ namespace Lykke.Service.HFT.Services
 			{MeStatusCodes.Dust, ResponseModel.ErrorCodeType.Dust},
 			{MeStatusCodes.ReservedVolumeHigherThanBalance, ResponseModel.ErrorCodeType.ReservedVolumeHigherThanBalance},
 			{MeStatusCodes.NotFound, ResponseModel.ErrorCodeType.NotFound},
-			{MeStatusCodes.Runtime, ResponseModel.ErrorCodeType.RuntimeError}
+		    {MeStatusCodes.BalanceLowerThanReserved, ResponseModel.ErrorCodeType.BalanceLowerThanReserved},
+		    {MeStatusCodes.LeadToNegativeSpread, ResponseModel.ErrorCodeType.LeadToNegativeSpread},
+            {MeStatusCodes.Runtime, ResponseModel.ErrorCodeType.RuntimeError}
 		};
 
 
@@ -50,12 +52,17 @@ namespace Lykke.Service.HFT.Services
 			return ConvertToApiModel(response);
 		}
 
-		public async Task HandleMarketOrderAsync(string clientId, string assetPairId, Core.Domain.OrderAction orderAction, double volume,
+		public async Task<ResponseModel<string>> HandleMarketOrderAsync(string clientId, string assetPairId, Core.Domain.OrderAction orderAction, double volume,
 			bool straight, double? reservedLimitVolume = null)
 		{
-			var id = GetNextRequestId();
-			var matchingEngineId = await _matchingEngineClient.HandleMarketOrderAsync(id, clientId, assetPairId, (OrderAction)orderAction, volume, straight, reservedLimitVolume);
-		}
+			var requestId = GetNextRequestGuid();
+			var matchingEngineResponse = await _matchingEngineClient.HandleMarketOrderAsync(requestId.ToString(), clientId, assetPairId, (OrderAction)orderAction, volume, straight, reservedLimitVolume);
+		    if (string.IsNullOrEmpty(matchingEngineResponse))
+		    {
+		        return ResponseModel<string>.CreateFail(ResponseModel.ErrorCodeType.RuntimeError, matchingEngineResponse);
+		    }
+		    return ResponseModel<string>.CreateOk(matchingEngineResponse);
+        }
 
 		public async Task<ResponseModel<Guid>> PlaceLimitOrderAsync(string clientId, string assetPairId, Core.Domain.OrderAction orderAction, double volume,
 			double price, bool cancelPreviousOrders = false)

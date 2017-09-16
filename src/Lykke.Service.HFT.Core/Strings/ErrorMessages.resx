@@ -120,8 +120,14 @@
   <data name="AlreadyProcessed" xml:space="preserve">
     <value>Already Processed</value>
   </data>
+  <data name="BalanceLowerThanReserved" xml:space="preserve">
+    <value>Balance lower than reserved</value>
+  </data>
   <data name="Dust" xml:space="preserve">
     <value>Dust</value>
+  </data>
+  <data name="LeadToNegativeSpread" xml:space="preserve">
+    <value>The order leads to negative spread</value>
   </data>
   <data name="LowBalance" xml:space="preserve">
     <value>Low balance</value>

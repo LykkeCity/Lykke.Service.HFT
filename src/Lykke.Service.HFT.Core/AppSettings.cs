@@ -105,7 +105,6 @@ namespace Lykke.Service.HFT.Core
 
     public class ExchangeSettings
     {
-        public double MinBtcOrderAmount { get; set; }
         public decimal MaxLimitOrderDeviationPercent { get; set; }
     }
 

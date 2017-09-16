@@ -28,10 +28,10 @@ namespace Lykke.Service.HFT.Controllers
         private readonly AppSettings _settings;
 
         public OrdersController(
-            IMatchingEngineAdapter frequencyTradingService, 
-            IAssetPairsManager assetPairsManager, 
-            IRepository<LimitOrderState> orderStateRepository, 
-            IOrderBooksService orderBooksService, 
+            IMatchingEngineAdapter frequencyTradingService,
+            IAssetPairsManager assetPairsManager,
+            IRepository<LimitOrderState> orderStateRepository,
+            IOrderBooksService orderBooksService,
             AppSettings settings)
         {
             _matchingEngineAdapter = frequencyTradingService ?? throw new ArgumentNullException(nameof(frequencyTradingService));
@@ -56,6 +56,53 @@ namespace Lykke.Service.HFT.Controllers
                 : _orderStateRepository.FilterBy(x => x.ClientId == clientId);
             return Ok(orders.OrderByDescending(x => x.CreatedAt));
         }
+
+        /// <summary>
+        /// Place a market order.
+        /// </summary>
+        /// <returns>Request id.</returns>
+        [HttpPost("PlaceMarketOrder")]
+        [SwaggerOperation("PlaceMarketOrder")]
+        [ProducesResponseType(typeof(ResponseModel), (int)HttpStatusCode.OK)]
+        [ProducesResponseType(typeof(ResponseModel), (int)HttpStatusCode.BadRequest)]
+        public async Task<IActionResult> PlaceMarketOrder([FromBody] MarketOrderRequest order)
+        {
+            if (!ModelState.IsValid)
+            {
+                return BadRequest(ToResponseModel(ModelState));
+            }
+
+            var assetPair = await _assetPairsManager.TryGetEnabledAssetPairAsync(order.AssetPairId);
+            if (assetPair == null)
+            {
+                var model = ResponseModel.CreateFail(ResponseModel.ErrorCodeType.UnknownAsset);
+                return BadRequest(model);
+            }
+
+            var asset = await _assetPairsManager.TryGetEnabledAssetAsync(assetPair.BaseAssetId);
+            if (asset == null)
+            {
+                throw new InvalidOperationException($"Base asset '{assetPair.BaseAssetId}' for asset pair '{assetPair.Id}' not found.");
+            }
+
+            var clientId = User.GetUserId();
+            var response = await _matchingEngineAdapter.HandleMarketOrderAsync(
+                clientId: clientId,
+                assetPairId: order.AssetPairId,
+                orderAction: order.OrderAction,
+                volume: order.Volume.TruncateDecimalPlaces(asset.Accuracy),
+                straight: order.Straight,
+                reservedLimitVolume: null);
+
+            if (response.Error != null)
+            {
+                // todo: produce valid http status codes based on ME response 
+                return BadRequest(response);
+            }
+
+            return Ok(response.Result);
+        }
+
         /// <summary>
         /// Place a limit order.
         /// </summary>
@@ -80,17 +127,17 @@ namespace Lykke.Service.HFT.Controllers
 
             var currentTopPrice = (decimal)await _orderBooksService.GetBestPrice(order.AssetPairId, order.OrderAction == OrderAction.Buy);
             var deviation = _settings.Exchange.MaxLimitOrderDeviationPercent / 100;
-            var price = (decimal) order.Price;
-            if (order.OrderAction == OrderAction.Buy && currentTopPrice * (1 - deviation) > price 
+            var price = (decimal)order.Price;
+            if (order.OrderAction == OrderAction.Buy && currentTopPrice * (1 - deviation) > price
                 || order.OrderAction == OrderAction.Sell && currentTopPrice * (1 + deviation) < price)
             {
                 return BadRequest(ResponseModel.CreateFail(ResponseModel.ErrorCodeType.PriceGapTooHigh));
             }
-            
+
             var asset = await _assetPairsManager.TryGetEnabledAssetAsync(assetPair.BaseAssetId);
             if (asset == null)
             {
-              throw new InvalidOperationException($"Base asset '{assetPair.BaseAssetId}' for asset pair '{assetPair.Id}' not found.");
+                throw new InvalidOperationException($"Base asset '{assetPair.BaseAssetId}' for asset pair '{assetPair.Id}' not found.");
             }
 
             var clientId = User.GetUserId();
