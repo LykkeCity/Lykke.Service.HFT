@@ -63,7 +63,7 @@ namespace Lykke.Service.HFT.Controllers
         /// <returns>Average strike price.</returns>
         [HttpPost("PlaceMarketOrder")]
         [SwaggerOperation("PlaceMarketOrder")]
-        [ProducesResponseType(typeof(ResponseModel), (int)HttpStatusCode.OK)]
+        [ProducesResponseType(typeof(double), (int)HttpStatusCode.OK)]
         [ProducesResponseType(typeof(ResponseModel), (int)HttpStatusCode.BadRequest)]
         public async Task<IActionResult> PlaceMarketOrder([FromBody] MarketOrderRequest order)
         {
@@ -89,6 +89,7 @@ namespace Lykke.Service.HFT.Controllers
             var response = await _matchingEngineAdapter.HandleMarketOrderAsync(
                 clientId: clientId,
                 assetPairId: order.AssetPair,
+                orderAction: order.OrderAction,
                 volume: order.Volume.TruncateDecimalPlaces(asset.Accuracy),
                 straight: order.Asset == assetPair.BaseAssetId,
                 reservedLimitVolume: null);
