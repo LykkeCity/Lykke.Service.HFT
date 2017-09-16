@@ -61,7 +61,7 @@ namespace Lykke.Service.HFT.Controllers
         /// Place a market order.
         /// </summary>
         /// <returns>Average strike price.</returns>
-        [HttpPost("PlaceMarketOrder")]
+        [HttpPost("market")]
         [SwaggerOperation("PlaceMarketOrder")]
         [ProducesResponseType(typeof(double), (int)HttpStatusCode.OK)]
         [ProducesResponseType(typeof(ResponseModel), (int)HttpStatusCode.BadRequest)]
@@ -107,7 +107,7 @@ namespace Lykke.Service.HFT.Controllers
         /// Place a limit order.
         /// </summary>
         /// <returns>Request id.</returns>
-        [HttpPost("PlaceLimitOrder")]
+        [HttpPost("limit")]
         [SwaggerOperation("PlaceLimitOrder")]
         [ProducesResponseType(typeof(Guid), (int)HttpStatusCode.OK)]
         [ProducesResponseType(typeof(ResponseModel), (int)HttpStatusCode.BadRequest)]
