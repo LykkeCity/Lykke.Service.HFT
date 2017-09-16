@@ -42,26 +42,26 @@ namespace Lykke.Service.HFT.Services
 		public async Task<ResponseModel> CancelLimitOrderAsync(Guid limitOrderId)
 		{
 			var response = await _matchingEngineClient.CancelLimitOrderAsync(limitOrderId.ToString());
-			return ConvertToApiModel(response);
+			return ConvertToApiModel(response.Status);
 		}
 
 		public async Task<ResponseModel> CashInOutAsync(string clientId, string assetId, double amount)
 		{
 			var id = GetNextRequestId();
 			var response = await _matchingEngineClient.CashInOutAsync(id, clientId, assetId, amount);
-			return ConvertToApiModel(response);
+			return ConvertToApiModel(response.Status);
 		}
 
-		public async Task<ResponseModel<string>> HandleMarketOrderAsync(string clientId, string assetPairId, Core.Domain.OrderAction orderAction, double volume,
+		public async Task<ResponseModel<double>> HandleMarketOrderAsync(string clientId, string assetPairId, Core.Domain.OrderAction orderAction, double volume,
 			bool straight, double? reservedLimitVolume = null)
 		{
 			var requestId = GetNextRequestGuid();
-			var matchingEngineResponse = await _matchingEngineClient.HandleMarketOrderAsync(requestId.ToString(), clientId, assetPairId, (OrderAction)orderAction, volume, straight, reservedLimitVolume);
-		    if (string.IsNullOrEmpty(matchingEngineResponse))
+			var response = await _matchingEngineClient.HandleMarketOrderAsync(requestId.ToString(), clientId, assetPairId, (OrderAction)orderAction, volume, straight, reservedLimitVolume);
+		    if (response.Status == MeStatusCodes.Ok)
 		    {
-		        return ResponseModel<string>.CreateFail(ResponseModel.ErrorCodeType.RuntimeError, matchingEngineResponse);
+		        return ResponseModel<double>.CreateOk(response.Price);
 		    }
-		    return ResponseModel<string>.CreateOk(matchingEngineResponse);
+		    return ConvertToApiModel<double>(response.Status);
         }
 
 		public async Task<ResponseModel<Guid>> PlaceLimitOrderAsync(string clientId, string assetPairId, Core.Domain.OrderAction orderAction, double volume,
@@ -74,21 +74,21 @@ namespace Lykke.Service.HFT.Services
 			{
 				return ResponseModel<Guid>.CreateOk(requestId);
 			}
-			return ConvertToApiModel<Guid>(response);
+			return ConvertToApiModel<Guid>(response.Status);
 		}
 
 		public async Task<ResponseModel> SwapAsync(string clientId1, string assetId1, double amount1, string clientId2, string assetId2, double amount2)
 		{
 			var id = GetNextRequestId();
 			var response = await _matchingEngineClient.SwapAsync(id, clientId1, assetId1, amount1, clientId2, assetId2, amount2);
-			return ConvertToApiModel(response);
+			return ConvertToApiModel(response.Status);
 		}
 
 		public async Task<ResponseModel> TransferAsync(string fromClientId, string toClientId, string assetId, double amount)
 		{
 			var id = GetNextRequestId();
 			var response = await _matchingEngineClient.TransferAsync(id, fromClientId, toClientId, assetId, amount);
-			return ConvertToApiModel(response);
+			return ConvertToApiModel(response.Status);
 		}
 
 		public async Task UpdateBalanceAsync(string clientId, string assetId, double value)
@@ -106,17 +106,17 @@ namespace Lykke.Service.HFT.Services
 			return Guid.NewGuid().ToString();
 		}
 
-		private ResponseModel ConvertToApiModel(MeResponseModel response)
+		private ResponseModel ConvertToApiModel(MeStatusCodes status)
 		{
-			if (response.Status == MeStatusCodes.Ok)
+			if (status == MeStatusCodes.Ok)
 				return ResponseModel.CreateOk();
 
-			return ResponseModel.CreateFail(_statusCodesMap[response.Status]);
+			return ResponseModel.CreateFail(_statusCodesMap[status]);
 		}
 
-		private ResponseModel<T> ConvertToApiModel<T>(MeResponseModel response)
+		private ResponseModel<T> ConvertToApiModel<T>(MeStatusCodes status)
 		{
-			return ResponseModel<T>.CreateFail(_statusCodesMap[response.Status]);
+			return ResponseModel<T>.CreateFail(_statusCodesMap[status]);
 		}
 	}
 }

@@ -60,7 +60,7 @@ namespace Lykke.Service.HFT.Controllers
         /// <summary>
         /// Place a market order.
         /// </summary>
-        /// <returns>Request id.</returns>
+        /// <returns>Average strike price.</returns>
         [HttpPost("PlaceMarketOrder")]
         [SwaggerOperation("PlaceMarketOrder")]
         [ProducesResponseType(typeof(ResponseModel), (int)HttpStatusCode.OK)]
