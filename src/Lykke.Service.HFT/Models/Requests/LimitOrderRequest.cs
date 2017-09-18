@@ -10,9 +10,9 @@ namespace Lykke.Service.HFT.Models.Requests
 		public string AssetPairId { get; set; }
 		[Required]
 		public OrderAction OrderAction { get; set; }
-		[Required, NonZero]
-		public double Volume { get; set; }
-		[Required, NonZero]
-		public double Price { get; set; }
+	    [Required, DoubleGreaterThanZero]
+        public double Volume { get; set; }
+	    [Required, DoubleGreaterThanZeroAttribute]
+        public double Price { get; set; }
 	}
 }

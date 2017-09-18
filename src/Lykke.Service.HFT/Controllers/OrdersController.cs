@@ -72,7 +72,7 @@ namespace Lykke.Service.HFT.Controllers
                 return BadRequest(ToResponseModel(ModelState));
             }
 
-            var assetPair = await _assetPairsManager.TryGetEnabledAssetPairAsync(order.AssetPair);
+            var assetPair = await _assetPairsManager.TryGetEnabledAssetPairAsync(order.AssetPairId);
             if (assetPair == null)
             {
                 var model = ResponseModel.CreateFail(ResponseModel.ErrorCodeType.UnknownAsset);
@@ -88,7 +88,7 @@ namespace Lykke.Service.HFT.Controllers
             var clientId = User.GetUserId();
             var response = await _matchingEngineAdapter.HandleMarketOrderAsync(
                 clientId: clientId,
-                assetPairId: order.AssetPair,
+                assetPairId: order.AssetPairId,
                 orderAction: order.OrderAction,
                 volume: order.Volume.TruncateDecimalPlaces(asset.Accuracy),
                 straight: order.Asset == assetPair.BaseAssetId,

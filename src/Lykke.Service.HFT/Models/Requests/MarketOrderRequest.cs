@@ -7,12 +7,12 @@ namespace Lykke.Service.HFT.Models.Requests
     public class MarketOrderRequest
     {
 		[Required]
-		public string AssetPair { get; set; }
+		public string AssetPairId { get; set; }
         [Required]
         public string Asset { get; set; }
         [Required]
         public OrderAction OrderAction { get; set; }
-        [Required, NonZero]
-		public double Volume { get; set; }
+        [Required, DoubleGreaterThanZero]
+        public double Volume { get; set; }
 	}
 }
