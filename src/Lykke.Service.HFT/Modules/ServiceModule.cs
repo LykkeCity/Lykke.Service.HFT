@@ -72,10 +72,10 @@ namespace Lykke.Service.HFT.Modules
 
 		private void BindRedis(ContainerBuilder builder)
 		{
-			var financeDataRedisCache = new RedisCache(new RedisCacheOptions
+            var financeDataRedisCache = new RedisCache(new RedisCacheOptions
 			{
-				Configuration = _settings.HighFrequencyTradingService.CacheSettings.RedisConfiguration,
-				InstanceName = _settings.HighFrequencyTradingService.CacheSettings.FinanceDataCacheInstance
+				Configuration = _serviceSettings.CacheSettings.RedisConfiguration,
+				InstanceName = _serviceSettings.CacheSettings.FinanceDataCacheInstance
 			});
 			builder.RegisterInstance(financeDataRedisCache)
 				.As<IDistributedCache>()
@@ -84,8 +84,8 @@ namespace Lykke.Service.HFT.Modules
 
 			var apiKeysRedisCache = new RedisCache(new RedisCacheOptions
 			{
-				Configuration = _settings.HighFrequencyTradingService.CacheSettings.RedisConfiguration,
-				InstanceName = _settings.HighFrequencyTradingService.CacheSettings.ApiKeyCacheInstance
+				Configuration = _serviceSettings.CacheSettings.RedisConfiguration,
+				InstanceName = _serviceSettings.CacheSettings.ApiKeyCacheInstance
 			});
 			builder.RegisterInstance(apiKeysRedisCache)
 				.As<IDistributedCache>()
@@ -105,12 +105,19 @@ namespace Lykke.Service.HFT.Modules
 						(pi, ctx) => pi.ParameterType == typeof(IDistributedCache),
 						(pi, ctx) => ctx.ResolveKeyed<IDistributedCache>("apiKeys")))
 				.As<IApiKeyValidator>()
-				.As<IApiKeyGenerator>()
 				.As<IClientResolver>()
 				.SingleInstance();
 
+		    builder.RegisterType<ApiKeyCacheInitializer>()
+		        .WithParameter(
+		            new ResolvedParameter(
+		                (pi, ctx) => pi.ParameterType == typeof(IDistributedCache),
+		                (pi, ctx) => ctx.ResolveKeyed<IDistributedCache>("apiKeys")))
+                .As<IApiKeyCacheInitializer>()
+		        .SingleInstance();
 
-		    builder.RegisterType<MongoRepository<ApiKey>>()
+
+            builder.RegisterType<MongoRepository<ApiKey>>()
 		        .As<IRepository<ApiKey>>()
 		        .SingleInstance();
         }

@@ -1,6 +1,6 @@
 ﻿using System.Threading.Tasks;
 
-namespace Lykke.Service.HFT.Core.Services.ApiKey
+namespace Lykke.ApiKeyGenerator
 {
 	public interface IApiKeyGenerator
 	{

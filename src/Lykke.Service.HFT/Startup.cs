@@ -8,9 +8,11 @@ using Lykke.Common.ApiLibrary.Middleware;
 using Lykke.Common.ApiLibrary.Swagger;
 using Lykke.Logs;
 using Lykke.Service.HFT.Core;
+using Lykke.Service.HFT.Core.Services.ApiKey;
 using Lykke.Service.HFT.Infrastructure;
 using Lykke.Service.HFT.Middleware;
 using Lykke.Service.HFT.Modules;
+using Lykke.Service.HFT.Services;
 using Lykke.SettingsReader;
 using Lykke.SlackNotification.AzureQueue;
 using Microsoft.AspNetCore.Builder;
@@ -67,11 +69,15 @@ namespace Lykke.Service.HFT
 			var log = CreateLogWithSlack(services, appSettings);
 
 			builder.RegisterModule(new ServiceModule(appSettings, log));
-			builder.Populate(services);
+		    builder.RegisterModule(new RedisModule(appSettings));
+            builder.Populate(services);
 
 			ApplicationContainer = builder.Build();
 
-			return new AutofacServiceProvider(ApplicationContainer);
+		    ApplicationContainer.Resolve<IApiKeyCacheInitializer>().InitApiKeyCache().Wait();
+
+
+            return new AutofacServiceProvider(ApplicationContainer);
 		}
 
 		public void Configure(IApplicationBuilder app, IHostingEnvironment env, IApplicationLifetime appLifetime)

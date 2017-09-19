@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 15
-VisualStudioVersion = 15.0.26430.16
+VisualStudioVersion = 15.0.26730.10
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "1. Instrastructure", "1. Instrastructure", "{CC2067D7-1971-47BB-B491-5649EA3C18B2}"
 EndProject
@@ -29,7 +29,9 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "4. Tests", "4. Tests", "{8F
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Lykke.Service.HFT", "src\Lykke.Service.HFT\Lykke.Service.HFT.csproj", "{E414FDB9-FEEA-4CD0-9BBA-D1541601DF29}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Lykke.Service.HFT.MongoRepositories", "src\Lykke.Service.HFT.MongoRepositories\Lykke.Service.HFT.MongoRepositories.csproj", "{02024DDF-76AB-4B0A-9019-DEEBA3168946}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Lykke.Service.HFT.MongoRepositories", "src\Lykke.Service.HFT.MongoRepositories\Lykke.Service.HFT.MongoRepositories.csproj", "{02024DDF-76AB-4B0A-9019-DEEBA3168946}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Lykke.ApiKeyGenerator", "src\Lykke.ApiKeyGenerator\Lykke.ApiKeyGenerator.csproj", "{DFAE3D78-2C1B-44D1-B25E-CF13E78FBC2C}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -65,6 +67,10 @@ Global
 		{02024DDF-76AB-4B0A-9019-DEEBA3168946}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{02024DDF-76AB-4B0A-9019-DEEBA3168946}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{02024DDF-76AB-4B0A-9019-DEEBA3168946}.Release|Any CPU.Build.0 = Release|Any CPU
+		{DFAE3D78-2C1B-44D1-B25E-CF13E78FBC2C}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{DFAE3D78-2C1B-44D1-B25E-CF13E78FBC2C}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{DFAE3D78-2C1B-44D1-B25E-CF13E78FBC2C}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{DFAE3D78-2C1B-44D1-B25E-CF13E78FBC2C}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -76,5 +82,8 @@ Global
 		{3C300C31-97D3-41E8-A627-C53491BDA28B} = {C9A2CFDE-EA32-4946-B679-7CE6EFA816B8}
 		{A61FFDEE-5725-4650-A788-6E55EE5EFD5B} = {8F9036B1-5106-4C69-B2D2-B78EE52687A0}
 		{02024DDF-76AB-4B0A-9019-DEEBA3168946} = {BF745453-B940-470E-81BC-43FB67703D4E}
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {B4EF6613-0DD1-42AE-B52D-CD122AD00DFE}
 	EndGlobalSection
 EndGlobal
