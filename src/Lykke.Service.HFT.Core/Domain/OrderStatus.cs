@@ -33,6 +33,10 @@
 		/// <summary>
 		/// Cancelled.
 		/// </summary>
-		Cancelled
-	}
+		Cancelled,
+        /// <summary>
+        /// Lead to negative spread
+        /// </summary>
+	    LeadToNegativeSpread
+    }
 }
