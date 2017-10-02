@@ -63,8 +63,8 @@ namespace Lykke.Service.HFT.Controllers
         /// <returns>Average strike price.</returns>
         [HttpPost("market")]
         [SwaggerOperation("PlaceMarketOrder")]
-        [ProducesResponseType(typeof(double), (int)HttpStatusCode.OK)]
-        [ProducesResponseType(typeof(ResponseModel), (int)HttpStatusCode.BadRequest)]
+        [ProducesResponseType(typeof(ResponseModel<double>), (int)HttpStatusCode.OK)]
+        [ProducesResponseType(typeof(ResponseModel<double>), (int)HttpStatusCode.BadRequest)]
         public async Task<IActionResult> PlaceMarketOrder([FromBody] MarketOrderRequest order)
         {
             if (!ModelState.IsValid)
@@ -75,7 +75,7 @@ namespace Lykke.Service.HFT.Controllers
             var assetPair = await _assetPairsManager.TryGetEnabledAssetPairAsync(order.AssetPairId);
             if (assetPair == null)
             {
-                var model = ResponseModel.CreateFail(ResponseModel.ErrorCodeType.UnknownAsset);
+                var model = ResponseModel<double>.CreateFail(ResponseModel.ErrorCodeType.UnknownAsset);
                 return BadRequest(model);
             }
 
@@ -100,7 +100,7 @@ namespace Lykke.Service.HFT.Controllers
                 return BadRequest(response);
             }
 
-            return Ok(response.Result);
+            return Ok(ResponseModel<double>.CreateOk(response.Result));
         }
 
         /// <summary>
