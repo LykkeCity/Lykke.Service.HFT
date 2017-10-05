@@ -6,6 +6,7 @@ namespace Lykke.Service.HFT.Core.Domain
     {
         public Guid Id { get; set; }
         public string ClientId { get; set; }
+        public string WalletId { get; set; }
         public DateTime? ValidTill { get; set; }
     }
 }
