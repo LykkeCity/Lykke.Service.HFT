@@ -78,25 +78,23 @@ namespace Lykke.Service.HFT.Controllers
                 var model = ResponseModel<double>.CreateFail(ResponseModel.ErrorCodeType.UnknownAsset);
                 return BadRequest(model);
             }
-            if (order.Asset != assetPair.BaseAssetId && order.Asset != assetPair.QuotingAssetId)
+
+            var baseAsset = await _assetPairsManager.TryGetEnabledAssetAsync(assetPair.BaseAssetId);
+            var quotingAsset = await _assetPairsManager.TryGetEnabledAssetAsync(assetPair.QuotingAssetId);
+            if (order.Asset != baseAsset.Id && order.Asset != baseAsset.Name && order.Asset != quotingAsset.Id && order.Asset != quotingAsset.Name)
             {
                 var model = ResponseModel.CreateInvalidFieldError("Asset", $"Asset <{order.Asset}> is not valid for asset pair <{assetPair.Id}>.");
                 return BadRequest(model);
             }
-
-            var asset = await _assetPairsManager.TryGetEnabledAssetAsync(assetPair.BaseAssetId);
-            if (asset == null)
-            {
-                throw new InvalidOperationException($"Base asset '{assetPair.BaseAssetId}' for asset pair '{assetPair.Id}' not found.");
-            }
-
+            
             var clientId = User.GetUserId();
+            var straight = order.Asset == baseAsset.Id || order.Asset == baseAsset.Name;
             var response = await _matchingEngineAdapter.HandleMarketOrderAsync(
                 clientId: clientId,
                 assetPairId: order.AssetPairId,
                 orderAction: order.OrderAction,
-                volume: order.Volume.TruncateDecimalPlaces(asset.Accuracy),
-                straight: order.Asset == assetPair.BaseAssetId,
+                volume: order.Volume.TruncateDecimalPlaces(straight ? baseAsset.Accuracy : quotingAsset.Accuracy),
+                straight: straight,
                 reservedLimitVolume: null);
 
             if (response.Error != null)
