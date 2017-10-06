@@ -78,6 +78,11 @@ namespace Lykke.Service.HFT.Controllers
                 var model = ResponseModel<double>.CreateFail(ResponseModel.ErrorCodeType.UnknownAsset);
                 return BadRequest(model);
             }
+            if (order.Asset != assetPair.BaseAssetId && order.Asset != assetPair.QuotingAssetId)
+            {
+                var model = ResponseModel.CreateInvalidFieldError("Asset", $"Asset <{order.Asset}> is not valid for asset pair <{assetPair.Id}>.");
+                return BadRequest(model);
+            }
 
             var asset = await _assetPairsManager.TryGetEnabledAssetAsync(assetPair.BaseAssetId);
             if (asset == null)
