@@ -6,9 +6,9 @@ namespace Lykke.Service.HFT.Services
 {
 	public class RedisModule : Module
 	{
-		private readonly AppSettings _settings;
+		private readonly CacheSettings _settings;
 
-		public RedisModule(AppSettings settings)
+		public RedisModule(CacheSettings settings)
 		{
 			_settings = settings;
 		}
@@ -20,7 +20,7 @@ namespace Lykke.Service.HFT.Services
 
 		private void BindRedis(ContainerBuilder builder)
 		{
-            var redis = ConnectionMultiplexer.Connect(_settings.HighFrequencyTradingService.CacheSettings.RedisConfiguration);
+            var redis = ConnectionMultiplexer.Connect(_settings.RedisConfiguration);
 
 		    builder.RegisterInstance(redis).SingleInstance();
 		    builder.Register(
