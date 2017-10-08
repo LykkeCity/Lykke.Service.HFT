@@ -25,83 +25,106 @@ namespace Lykke.Service.HFT
     public class Startup
     {
         public IHostingEnvironment Environment { get; }
-        public IContainer ApplicationContainer { get; set; }
+        public IContainer ApplicationContainer { get; private set; }
         public IConfigurationRoot Configuration { get; }
+        public ILog Log { get; private set; }
 
         public Startup(IHostingEnvironment env)
         {
             var builder = new ConfigurationBuilder()
                 .SetBasePath(env.ContentRootPath)
-                .AddJsonFile("appsettings.json", optional: true, reloadOnChange: true)
-                .AddJsonFile($"appsettings.{env.EnvironmentName}.json", optional: true)
                 .AddEnvironmentVariables();
             Configuration = builder.Build();
 
             Environment = env;
-
-            Console.WriteLine($"ENV_INFO: {System.Environment.GetEnvironmentVariable("ENV_INFO")}");
         }
 
         public IServiceProvider ConfigureServices(IServiceCollection services)
         {
-            services.AddMvc()
-                .AddJsonOptions(options =>
+            try
+            {
+                services.AddMvc()
+                        .AddJsonOptions(options =>
+                        {
+                            options.SerializerSettings.ContractResolver = new Newtonsoft.Json.Serialization.DefaultContractResolver();
+                            options.SerializerSettings.Converters.Add(new Newtonsoft.Json.Converters.StringEnumConverter());
+                        });
+
+                services.AddSwaggerGen(options =>
                 {
-                    options.SerializerSettings.ContractResolver = new Newtonsoft.Json.Serialization.DefaultContractResolver();
-                    options.SerializerSettings.Converters.Add(new Newtonsoft.Json.Converters.StringEnumConverter());
+                    options.DefaultLykkeConfiguration("v1", "HighFrequencyTrading API");
+                    options.OperationFilter<ApiKeyHeaderOperationFilter>();
+                    options.DescribeAllEnumsAsStrings();
                 });
 
-            services.AddSwaggerGen(options =>
+                services.AddOptions();
+
+                ConfigureRateLimits(services);
+
+                var builder = new ContainerBuilder();
+                var appSettings = Configuration.LoadSettings<AppSettings>();
+                var log = CreateLogWithSlack(services, appSettings);
+
+                builder.RegisterModule(new ServiceModule(appSettings, log));
+                builder.RegisterModule(new RedisModule(appSettings.CurrentValue.HighFrequencyTradingService.CacheSettings));
+                builder.Populate(services);
+
+                ApplicationContainer = builder.Build();
+
+                // todo: move into appLifetime
+                ApplicationContainer.Resolve<IApiKeyCacheInitializer>().InitApiKeyCache().Wait();
+
+
+                return new AutofacServiceProvider(ApplicationContainer);
+            }
+            catch (Exception ex)
             {
-                options.DefaultLykkeConfiguration("v1", "HighFrequencyTrading API");
-                options.OperationFilter<ApiKeyHeaderOperationFilter>();
-                options.DescribeAllEnumsAsStrings();
-            });
-
-            services.AddOptions();
-
-            ConfigureRateLimits(services);
-
-            var builder = new ContainerBuilder();
-            var appSettings = Configuration.LoadSettings<AppSettings>();
-            var log = CreateLogWithSlack(services, appSettings);
-
-            builder.RegisterModule(new ServiceModule(appSettings, log));
-            builder.RegisterModule(new RedisModule(appSettings.CurrentValue.HighFrequencyTradingService.CacheSettings));
-            builder.Populate(services);
-
-            ApplicationContainer = builder.Build();
-
-            ApplicationContainer.Resolve<IApiKeyCacheInitializer>().InitApiKeyCache().Wait();
-
-
-            return new AutofacServiceProvider(ApplicationContainer);
+                Log?.WriteFatalErrorAsync(nameof(Startup), nameof(ConfigureServices), "", ex);
+                throw;
+            }
         }
 
         public void Configure(IApplicationBuilder app, IHostingEnvironment env, IApplicationLifetime appLifetime)
         {
-            if (env.IsDevelopment())
+            try
             {
-                app.UseDeveloperExceptionPage();
+                if (env.IsDevelopment())
+                {
+                    app.UseDeveloperExceptionPage();
+                }
+
+                app.UseLykkeMiddleware("HighFrequencyTrading", ex => new { Message = "Technical problem" });
+                app.UseMiddleware<KeyAuthMiddleware>();
+                app.UseMiddleware<CustomThrottlingMiddleware>();
+                
+                app.UseMvc();
+                app.UseSwagger();
+                app.UseSwaggerUi();
+                app.UseStaticFiles();
+
+                appLifetime.ApplicationStopped.Register(CleanUp);
             }
+            catch (Exception ex)
+            {
+                Log?.WriteFatalErrorAsync(nameof(Startup), nameof(ConfigureServices), "", ex);
+                throw;
+            }
+        }
 
-            app.UseLykkeMiddleware("HighFrequencyTrading", ex => new { Message = "Technical problem" });
-            app.UseMiddleware<KeyAuthMiddleware>();
-            app.UseMiddleware<CustomThrottlingMiddleware>();
-
-            // Use API Authentication
-            //app.UseLykkeApiAuth(conf =>
-            //    conf.ApiId = Configuration.GetValue<string>("LykkeTempApi:ApiId"));
-
-            app.UseMvc();
-            app.UseSwagger();
-            app.UseSwaggerUi();
-
-            appLifetime.ApplicationStopped.Register(() =>
+        private void CleanUp()
+        {
+            try
             {
                 ApplicationContainer.Dispose();
-            });
+            }
+            catch (Exception ex)
+            {
+                Log?.WriteFatalErrorAsync(nameof(Startup), nameof(CleanUp), "", ex);
+                (Log as IDisposable)?.Dispose();
+                throw;
+            }
         }
+
 
         private static ILog CreateLogWithSlack(IServiceCollection services, IReloadingManager<AppSettings> settings)
         {
