@@ -124,7 +124,7 @@
     <value>Balance lower than reserved</value>
   </data>
   <data name="Dust" xml:space="preserve">
-    <value>Dust</value>
+    <value>One of trades or whole order has volume/price*volume less then configured dust</value>
   </data>
   <data name="LeadToNegativeSpread" xml:space="preserve">
     <value>The order leads to negative spread</value>

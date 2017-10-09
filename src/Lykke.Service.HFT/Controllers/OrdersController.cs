@@ -86,14 +86,20 @@ namespace Lykke.Service.HFT.Controllers
                 var model = ResponseModel.CreateInvalidFieldError("Asset", $"Asset <{order.Asset}> is not valid for asset pair <{assetPair.Id}>.");
                 return BadRequest(model);
             }
-            
+
             var clientId = User.GetUserId();
             var straight = order.Asset == baseAsset.Id || order.Asset == baseAsset.Name;
+            var volume = order.Volume.TruncateDecimalPlaces(straight ? baseAsset.Accuracy : quotingAsset.Accuracy);
+            if (Math.Abs(volume) < double.Epsilon)
+            {
+                var model = ResponseModel<double>.CreateFail(ResponseModel.ErrorCodeType.Dust, "Required volume is less than asset accuracy.");
+                return BadRequest(model);
+            }
             var response = await _matchingEngineAdapter.HandleMarketOrderAsync(
                 clientId: clientId,
                 assetPairId: order.AssetPairId,
                 orderAction: order.OrderAction,
-                volume: order.Volume.TruncateDecimalPlaces(straight ? baseAsset.Accuracy : quotingAsset.Accuracy),
+                volume: volume,
                 straight: straight,
                 reservedLimitVolume: null);
 
@@ -144,11 +150,17 @@ namespace Lykke.Service.HFT.Controllers
             }
 
             var clientId = User.GetUserId();
+            var volume = order.Volume.TruncateDecimalPlaces(asset.Accuracy);
+            if (Math.Abs(volume) < double.Epsilon)
+            {
+                var model = ResponseModel<double>.CreateFail(ResponseModel.ErrorCodeType.Dust, "Required volume is less than asset accuracy.");
+                return BadRequest(model);
+            }
             var response = await _matchingEngineAdapter.PlaceLimitOrderAsync(
                 clientId: clientId,
                 assetPairId: order.AssetPairId,
                 orderAction: order.OrderAction,
-                volume: order.Volume.TruncateDecimalPlaces(asset.Accuracy),
+                volume: volume,
                 price: order.Price.TruncateDecimalPlaces(assetPair.Accuracy));
             if (response.Error != null)
             {
