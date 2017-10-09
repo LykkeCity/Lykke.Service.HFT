@@ -25,14 +25,14 @@ namespace Lykke.Service.HFT.Controllers
         private readonly IAssetPairsManager _assetPairsManager;
         private readonly IRepository<LimitOrderState> _orderStateRepository;
         private readonly IOrderBooksService _orderBooksService;
-        private readonly AppSettings _settings;
+        private readonly ExchangeSettings _settings;
 
         public OrdersController(
             IMatchingEngineAdapter frequencyTradingService,
             IAssetPairsManager assetPairsManager,
             IRepository<LimitOrderState> orderStateRepository,
             IOrderBooksService orderBooksService,
-            AppSettings settings)
+            ExchangeSettings settings)
         {
             _matchingEngineAdapter = frequencyTradingService ?? throw new ArgumentNullException(nameof(frequencyTradingService));
             _assetPairsManager = assetPairsManager ?? throw new ArgumentNullException(nameof(assetPairsManager));
@@ -135,7 +135,7 @@ namespace Lykke.Service.HFT.Controllers
             }
 
             var currentTopPrice = (decimal)await _orderBooksService.GetBestPrice(order.AssetPairId, order.OrderAction == OrderAction.Buy);
-            var deviation = _settings.Exchange.MaxLimitOrderDeviationPercent / 100;
+            var deviation = _settings.MaxLimitOrderDeviationPercent / 100;
             var price = (decimal)order.Price;
             if (order.OrderAction == OrderAction.Buy && currentTopPrice * (1 - deviation) > price
                 || order.OrderAction == OrderAction.Sell && currentTopPrice * (1 + deviation) < price)

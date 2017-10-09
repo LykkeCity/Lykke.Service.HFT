@@ -1,15 +1,10 @@
-﻿using Microsoft.AspNetCore.Builder;
+﻿using Microsoft.AspNetCore.Authentication;
 
 namespace Lykke.Service.HFT.Middleware
 {
-	public class KeyAuthOptions : AuthenticationOptions
-	{
-		public const string DefaultHeaderName = "api-key";
-		public string KeyHeaderName { get; set; } = DefaultHeaderName;
-
-		public KeyAuthOptions()
-		{
-			AuthenticationScheme = "Automatic";
-		}
-	}
+    public class KeyAuthOptions : AuthenticationSchemeOptions
+    {
+        public const string DefaultHeaderName = "api-key";
+        public const string AuthenticationScheme = "Automatic";
+    }
 }

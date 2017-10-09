@@ -47,8 +47,12 @@ namespace Lykke.Service.HFT.Modules
 		        .SingleInstance();
             builder.RegisterInstance(_serviceSettings)
 				.SingleInstance();
+		    builder.RegisterInstance(_settings.CurrentValue.Exchange)
+		        .SingleInstance();
+		    builder.RegisterInstance(_settings.CurrentValue.HighFrequencyTradingService.LimitOrdersFeed)
+		        .SingleInstance();
 
-			builder.RegisterInstance(_log)
+            builder.RegisterInstance(_log)
 				.As<ILog>()
 				.SingleInstance();
 

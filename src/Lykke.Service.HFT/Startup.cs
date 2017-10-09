@@ -49,6 +49,8 @@ namespace Lykke.Service.HFT
                             options.SerializerSettings.ContractResolver = new Newtonsoft.Json.Serialization.DefaultContractResolver();
                             options.SerializerSettings.Converters.Add(new Newtonsoft.Json.Converters.StringEnumConverter());
                         });
+                services.AddAuthentication(KeyAuthOptions.AuthenticationScheme)
+                    .AddScheme<KeyAuthOptions, KeyAuthHandler>(KeyAuthOptions.AuthenticationScheme, "", options => { });
 
                 services.AddSwaggerGen(options =>
                 {
@@ -94,9 +96,9 @@ namespace Lykke.Service.HFT
                 }
 
                 app.UseLykkeMiddleware("HighFrequencyTrading", ex => new { Message = "Technical problem" });
-                app.UseMiddleware<KeyAuthMiddleware>();
                 app.UseMiddleware<CustomThrottlingMiddleware>();
-                
+
+                app.UseAuthentication();
                 app.UseMvc();
                 app.UseSwagger();
                 app.UseSwaggerUi();
