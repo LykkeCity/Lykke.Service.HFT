@@ -10,34 +10,31 @@ namespace Lykke.Service.HFT
     {
         public static void Main(string[] args)
         {
+            Console.WriteLine($"HFT API version {Microsoft.Extensions.PlatformAbstractions.PlatformServices.Default.Application.ApplicationVersion}");
 #if DEBUG
             Console.WriteLine("Is DEBUG");
 #else
             Console.WriteLine("Is RELEASE");
-#endif
-            var webHostCancellationTokenSource = new CancellationTokenSource();
-            var end = new ManualResetEvent(false);
+#endif           
+            Console.WriteLine($"ENV_INFO: {Environment.GetEnvironmentVariable("ENV_INFO")}");
 
-            AssemblyLoadContext.Default.Unloading += ctx =>
+            try
             {
-                Console.WriteLine("SIGTERM recieved");
+                var host = new WebHostBuilder()
+                    .UseKestrel()
+                    .UseUrls("http://*:5000")
+                    .UseContentRoot(Directory.GetCurrentDirectory())
+                    .UseStartup<Startup>()
+                    .UseApplicationInsights()
+                    .Build();
 
-                webHostCancellationTokenSource.Cancel();
-
-                end.WaitOne();
-            };
-
-            var host = new WebHostBuilder()
-                .UseKestrel()
-                .UseUrls("http://*:5000")
-                .UseContentRoot(Directory.GetCurrentDirectory())
-                .UseStartup<Startup>()
-                .UseApplicationInsights()
-                .Build();
-
-            host.Run(webHostCancellationTokenSource.Token);
-
-            end.Set();
+                host.Run();
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine("Fatal error:");
+                Console.WriteLine(ex);
+            }
 
             Console.WriteLine("Terminated");
         }

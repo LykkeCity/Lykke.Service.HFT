@@ -16,6 +16,7 @@ using Lykke.Service.HFT.Core.Services.Assets;
 using Lykke.Service.HFT.MongoRepositories;
 using Lykke.Service.HFT.Services;
 using Lykke.Service.HFT.Services.Assets;
+using Lykke.SettingsReader;
 using Microsoft.Extensions.Caching.Distributed;
 using Microsoft.Extensions.Caching.Redis;
 using Microsoft.Extensions.DependencyInjection;
@@ -26,15 +27,15 @@ namespace Lykke.Service.HFT.Modules
 {
 	public class ServiceModule : Module
 	{
-		private readonly AppSettings _settings;
+		private readonly IReloadingManager<AppSettings> _settings;
 		private readonly AppSettings.HighFrequencyTradingSettings _serviceSettings;
 		private readonly IServiceCollection _services;
 		private readonly ILog _log;
 
-		public ServiceModule(AppSettings settings, ILog log)
+		public ServiceModule(IReloadingManager<AppSettings> settings, ILog log)
 		{
 			_settings = settings;
-			_serviceSettings = _settings.HighFrequencyTradingService;
+			_serviceSettings = _settings.CurrentValue.HighFrequencyTradingService;
 			_log = log;
 
 			_services = new ServiceCollection();
@@ -46,8 +47,12 @@ namespace Lykke.Service.HFT.Modules
 		        .SingleInstance();
             builder.RegisterInstance(_serviceSettings)
 				.SingleInstance();
+		    builder.RegisterInstance(_settings.CurrentValue.Exchange)
+		        .SingleInstance();
+		    builder.RegisterInstance(_settings.CurrentValue.HighFrequencyTradingService.LimitOrdersFeed)
+		        .SingleInstance();
 
-			builder.RegisterInstance(_log)
+            builder.RegisterInstance(_log)
 				.As<ILog>()
 				.SingleInstance();
 
@@ -138,7 +143,7 @@ namespace Lykke.Service.HFT.Modules
 			var socketLog = new SocketLogDynamic(i => { },
 				str => Console.WriteLine(DateTime.UtcNow.ToIsoDateTime() + ": " + str));
 
-			builder.BindMeClient(_settings.MatchingEngineClient.IpEndpoint.GetClientIpEndPoint(), socketLog);
+			builder.BindMeClient(_settings.CurrentValue.MatchingEngineClient.IpEndpoint.GetClientIpEndPoint(), socketLog);
 
 			builder.RegisterType<MatchingEngineAdapter>()
 				.As<IMatchingEngineAdapter>()
@@ -148,7 +153,7 @@ namespace Lykke.Service.HFT.Modules
 		private void RegisterBalances(ContainerBuilder builder)
 		{
 			builder.RegisterInstance<IWalletsRepository>(
-				AzureRepoFactories.CreateAccountsRepository(_serviceSettings.Db.BalancesInfoConnString, _log));
+				AzureRepoFactories.CreateAccountsRepository(_settings.Nested(x => x.HighFrequencyTradingService.Db.BalancesInfoConnString), _log));
 		}
 
 		private void RegisterAssets(ContainerBuilder builder)
