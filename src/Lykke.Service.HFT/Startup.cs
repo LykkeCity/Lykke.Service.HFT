@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Linq;
 using AspNetCoreRateLimit;
 using Autofac;
 using Autofac.Extensions.DependencyInjection;
@@ -61,11 +62,11 @@ namespace Lykke.Service.HFT
 
                 services.AddOptions();
 
-                ConfigureRateLimits(services);
-
                 var builder = new ContainerBuilder();
                 var appSettings = Configuration.LoadSettings<AppSettings>();
                 var log = CreateLogWithSlack(services, appSettings);
+
+                ConfigureRateLimits(services, appSettings.CurrentValue.HighFrequencyTradingService.IpRateLimiting);
 
                 builder.RegisterModule(new ServiceModule(appSettings, log));
                 builder.RegisterModule(new RedisModule(appSettings.CurrentValue.HighFrequencyTradingService.CacheSettings));
@@ -167,9 +168,22 @@ namespace Lykke.Service.HFT
             return aggregateLogger;
         }
 
-        private void ConfigureRateLimits(IServiceCollection services)
+        private void ConfigureRateLimits(IServiceCollection services, RateLimitSettings.IpRateLimitOptions rateLimitOptions)
         {
-            services.Configure<IpRateLimitOptions>(Configuration.GetSection("HighFrequencyTradingService:IpRateLimiting"));
+            services.Configure<IpRateLimitOptions>(options =>
+            {
+                options.EnableEndpointRateLimiting = rateLimitOptions.EnableEndpointRateLimiting;
+                options.ClientIdHeader = KeyAuthOptions.DefaultHeaderName;
+                options.StackBlockedRequests = rateLimitOptions.StackBlockedRequests;
+                options.RealIpHeader = rateLimitOptions.RealIpHeader;
+                options.GeneralRules = rateLimitOptions.GeneralRules.Select(x => new RateLimitRule
+                {
+                    Endpoint = x.Endpoint,
+                    Limit = x.Limit,
+                    Period = x.Period
+                }).ToList();
+            });
+
             services.AddSingleton<IIpPolicyStore, DistributedCacheIpPolicyStore>();
             services.AddSingleton<IRateLimitCounterStore, DistributedCacheRateLimitCounterStore>();
         }
