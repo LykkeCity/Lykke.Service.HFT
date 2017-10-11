@@ -179,6 +179,8 @@ namespace Lykke.Service.HFT.Controllers
         [SwaggerOperation("CancelLimitOrder")]
         [ProducesResponseType((int)HttpStatusCode.OK)]
         [ProducesResponseType((int)HttpStatusCode.NotFound)]
+        [ProducesResponseType((int)HttpStatusCode.Forbidden)]
+        [ProducesResponseType((int)HttpStatusCode.BadRequest)]
         public async Task<IActionResult> CancelLimitOrder(Guid id)
         {
             if (id == Guid.Empty)
@@ -195,12 +197,18 @@ namespace Lykke.Service.HFT.Controllers
             {
                 return Forbid();
             }
+            if (order.Status == OrderStatus.Cancelled || order.Status == OrderStatus.NoLiquidity || order.Status == OrderStatus.NotEnoughFunds ||
+                order.Status == OrderStatus.UnknownAsset || order.Status == OrderStatus.LeadToNegativeSpread)
+            {
+                return Ok();
+            }
+            // todo: produce valid http status code if status is 'Matched' or 'Pending'
 
             var response = await _matchingEngineAdapter.CancelLimitOrderAsync(id);
             if (response.Error != null)
             {
                 // todo: produce valid http status codes based on ME response 
-                return NotFound();
+                return BadRequest();
             }
             return Ok();
         }
