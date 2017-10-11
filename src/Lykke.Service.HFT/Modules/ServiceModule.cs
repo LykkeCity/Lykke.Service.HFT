@@ -164,7 +164,6 @@ namespace Lykke.Service.HFT.Modules
 
 			builder.RegisterType<AssetPairsManager>()
 				.As<IAssetPairsManager>()
-				.WithParameter(new TypedParameter(typeof(TimeSpan), _serviceSettings.Dictionaries.CacheExpirationPeriod))
 				.SingleInstance();
 		}
 

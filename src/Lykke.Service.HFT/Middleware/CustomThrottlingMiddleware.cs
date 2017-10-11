@@ -19,8 +19,8 @@ namespace Lykke.Service.HFT.Middleware
 
 		public override void LogBlockedRequest(HttpContext httpContext, ClientRequestIdentity identity, RateLimitCounter counter, RateLimitRule rule)
 		{
-			_log?.WriteWarningAsync("Middleware", "Throttle", "",
-				$"{DateTime.UtcNow} Request {httpContext.TraceIdentifier} from {identity.ClientIp} to endpoint {rule.Endpoint} has been throttled (blocked), quota {rule.Limit}/{rule.Period} exceeded by {counter.TotalRequests}");
+			//_log?.WriteWarningAsync("Middleware", "Throttle", "",
+			//	$"{DateTime.UtcNow} Request {httpContext.TraceIdentifier} from {identity.ClientIp} to endpoint {rule.Endpoint} has been throttled (blocked), quota {rule.Limit}/{rule.Period} exceeded by {counter.TotalRequests}");
 		}
 	}
 }
