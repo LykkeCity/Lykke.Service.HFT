@@ -67,18 +67,21 @@ namespace Lykke.Service.HFT.Controllers
         [ProducesResponseType(typeof(ResponseModel<double>), (int)HttpStatusCode.BadRequest)]
         public async Task<IActionResult> PlaceMarketOrder([FromBody] MarketOrderRequest order)
         {
+            var startTime = DateTime.Now;
             if (!ModelState.IsValid)
             {
                 return BadRequest(ToResponseModel(ModelState));
             }
-
+            var currentTime = DateTime.Now;
             var assetPair = await _assetPairsManager.TryGetEnabledAssetPairAsync(order.AssetPairId);
             if (assetPair == null)
             {
                 var model = ResponseModel<double>.CreateFail(ResponseModel.ErrorCodeType.UnknownAsset);
                 return BadRequest(model);
             }
+            Console.WriteLine($"Get asset pair: {(DateTime.Now - currentTime).TotalMilliseconds} ms.");
 
+            currentTime = DateTime.Now;
             var baseAsset = await _assetPairsManager.TryGetEnabledAssetAsync(assetPair.BaseAssetId);
             var quotingAsset = await _assetPairsManager.TryGetEnabledAssetAsync(assetPair.QuotingAssetId);
             if (order.Asset != baseAsset.Id && order.Asset != baseAsset.Name && order.Asset != quotingAsset.Id && order.Asset != quotingAsset.Name)
@@ -86,6 +89,7 @@ namespace Lykke.Service.HFT.Controllers
                 var model = ResponseModel.CreateInvalidFieldError("Asset", $"Asset <{order.Asset}> is not valid for asset pair <{assetPair.Id}>.");
                 return BadRequest(model);
             }
+            Console.WriteLine($"Check assets: {(DateTime.Now - currentTime).TotalMilliseconds} ms.");
 
             var clientId = User.GetUserId();
             var straight = order.Asset == baseAsset.Id || order.Asset == baseAsset.Name;
@@ -95,6 +99,7 @@ namespace Lykke.Service.HFT.Controllers
                 var model = ResponseModel<double>.CreateFail(ResponseModel.ErrorCodeType.Dust, "Required volume is less than asset accuracy.");
                 return BadRequest(model);
             }
+            currentTime = DateTime.Now;
             var response = await _matchingEngineAdapter.HandleMarketOrderAsync(
                 clientId: clientId,
                 assetPairId: order.AssetPairId,
@@ -102,6 +107,7 @@ namespace Lykke.Service.HFT.Controllers
                 volume: volume,
                 straight: straight,
                 reservedLimitVolume: null);
+            Console.WriteLine($"ME request: {(DateTime.Now - currentTime).TotalMilliseconds} ms.");
 
             if (response.Error != null)
             {
@@ -109,6 +115,7 @@ namespace Lykke.Service.HFT.Controllers
                 return BadRequest(response);
             }
 
+            Console.WriteLine($"Total time: {(DateTime.Now - currentTime).TotalMilliseconds} ms.");
             return Ok(ResponseModel<double>.CreateOk(response.Result));
         }
 
