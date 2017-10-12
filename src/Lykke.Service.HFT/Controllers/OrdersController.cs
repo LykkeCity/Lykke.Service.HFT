@@ -107,7 +107,7 @@ namespace Lykke.Service.HFT.Controllers
                 volume: volume,
                 straight: straight,
                 reservedLimitVolume: null);
-            Console.WriteLine($"ME request: {(DateTime.Now - currentTime).TotalMilliseconds} ms.");
+            Console.WriteLine($"ME HandleMarketOrderAsync request: {(DateTime.Now - currentTime).TotalMilliseconds} ms.");
 
             if (response.Error != null)
             {
@@ -115,7 +115,7 @@ namespace Lykke.Service.HFT.Controllers
                 return BadRequest(response);
             }
 
-            Console.WriteLine($"Total time: {(DateTime.Now - currentTime).TotalMilliseconds} ms.");
+            Console.WriteLine($"Total time: {(DateTime.Now - startTime).TotalMilliseconds} ms.");
             return Ok(ResponseModel<double>.CreateOk(response.Result));
         }
 
@@ -129,11 +129,13 @@ namespace Lykke.Service.HFT.Controllers
         [ProducesResponseType(typeof(ResponseModel), (int)HttpStatusCode.BadRequest)]
         public async Task<IActionResult> PlaceLimitOrder([FromBody] LimitOrderRequest order)
         {
+            var startTime = DateTime.Now;
             if (!ModelState.IsValid)
             {
                 return BadRequest(ToResponseModel(ModelState));
             }
 
+            var currentTime = DateTime.Now;
             var assetPair = await _assetPairsManager.TryGetEnabledAssetPairAsync(order.AssetPairId);
             if (assetPair == null)
             {
@@ -163,18 +165,22 @@ namespace Lykke.Service.HFT.Controllers
                 var model = ResponseModel<double>.CreateFail(ResponseModel.ErrorCodeType.Dust, "Required volume is less than asset accuracy.");
                 return BadRequest(model);
             }
+            Console.WriteLine($"Get asset pair, best price, asset: {(DateTime.Now - currentTime).TotalMilliseconds} ms.");
+            currentTime = DateTime.Now;
             var response = await _matchingEngineAdapter.PlaceLimitOrderAsync(
                 clientId: clientId,
                 assetPairId: order.AssetPairId,
                 orderAction: order.OrderAction,
                 volume: volume,
                 price: order.Price.TruncateDecimalPlaces(assetPair.Accuracy));
+            Console.WriteLine($"ME PlaceLimitOrderAsync request: {(DateTime.Now - currentTime).TotalMilliseconds} ms.");
             if (response.Error != null)
             {
                 // todo: produce valid http status codes based on ME response 
                 return BadRequest(response);
             }
 
+            Console.WriteLine($"Total time: {(DateTime.Now - startTime).TotalMilliseconds} ms.");
             return Ok(response.Result);
         }
 
