@@ -97,7 +97,7 @@ namespace Lykke.Service.HFT
                 }
 
                 app.UseLykkeMiddleware("HighFrequencyTrading", ex => new { Message = "Technical problem" });
-                app.UseMiddleware<CustomThrottlingMiddleware>();
+                app.UseClientRateLimiting();
 
                 app.UseAuthentication();
                 app.UseMvc();
@@ -168,14 +168,13 @@ namespace Lykke.Service.HFT
             return aggregateLogger;
         }
 
-        private void ConfigureRateLimits(IServiceCollection services, RateLimitSettings.IpRateLimitOptions rateLimitOptions)
+        private void ConfigureRateLimits(IServiceCollection services, RateLimitSettings.RateLimitCoreOptions rateLimitOptions)
         {
-            services.Configure<IpRateLimitOptions>(options =>
+            services.Configure<ClientRateLimitOptions>(options =>
             {
                 options.EnableEndpointRateLimiting = rateLimitOptions.EnableEndpointRateLimiting;
                 options.ClientIdHeader = KeyAuthOptions.DefaultHeaderName;
                 options.StackBlockedRequests = rateLimitOptions.StackBlockedRequests;
-                options.RealIpHeader = rateLimitOptions.RealIpHeader;
                 options.GeneralRules = rateLimitOptions.GeneralRules.Select(x => new RateLimitRule
                 {
                     Endpoint = x.Endpoint,
@@ -184,7 +183,7 @@ namespace Lykke.Service.HFT
                 }).ToList();
             });
 
-            services.AddSingleton<IIpPolicyStore, DistributedCacheIpPolicyStore>();
+            services.AddSingleton<IClientPolicyStore, DistributedCacheClientPolicyStore>();
             services.AddSingleton<IRateLimitCounterStore, DistributedCacheRateLimitCounterStore>();
         }
     }
