@@ -18,7 +18,7 @@ namespace Lykke.Service.HFT.Core
             public CacheSettings CacheSettings { get; set; }
             public RabbitMqSettings LimitOrdersFeed { get; set; }
             public MongoSettings MongoSettings { get; set; }
-            public RateLimitSettings.IpRateLimitOptions IpRateLimiting { get; set; }
+            public RateLimitSettings.RateLimitCoreOptions IpRateLimiting { get; set; }
         }
 
         public class MongoSettings
