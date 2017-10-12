@@ -69,7 +69,6 @@ namespace Lykke.Service.HFT.Controllers
         [ProducesResponseType(typeof(ResponseModel<double>), (int)HttpStatusCode.BadRequest)]
         public async Task<IActionResult> PlaceMarketOrder([FromBody] MarketOrderRequest order)
         {
-            var startTime = DateTime.Now;
             if (!ModelState.IsValid)
             {
                 return BadRequest(ToResponseModel(ModelState));
@@ -97,7 +96,6 @@ namespace Lykke.Service.HFT.Controllers
                 var model = ResponseModel<double>.CreateFail(ResponseModel.ErrorCodeType.Dust, "Required volume is less than asset accuracy.");
                 return BadRequest(model);
             }
-            var currentTime = DateTime.Now;
             var response = await _matchingEngineAdapter.HandleMarketOrderAsync(
                 clientId: clientId,
                 assetPairId: order.AssetPairId,
@@ -105,7 +103,6 @@ namespace Lykke.Service.HFT.Controllers
                 volume: volume,
                 straight: straight,
                 reservedLimitVolume: null);
-            Console.WriteLine($"ME HandleMarketOrderAsync request: {(DateTime.Now - currentTime).TotalMilliseconds} ms.");
 
             if (response.Error != null)
             {
@@ -113,7 +110,6 @@ namespace Lykke.Service.HFT.Controllers
                 return BadRequest(response);
             }
 
-            Console.WriteLine($"Total time: {(DateTime.Now - startTime).TotalMilliseconds} ms.");
             return Ok(ResponseModel<double>.CreateOk(response.Result));
         }
 
@@ -127,7 +123,6 @@ namespace Lykke.Service.HFT.Controllers
         [ProducesResponseType(typeof(ResponseModel), (int)HttpStatusCode.BadRequest)]
         public async Task<IActionResult> PlaceLimitOrder([FromBody] LimitOrderRequest order)
         {
-            var startTime = DateTime.Now;
             if (!ModelState.IsValid)
             {
                 return BadRequest(ToResponseModel(ModelState));
@@ -140,14 +135,12 @@ namespace Lykke.Service.HFT.Controllers
                 return BadRequest(model);
             }
 
-            var currentTime = DateTime.Now;
             var bestPrice = await _orderBooksService.GetBestPrice(order.AssetPairId, order.OrderAction == OrderAction.Buy);
             if (order.OrderAction == OrderAction.Buy && bestPrice * (1 - _deviation) > order.Price
                 || order.OrderAction == OrderAction.Sell && bestPrice * (1 + _deviation) < order.Price)
             {
                 return BadRequest(ResponseModel.CreateFail(ResponseModel.ErrorCodeType.PriceGapTooHigh));
             }
-            Console.WriteLine($"Get best price: {(DateTime.Now - currentTime).TotalMilliseconds} ms.");
 
             var asset = await _assetPairsManager.TryGetEnabledAssetAsync(assetPair.BaseAssetId);
             if (asset == null)
@@ -162,21 +155,18 @@ namespace Lykke.Service.HFT.Controllers
                 var model = ResponseModel<double>.CreateFail(ResponseModel.ErrorCodeType.Dust, "Required volume is less than asset accuracy.");
                 return BadRequest(model);
             }
-            currentTime = DateTime.Now;
             var response = await _matchingEngineAdapter.PlaceLimitOrderAsync(
                 clientId: clientId,
                 assetPairId: order.AssetPairId,
                 orderAction: order.OrderAction,
                 volume: volume,
                 price: order.Price.TruncateDecimalPlaces(assetPair.Accuracy));
-            Console.WriteLine($"ME PlaceLimitOrderAsync request: {(DateTime.Now - currentTime).TotalMilliseconds} ms.");
             if (response.Error != null)
             {
                 // todo: produce valid http status codes based on ME response 
                 return BadRequest(response);
             }
 
-            Console.WriteLine($"Total time: {(DateTime.Now - startTime).TotalMilliseconds} ms.");
             return Ok(response.Result);
         }
 
