@@ -4,12 +4,12 @@ namespace Lykke.Service.HFT.Models
 {
 	public static class DomainToContractConverter
 	{
-		public static ApiAssetPairModel ConvertToApiModel(this IAssetPair src)
+		public static AssetPairModel ConvertToApiModel(this IAssetPair src)
 		{
 			if (src == null)
 				return null;
 
-			return new ApiAssetPairModel
+			return new AssetPairModel
 			{
 				Id = src.Id,
 				Name = src.Name,

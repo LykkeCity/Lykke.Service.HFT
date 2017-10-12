@@ -11,25 +11,25 @@ namespace Lykke.Service.HFT.Client.AutorestClient.Models
     using System.Collections.Generic;
     using System.Linq;
 
-    public partial class IsAliveResponse
+    public partial class OrderBook
     {
         /// <summary>
-        /// Initializes a new instance of the IsAliveResponse class.
+        /// Initializes a new instance of the OrderBook class.
         /// </summary>
-        public IsAliveResponse()
+        public OrderBook()
         {
             CustomInit();
         }
 
         /// <summary>
-        /// Initializes a new instance of the IsAliveResponse class.
+        /// Initializes a new instance of the OrderBook class.
         /// </summary>
-        public IsAliveResponse(bool isDebug, string version = default(string), string env = default(string), IList<IssueIndicator> issueIndicators = default(IList<IssueIndicator>))
+        public OrderBook(bool isBuy, System.DateTime timestamp, string assetPair = default(string), IList<VolumePrice> prices = default(IList<VolumePrice>))
         {
-            Version = version;
-            Env = env;
-            IsDebug = isDebug;
-            IssueIndicators = issueIndicators;
+            AssetPair = assetPair;
+            IsBuy = isBuy;
+            Timestamp = timestamp;
+            Prices = prices;
             CustomInit();
         }
 
@@ -40,23 +40,23 @@ namespace Lykke.Service.HFT.Client.AutorestClient.Models
 
         /// <summary>
         /// </summary>
-        [JsonProperty(PropertyName = "Version")]
-        public string Version { get; set; }
+        [JsonProperty(PropertyName = "AssetPair")]
+        public string AssetPair { get; set; }
 
         /// <summary>
         /// </summary>
-        [JsonProperty(PropertyName = "Env")]
-        public string Env { get; set; }
+        [JsonProperty(PropertyName = "IsBuy")]
+        public bool IsBuy { get; set; }
 
         /// <summary>
         /// </summary>
-        [JsonProperty(PropertyName = "IsDebug")]
-        public bool IsDebug { get; set; }
+        [JsonProperty(PropertyName = "Timestamp")]
+        public System.DateTime Timestamp { get; set; }
 
         /// <summary>
         /// </summary>
-        [JsonProperty(PropertyName = "IssueIndicators")]
-        public IList<IssueIndicator> IssueIndicators { get; set; }
+        [JsonProperty(PropertyName = "Prices")]
+        public IList<VolumePrice> Prices { get; set; }
 
         /// <summary>
         /// Validate the object.
@@ -66,6 +66,16 @@ namespace Lykke.Service.HFT.Client.AutorestClient.Models
         /// </exception>
         public virtual void Validate()
         {
+            if (Prices != null)
+            {
+                foreach (var element in Prices)
+                {
+                    if (element != null)
+                    {
+                        element.Validate();
+                    }
+                }
+            }
         }
     }
 }

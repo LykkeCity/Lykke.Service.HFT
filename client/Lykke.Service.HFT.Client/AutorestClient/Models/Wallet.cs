@@ -7,29 +7,26 @@
 namespace Lykke.Service.HFT.Client.AutorestClient.Models
 {
     using Newtonsoft.Json;
-    using System.Collections;
-    using System.Collections.Generic;
     using System.Linq;
 
-    public partial class IsAliveResponse
+    public partial class Wallet
     {
         /// <summary>
-        /// Initializes a new instance of the IsAliveResponse class.
+        /// Initializes a new instance of the Wallet class.
         /// </summary>
-        public IsAliveResponse()
+        public Wallet()
         {
             CustomInit();
         }
 
         /// <summary>
-        /// Initializes a new instance of the IsAliveResponse class.
+        /// Initializes a new instance of the Wallet class.
         /// </summary>
-        public IsAliveResponse(bool isDebug, string version = default(string), string env = default(string), IList<IssueIndicator> issueIndicators = default(IList<IssueIndicator>))
+        public Wallet(double reserved, double balance, string assetId = default(string))
         {
-            Version = version;
-            Env = env;
-            IsDebug = isDebug;
-            IssueIndicators = issueIndicators;
+            AssetId = assetId;
+            Reserved = reserved;
+            Balance = balance;
             CustomInit();
         }
 
@@ -40,23 +37,18 @@ namespace Lykke.Service.HFT.Client.AutorestClient.Models
 
         /// <summary>
         /// </summary>
-        [JsonProperty(PropertyName = "Version")]
-        public string Version { get; set; }
+        [JsonProperty(PropertyName = "AssetId")]
+        public string AssetId { get; set; }
 
         /// <summary>
         /// </summary>
-        [JsonProperty(PropertyName = "Env")]
-        public string Env { get; set; }
+        [JsonProperty(PropertyName = "Reserved")]
+        public double Reserved { get; set; }
 
         /// <summary>
         /// </summary>
-        [JsonProperty(PropertyName = "IsDebug")]
-        public bool IsDebug { get; set; }
-
-        /// <summary>
-        /// </summary>
-        [JsonProperty(PropertyName = "IssueIndicators")]
-        public IList<IssueIndicator> IssueIndicators { get; set; }
+        [JsonProperty(PropertyName = "Balance")]
+        public double Balance { get; set; }
 
         /// <summary>
         /// Validate the object.
@@ -66,6 +58,7 @@ namespace Lykke.Service.HFT.Client.AutorestClient.Models
         /// </exception>
         public virtual void Validate()
         {
+            //Nothing to validate
         }
     }
 }

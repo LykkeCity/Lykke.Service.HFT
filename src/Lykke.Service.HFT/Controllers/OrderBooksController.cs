@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Net;
 using System.Threading.Tasks;
 using Lykke.Service.HFT.Core.Domain;
@@ -28,11 +29,11 @@ namespace Lykke.Service.HFT.Controllers
 		/// <returns>All order books.</returns>
 		[HttpGet]
 		[SwaggerOperation("OrderBooks")]
-		[ProducesResponseType(typeof(IEnumerable<IOrderBook>), (int)HttpStatusCode.OK)]
+		[ProducesResponseType(typeof(IEnumerable<OrderBook>), (int)HttpStatusCode.OK)]
 		public async Task<IActionResult> GetOrderBooks()
 		{
 			var orderBooks = await _orderBooksService.GetAllAsync();
-			return Ok(orderBooks);
+			return Ok(orderBooks.Cast<OrderBook>());
 
 		}
 
@@ -43,7 +44,7 @@ namespace Lykke.Service.HFT.Controllers
 		/// <returns>Order books for a specified asster pair.</returns>
 		[HttpGet("{assetPairId}")]
 		[SwaggerOperation("OrderBooks_id")]
-		[ProducesResponseType(typeof(IEnumerable<IOrderBook>), (int)HttpStatusCode.OK)]
+		[ProducesResponseType(typeof(IEnumerable<OrderBook>), (int)HttpStatusCode.OK)]
 		[ProducesResponseType((int)HttpStatusCode.NotFound)]
 		public async Task<IActionResult> GetOrderBook(string assetPairId)
 		{
@@ -59,7 +60,7 @@ namespace Lykke.Service.HFT.Controllers
 			}
 
 			var orderBooks = await _orderBooksService.GetAsync(assetPairId);
-			return Ok(orderBooks);
+			return Ok(orderBooks.Cast<OrderBook>());
 		}
 	}
 }
