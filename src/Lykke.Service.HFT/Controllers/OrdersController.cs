@@ -142,7 +142,9 @@ namespace Lykke.Service.HFT.Controllers
                 var model = ResponseModel.CreateFail(ResponseModel.ErrorCodeType.UnknownAsset);
                 return BadRequest(model);
             }
+            Console.WriteLine($"Get asset pair: {(DateTime.Now - currentTime).TotalMilliseconds} ms.");
 
+            currentTime = DateTime.Now;
             var currentTopPrice = (decimal)await _orderBooksService.GetBestPrice(order.AssetPairId, order.OrderAction == OrderAction.Buy);
             var deviation = _settings.MaxLimitOrderDeviationPercent / 100;
             var price = (decimal)order.Price;
@@ -151,7 +153,9 @@ namespace Lykke.Service.HFT.Controllers
             {
                 return BadRequest(ResponseModel.CreateFail(ResponseModel.ErrorCodeType.PriceGapTooHigh));
             }
+            Console.WriteLine($"Get best price: {(DateTime.Now - currentTime).TotalMilliseconds} ms.");
 
+            currentTime = DateTime.Now;
             var asset = await _assetPairsManager.TryGetEnabledAssetAsync(assetPair.BaseAssetId);
             if (asset == null)
             {
@@ -165,7 +169,7 @@ namespace Lykke.Service.HFT.Controllers
                 var model = ResponseModel<double>.CreateFail(ResponseModel.ErrorCodeType.Dust, "Required volume is less than asset accuracy.");
                 return BadRequest(model);
             }
-            Console.WriteLine($"Get asset pair, best price, asset: {(DateTime.Now - currentTime).TotalMilliseconds} ms.");
+            Console.WriteLine($"Get asset: {(DateTime.Now - currentTime).TotalMilliseconds} ms.");
             currentTime = DateTime.Now;
             var response = await _matchingEngineAdapter.PlaceLimitOrderAsync(
                 clientId: clientId,
