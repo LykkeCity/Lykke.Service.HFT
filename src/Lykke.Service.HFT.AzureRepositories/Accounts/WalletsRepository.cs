@@ -1,5 +1,4 @@
 ﻿using System.Collections.Generic;
-using System.Linq;
 using System.Threading.Tasks;
 using AzureStorage;
 using Common;
@@ -22,16 +21,6 @@ namespace Lykke.Service.HFT.AzureRepositories.Accounts
 
             [JsonProperty("reserved")]
             public double Reserved { get; set; }
-
-
-            public static TheWallet Create(string assetId, double balance)
-            {
-                return new TheWallet
-                {
-                    AssetId = assetId,
-                    Balance = balance
-                };
-            }
         }
 
         public static string GeneratePartitionKey()
@@ -47,26 +36,7 @@ namespace Lykke.Service.HFT.AzureRepositories.Accounts
         public string ClientId => RowKey;
 
         public string Balances { get; set; }
-
-        internal void UpdateBalance(string assetId, double balanceDelta)
-        {
-            var data = Get();
-            var element = data.FirstOrDefault(itm => itm.AssetId == assetId);
-
-            if (element != null)
-            {
-                element.Balance += balanceDelta;
-                Balances = data.ToJson();
-                return;
-            }
-
-            var list = new List<TheWallet>();
-            list.AddRange(data);
-            list.Add(TheWallet.Create(assetId, balanceDelta));
-            Balances = list.ToJson();
-
-        }
-
+        
         internal static readonly TheWallet[] EmptyList = new TheWallet[0];
 
         internal TheWallet[] Get()
@@ -75,15 +45,6 @@ namespace Lykke.Service.HFT.AzureRepositories.Accounts
                 return EmptyList;
 
             return Balances.DeserializeJson(() => EmptyList);
-        }
-        public static WalletEntity Create(string clientId)
-        {
-            return new WalletEntity
-            {
-                PartitionKey = GeneratePartitionKey(),
-                RowKey = GenerateRowKey(clientId),
-
-            };
         }
     }
 

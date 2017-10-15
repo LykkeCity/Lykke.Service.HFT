@@ -12,9 +12,9 @@ namespace Lykke.Service.HFT.Core.Accounts
 
 	public class Wallet : IWallet
 	{
-		public string AssetId { get; set; }
+	    public double Balance { get; set; }
+        public string AssetId { get; set; }
 		public double Reserved { get; set; }
-		public double Balance { get; set; }
 	}
 
 	public interface IWalletsRepository

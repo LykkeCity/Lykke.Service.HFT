@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Linq;
+using System.Threading.Tasks;
 using AspNetCoreRateLimit;
 using Autofac;
 using Autofac.Extensions.DependencyInjection;
@@ -64,25 +65,21 @@ namespace Lykke.Service.HFT
 
                 var builder = new ContainerBuilder();
                 var appSettings = Configuration.LoadSettings<AppSettings>();
-                var log = CreateLogWithSlack(services, appSettings);
+                Log = CreateLogWithSlack(services, appSettings);
 
                 ConfigureRateLimits(services, appSettings.CurrentValue.HighFrequencyTradingService.IpRateLimiting);
 
-                builder.RegisterModule(new ServiceModule(appSettings, log));
+                builder.RegisterModule(new ServiceModule(appSettings, Log));
                 builder.RegisterModule(new RedisModule(appSettings.CurrentValue.HighFrequencyTradingService.CacheSettings));
                 builder.Populate(services);
 
                 ApplicationContainer = builder.Build();
 
-                // todo: move into appLifetime
-                ApplicationContainer.Resolve<IApiKeyCacheInitializer>().InitApiKeyCache().Wait();
-
-
                 return new AutofacServiceProvider(ApplicationContainer);
             }
             catch (Exception ex)
             {
-                Log?.WriteFatalErrorAsync(nameof(Startup), nameof(ConfigureServices), "", ex);
+                Log?.WriteFatalErrorAsync(nameof(Startup), nameof(ConfigureServices), "", ex).Wait();
                 throw;
             }
         }
@@ -105,25 +102,54 @@ namespace Lykke.Service.HFT
                 app.UseSwaggerUi();
                 app.UseStaticFiles();
 
-                appLifetime.ApplicationStopped.Register(CleanUp);
+                appLifetime.ApplicationStarted.Register(() => StartApplication().Wait());
+                appLifetime.ApplicationStopped.Register(() => CleanUp().Wait());
             }
             catch (Exception ex)
             {
-                Log?.WriteFatalErrorAsync(nameof(Startup), nameof(ConfigureServices), "", ex);
+                Log?.WriteFatalErrorAsync(nameof(Startup), nameof(ConfigureServices), "", ex).Wait();
                 throw;
             }
         }
 
-        private void CleanUp()
+        private async Task StartApplication()
         {
             try
             {
+                // NOTE: Service not yet recieve and process requests here
+
+                await ApplicationContainer.Resolve<IApiKeyCacheInitializer>().InitApiKeyCache();
+
+                await Log.WriteMonitorAsync("", "", "Started");
+            }
+            catch (Exception ex)
+            {
+                await Log.WriteFatalErrorAsync(nameof(Startup), nameof(StartApplication), "", ex);
+                throw;
+            }
+        }
+
+
+        private async Task CleanUp()
+        {
+            try
+            {
+                // NOTE: Service can't recieve and process requests here, so you can destroy all resources
+
+                if (Log != null)
+                {
+                    await Log.WriteMonitorAsync("", "", "Terminating");
+                }
+
                 ApplicationContainer.Dispose();
             }
             catch (Exception ex)
             {
-                Log?.WriteFatalErrorAsync(nameof(Startup), nameof(CleanUp), "", ex);
-                (Log as IDisposable)?.Dispose();
+                if (Log != null)
+                {
+                    await Log.WriteFatalErrorAsync(nameof(Startup), nameof(CleanUp), "", ex);
+                    (Log as IDisposable)?.Dispose();
+                }
                 throw;
             }
         }
