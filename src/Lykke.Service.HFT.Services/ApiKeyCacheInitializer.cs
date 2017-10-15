@@ -12,12 +12,12 @@ namespace Lykke.Service.HFT.Services
     public class ApiKeyCacheInitializer : IApiKeyCacheInitializer
     {
         private readonly IDistributedCache _distributedCache;
-        private readonly AppSettings.HighFrequencyTradingSettings _settings;
+        private readonly CacheSettings _settings;
         private readonly IRepository<ApiKey> _apiKeyRepository;
         private readonly IServer _redisServer;
         private readonly IDatabase _redisDatabase;
 
-        public ApiKeyCacheInitializer(AppSettings.HighFrequencyTradingSettings settings, IRepository<ApiKey> orderStateRepository, IServer redisServer, IDatabase redisDatabase, IDistributedCache distributedCache)
+        public ApiKeyCacheInitializer(CacheSettings settings, IRepository<ApiKey> orderStateRepository, IServer redisServer, IDatabase redisDatabase, IDistributedCache distributedCache)
         {
             _distributedCache = distributedCache ?? throw new ArgumentNullException(nameof(distributedCache));
             _settings = settings ?? throw new ArgumentNullException(nameof(settings));
@@ -34,18 +34,17 @@ namespace Lykke.Service.HFT.Services
             foreach (var key in keys)
             {
                 await _distributedCache.SetStringAsync(GetCacheKey(key.Id.ToString()), key.WalletId ?? key.ClientId);   // todo: remove ClientId usage here after DB migration
-                //_redisDatabase.StringSet(_settings.CacheSettings.ApiKeyCacheInstance + GetCacheKey(key.Id.ToString()), key.ClientId);
             }
         }
 
         private string GetCacheKey(string apiKey)
         {
-            return _settings.CacheSettings.GetApiKey(apiKey);
+            return _settings.GetApiKey(apiKey);
         }
 
         private void ClearExistingRecords()
         {
-            var keys = _redisServer.Keys(pattern: _settings.CacheSettings.ApiKeyCacheInstance + "*").ToArray();
+            var keys = _redisServer.Keys(pattern: _settings.ApiKeyCacheInstance + "*").ToArray();
             _redisDatabase.KeyDelete(keys);
         }
     }

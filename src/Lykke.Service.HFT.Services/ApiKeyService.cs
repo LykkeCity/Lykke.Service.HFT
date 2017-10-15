@@ -9,9 +9,9 @@ namespace Lykke.Service.HFT.Services
     public class ApiKeyService : IApiKeyValidator, IClientResolver
     {
         private readonly IDistributedCache _distributedCache;
-        private readonly AppSettings.HighFrequencyTradingSettings _settings;
+        private readonly CacheSettings _settings;
 
-        public ApiKeyService(IDistributedCache distributedCache, AppSettings.HighFrequencyTradingSettings settings)
+        public ApiKeyService(IDistributedCache distributedCache, CacheSettings settings)
         {
             _settings = settings ?? throw new ArgumentNullException(nameof(settings));
             _distributedCache = distributedCache ?? throw new ArgumentNullException(nameof(distributedCache));
@@ -26,15 +26,11 @@ namespace Lykke.Service.HFT.Services
         public async Task<string> GetClientAsync(string apiKey)
         {
             var clientId = await _distributedCache.GetStringAsync(GetCacheKey(apiKey));
-            if (clientId == null && apiKey == _settings.ApiKey)
-            {
-                return _settings.ApiKey;
-            }
             return clientId;
         }
         private string GetCacheKey(string apiKey)
         {
-            return _settings.CacheSettings.GetApiKey(apiKey);
+            return _settings.GetApiKey(apiKey);
         }
     }
 }
