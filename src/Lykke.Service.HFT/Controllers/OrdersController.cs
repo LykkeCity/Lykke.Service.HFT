@@ -25,20 +25,22 @@ namespace Lykke.Service.HFT.Controllers
         private readonly IAssetPairsManager _assetPairsManager;
         private readonly IRepository<LimitOrderState> _orderStateRepository;
         private readonly IOrderBooksService _orderBooksService;
-        private readonly AppSettings _settings;
+        private readonly double _deviation;
 
         public OrdersController(
             IMatchingEngineAdapter frequencyTradingService,
             IAssetPairsManager assetPairsManager,
             IRepository<LimitOrderState> orderStateRepository,
             IOrderBooksService orderBooksService,
-            AppSettings settings)
+            ExchangeSettings settings)
         {
             _matchingEngineAdapter = frequencyTradingService ?? throw new ArgumentNullException(nameof(frequencyTradingService));
             _assetPairsManager = assetPairsManager ?? throw new ArgumentNullException(nameof(assetPairsManager));
             _orderStateRepository = orderStateRepository ?? throw new ArgumentNullException(nameof(orderStateRepository));
             _orderBooksService = orderBooksService ?? throw new ArgumentNullException(nameof(orderBooksService));
-            _settings = settings ?? throw new ArgumentNullException(nameof(settings));
+            if (settings == null)
+                throw new ArgumentNullException(nameof(settings));
+            _deviation = (double)settings.MaxLimitOrderDeviationPercent / 100;
         }
 
         /// <summary>
@@ -71,7 +73,6 @@ namespace Lykke.Service.HFT.Controllers
             {
                 return BadRequest(ToResponseModel(ModelState));
             }
-
             var assetPair = await _assetPairsManager.TryGetEnabledAssetPairAsync(order.AssetPairId);
             if (assetPair == null)
             {
@@ -86,14 +87,20 @@ namespace Lykke.Service.HFT.Controllers
                 var model = ResponseModel.CreateInvalidFieldError("Asset", $"Asset <{order.Asset}> is not valid for asset pair <{assetPair.Id}>.");
                 return BadRequest(model);
             }
-            
+
             var clientId = User.GetUserId();
             var straight = order.Asset == baseAsset.Id || order.Asset == baseAsset.Name;
+            var volume = order.Volume.TruncateDecimalPlaces(straight ? baseAsset.Accuracy : quotingAsset.Accuracy);
+            if (Math.Abs(volume) < double.Epsilon)
+            {
+                var model = ResponseModel<double>.CreateFail(ResponseModel.ErrorCodeType.Dust, "Required volume is less than asset accuracy.");
+                return BadRequest(model);
+            }
             var response = await _matchingEngineAdapter.HandleMarketOrderAsync(
                 clientId: clientId,
                 assetPairId: order.AssetPairId,
                 orderAction: order.OrderAction,
-                volume: order.Volume.TruncateDecimalPlaces(straight ? baseAsset.Accuracy : quotingAsset.Accuracy),
+                volume: volume,
                 straight: straight,
                 reservedLimitVolume: null);
 
@@ -128,11 +135,9 @@ namespace Lykke.Service.HFT.Controllers
                 return BadRequest(model);
             }
 
-            var currentTopPrice = (decimal)await _orderBooksService.GetBestPrice(order.AssetPairId, order.OrderAction == OrderAction.Buy);
-            var deviation = _settings.Exchange.MaxLimitOrderDeviationPercent / 100;
-            var price = (decimal)order.Price;
-            if (order.OrderAction == OrderAction.Buy && currentTopPrice * (1 - deviation) > price
-                || order.OrderAction == OrderAction.Sell && currentTopPrice * (1 + deviation) < price)
+            var bestPrice = await _orderBooksService.GetBestPrice(order.AssetPairId, order.OrderAction == OrderAction.Buy);
+            if (order.OrderAction == OrderAction.Buy && bestPrice * (1 - _deviation) > order.Price
+                || order.OrderAction == OrderAction.Sell && bestPrice * (1 + _deviation) < order.Price)
             {
                 return BadRequest(ResponseModel.CreateFail(ResponseModel.ErrorCodeType.PriceGapTooHigh));
             }
@@ -144,11 +149,17 @@ namespace Lykke.Service.HFT.Controllers
             }
 
             var clientId = User.GetUserId();
+            var volume = order.Volume.TruncateDecimalPlaces(asset.Accuracy);
+            if (Math.Abs(volume) < double.Epsilon)
+            {
+                var model = ResponseModel<double>.CreateFail(ResponseModel.ErrorCodeType.Dust, "Required volume is less than asset accuracy.");
+                return BadRequest(model);
+            }
             var response = await _matchingEngineAdapter.PlaceLimitOrderAsync(
                 clientId: clientId,
                 assetPairId: order.AssetPairId,
                 orderAction: order.OrderAction,
-                volume: order.Volume.TruncateDecimalPlaces(asset.Accuracy),
+                volume: volume,
                 price: order.Price.TruncateDecimalPlaces(assetPair.Accuracy));
             if (response.Error != null)
             {
@@ -167,6 +178,8 @@ namespace Lykke.Service.HFT.Controllers
         [SwaggerOperation("CancelLimitOrder")]
         [ProducesResponseType((int)HttpStatusCode.OK)]
         [ProducesResponseType((int)HttpStatusCode.NotFound)]
+        [ProducesResponseType((int)HttpStatusCode.Forbidden)]
+        [ProducesResponseType((int)HttpStatusCode.BadRequest)]
         public async Task<IActionResult> CancelLimitOrder(Guid id)
         {
             if (id == Guid.Empty)
@@ -183,12 +196,18 @@ namespace Lykke.Service.HFT.Controllers
             {
                 return Forbid();
             }
+            if (order.Status == OrderStatus.Cancelled || order.Status == OrderStatus.NoLiquidity || order.Status == OrderStatus.NotEnoughFunds ||
+                order.Status == OrderStatus.UnknownAsset || order.Status == OrderStatus.LeadToNegativeSpread)
+            {
+                return Ok();
+            }
+            // todo: produce valid http status code if status is 'Matched' or 'Pending'
 
             var response = await _matchingEngineAdapter.CancelLimitOrderAsync(id);
             if (response.Error != null)
             {
                 // todo: produce valid http status codes based on ME response 
-                return NotFound();
+                return BadRequest();
             }
             return Ok();
         }

@@ -79,7 +79,7 @@ namespace Lykke.Service.HFT.Core.Strings {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Dust.
+        ///   Looks up a localized string similar to One of trades or whole order has volume/price*volume less then configured dust.
         /// </summary>
         internal static string Dust {
             get {

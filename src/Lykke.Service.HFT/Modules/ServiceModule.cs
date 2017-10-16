@@ -2,9 +2,7 @@
 using Autofac;
 using Autofac.Core;
 using Autofac.Extensions.DependencyInjection;
-using Common;
 using Common.Log;
-using Lykke.MatchingEngine.Connector.Services;
 using Lykke.Service.Assets.Client.Custom;
 using Lykke.Service.HFT.AzureRepositories;
 using Lykke.Service.HFT.Core;
@@ -16,174 +14,149 @@ using Lykke.Service.HFT.Core.Services.Assets;
 using Lykke.Service.HFT.MongoRepositories;
 using Lykke.Service.HFT.Services;
 using Lykke.Service.HFT.Services.Assets;
+using Lykke.SettingsReader;
 using Microsoft.Extensions.Caching.Distributed;
 using Microsoft.Extensions.Caching.Redis;
 using Microsoft.Extensions.DependencyInjection;
-using MongoDB.Bson.Serialization.Conventions;
-using MongoDB.Driver;
 
 namespace Lykke.Service.HFT.Modules
 {
-	public class ServiceModule : Module
-	{
-		private readonly AppSettings _settings;
-		private readonly AppSettings.HighFrequencyTradingSettings _serviceSettings;
-		private readonly IServiceCollection _services;
-		private readonly ILog _log;
+    public class ServiceModule : Module
+    {
+        private readonly IReloadingManager<AppSettings> _settings;
+        private readonly IServiceCollection _services;
+        private readonly ILog _log;
 
-		public ServiceModule(AppSettings settings, ILog log)
-		{
-			_settings = settings;
-			_serviceSettings = _settings.HighFrequencyTradingService;
-			_log = log;
+        public ServiceModule(IReloadingManager<AppSettings> settings, ILog log)
+        {
+            _settings = settings;
+            _log = log;
 
-			_services = new ServiceCollection();
-		}
+            _services = new ServiceCollection();
+        }
 
-		protected override void Load(ContainerBuilder builder)
-		{
-		    builder.RegisterInstance(_settings)
-		        .SingleInstance();
-            builder.RegisterInstance(_serviceSettings)
-				.SingleInstance();
+        protected override void Load(ContainerBuilder builder)
+        {
+            var currentSettings = _settings.CurrentValue;
+            builder.RegisterInstance(currentSettings.Exchange)
+                .SingleInstance();
+            builder.RegisterInstance(currentSettings.HighFrequencyTradingService.CacheSettings)
+                .SingleInstance();
+            builder.RegisterInstance(currentSettings.HighFrequencyTradingService.LimitOrdersFeed)
+                .SingleInstance();
 
-			builder.RegisterInstance(_log)
-				.As<ILog>()
-				.SingleInstance();
+            builder.RegisterInstance(_log)
+                .As<ILog>()
+                .SingleInstance();
 
-			RegisterApiKeyService(builder);
+            RegisterApiKeyService(builder);
 
-			RegisterMatchingEngine(builder);
+            RegisterBalances(builder, _settings.Nested(x => x.HighFrequencyTradingService.Db));
 
-			RegisterBalances(builder);
+            RegisterOrderBooks(builder);
 
-			RegisterOrderBooks(builder);
+            RegisterAssets(builder, currentSettings.HighFrequencyTradingService.Dictionaries);
 
-			RegisterAssets(builder);
+            RegisterOrderBookStates(builder);
 
-			RegisterOrderBookStates(builder);
+            BindRedis(builder, currentSettings.HighFrequencyTradingService.CacheSettings);
+            BindRabbitMq(builder, currentSettings.HighFrequencyTradingService.LimitOrdersFeed);
 
-            BindMongoDb(builder);
-			BindRedis(builder);
-			BindRabbitMq(builder);
+            builder.Populate(_services);
+        }
 
-			builder.Populate(_services);
-		}
-
-		private void BindRedis(ContainerBuilder builder)
-		{
+        private void BindRedis(ContainerBuilder builder, CacheSettings settings)
+        {
             var financeDataRedisCache = new RedisCache(new RedisCacheOptions
-			{
-				Configuration = _serviceSettings.CacheSettings.RedisConfiguration,
-				InstanceName = _serviceSettings.CacheSettings.FinanceDataCacheInstance
-			});
-			builder.RegisterInstance(financeDataRedisCache)
-				.As<IDistributedCache>()
-				.Keyed<IDistributedCache>("financeData")
-				.SingleInstance();
+            {
+                Configuration = settings.RedisConfiguration,
+                InstanceName = settings.FinanceDataCacheInstance
+            });
+            builder.RegisterInstance(financeDataRedisCache)
+                .As<IDistributedCache>()
+                .Keyed<IDistributedCache>("financeData")
+                .SingleInstance();
 
-			var apiKeysRedisCache = new RedisCache(new RedisCacheOptions
-			{
-				Configuration = _serviceSettings.CacheSettings.RedisConfiguration,
-				InstanceName = _serviceSettings.CacheSettings.ApiKeyCacheInstance
-			});
-			builder.RegisterInstance(apiKeysRedisCache)
-				.As<IDistributedCache>()
-				.Keyed<IDistributedCache>("apiKeys")
-				.SingleInstance();
-		}
+            var apiKeysRedisCache = new RedisCache(new RedisCacheOptions
+            {
+                Configuration = settings.RedisConfiguration,
+                InstanceName = settings.ApiKeyCacheInstance
+            });
+            builder.RegisterInstance(apiKeysRedisCache)
+                .As<IDistributedCache>()
+                .Keyed<IDistributedCache>("apiKeys")
+                .SingleInstance();
+        }
 
-		private void RegisterApiKeyService(ContainerBuilder builder)
-		{
-			builder.RegisterType<HealthService>()
-				.As<IHealthService>()
-				.SingleInstance();
+        private void RegisterApiKeyService(ContainerBuilder builder)
+        {
+            builder.RegisterType<HealthService>()
+                .As<IHealthService>()
+                .SingleInstance();
 
-			builder.RegisterType<ApiKeyService>()
-				.WithParameter(
-					new ResolvedParameter(
-						(pi, ctx) => pi.ParameterType == typeof(IDistributedCache),
-						(pi, ctx) => ctx.ResolveKeyed<IDistributedCache>("apiKeys")))
-				.As<IApiKeyValidator>()
-				.As<IClientResolver>()
-				.SingleInstance();
+            builder.RegisterType<ApiKeyService>()
+                .WithParameter(
+                    new ResolvedParameter(
+                        (pi, ctx) => pi.ParameterType == typeof(IDistributedCache),
+                        (pi, ctx) => ctx.ResolveKeyed<IDistributedCache>("apiKeys")))
+                .As<IApiKeyValidator>()
+                .As<IClientResolver>()
+                .SingleInstance();
 
-		    builder.RegisterType<ApiKeyCacheInitializer>()
-		        .WithParameter(
-		            new ResolvedParameter(
-		                (pi, ctx) => pi.ParameterType == typeof(IDistributedCache),
-		                (pi, ctx) => ctx.ResolveKeyed<IDistributedCache>("apiKeys")))
+            builder.RegisterType<ApiKeyCacheInitializer>()
+                .WithParameter(
+                    new ResolvedParameter(
+                        (pi, ctx) => pi.ParameterType == typeof(IDistributedCache),
+                        (pi, ctx) => ctx.ResolveKeyed<IDistributedCache>("apiKeys")))
                 .As<IApiKeyCacheInitializer>()
-		        .SingleInstance();
+                .SingleInstance();
 
 
             builder.RegisterType<MongoRepository<ApiKey>>()
-		        .As<IRepository<ApiKey>>()
-		        .SingleInstance();
+                .As<IRepository<ApiKey>>()
+                .SingleInstance();
         }
 
-		private void RegisterOrderBooks(ContainerBuilder builder)
-		{
-			builder.RegisterType<OrderBookService>()
-				.As<IOrderBooksService>()
-				.WithParameter(
-					new ResolvedParameter(
-						(pi, ctx) => pi.ParameterType == typeof(IDistributedCache),
-						(pi, ctx) => ctx.ResolveKeyed<IDistributedCache>("financeData")))
-				.SingleInstance();
-		}
+        private void RegisterOrderBooks(ContainerBuilder builder)
+        {
+            builder.RegisterType<OrderBookService>()
+                .As<IOrderBooksService>()
+                .WithParameter(
+                    new ResolvedParameter(
+                        (pi, ctx) => pi.ParameterType == typeof(IDistributedCache),
+                        (pi, ctx) => ctx.ResolveKeyed<IDistributedCache>("financeData")))
+                .SingleInstance();
+        }
 
-		private void RegisterMatchingEngine(ContainerBuilder builder)
-		{
-			var socketLog = new SocketLogDynamic(i => { },
-				str => Console.WriteLine(DateTime.UtcNow.ToIsoDateTime() + ": " + str));
+        private void RegisterBalances(ContainerBuilder builder, IReloadingManager<AppSettings.DbSettings> settings)
+        {
+            builder.RegisterInstance<IWalletsRepository>(
+                AzureRepoFactories.CreateAccountsRepository(settings.Nested(x => x.BalancesInfoConnString), _log));
+        }
 
-			builder.BindMeClient(_settings.MatchingEngineClient.IpEndpoint.GetClientIpEndPoint(), socketLog);
+        private void RegisterAssets(ContainerBuilder builder, AppSettings.DictionariesSettings settings)
+        {
+            _services.UseAssetsClient(AssetServiceSettings.Create(
+                new Uri(settings.AssetsServiceUrl),
+                settings.CacheExpirationPeriod));
 
-			builder.RegisterType<MatchingEngineAdapter>()
-				.As<IMatchingEngineAdapter>()
-				.SingleInstance();
-		}
+            builder.RegisterType<AssetPairsManager>()
+                .As<IAssetPairsManager>()
+                .SingleInstance();
+        }
 
-		private void RegisterBalances(ContainerBuilder builder)
-		{
-			builder.RegisterInstance<IWalletsRepository>(
-				AzureRepoFactories.CreateAccountsRepository(_serviceSettings.Db.BalancesInfoConnString, _log));
-		}
-
-		private void RegisterAssets(ContainerBuilder builder)
-		{
-			_services.UseAssetsClient(AssetServiceSettings.Create(
-				new Uri(_serviceSettings.Dictionaries.AssetsServiceUrl),
-				_serviceSettings.Dictionaries.CacheExpirationPeriod));
-
-			builder.RegisterType<AssetPairsManager>()
-				.As<IAssetPairsManager>()
-				.WithParameter(new TypedParameter(typeof(TimeSpan), _serviceSettings.Dictionaries.CacheExpirationPeriod))
-				.SingleInstance();
-		}
-
-		private void BindRabbitMq(ContainerBuilder builder)
-		{
-			builder.RegisterType<LimitOrdersConsumer>().SingleInstance().AutoActivate();
-			builder.RegisterInstance(_serviceSettings.LimitOrdersFeed);
-		}
-
-	    private void BindMongoDb(ContainerBuilder builder)
-	    {
-	        var mongoUrl = new MongoUrl(_serviceSettings.MongoSettings.ConnectionString);
-	        ConventionRegistry.Register("Ignore extra", new ConventionPack { new IgnoreExtraElementsConvention(true) }, x => true);
-
-	        var database = new MongoClient(mongoUrl).GetDatabase(mongoUrl.DatabaseName);
-	        builder.RegisterInstance(database);
-	    }
+        private void BindRabbitMq(ContainerBuilder builder, AppSettings.RabbitMqSettings settings)
+        {
+            builder.RegisterType<LimitOrdersConsumer>().SingleInstance().AutoActivate();
+            builder.RegisterInstance(settings);
+        }
 
         private void RegisterOrderBookStates(ContainerBuilder builder)
-		{
+        {
             builder.RegisterType<MongoRepository<LimitOrderState>>()
-				.As<IRepository<LimitOrderState>>()
-				.SingleInstance();
-		}
+                .As<IRepository<LimitOrderState>>()
+                .SingleInstance();
+        }
 
-	}
+    }
 }

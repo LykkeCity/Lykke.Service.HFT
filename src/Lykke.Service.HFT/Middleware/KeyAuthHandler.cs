@@ -1,8 +1,11 @@
 ﻿using System.Linq;
 using System.Security.Claims;
+using System.Text.Encodings.Web;
 using System.Threading.Tasks;
 using Lykke.Service.HFT.Core.Services.ApiKey;
 using Microsoft.AspNetCore.Authentication;
+using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 using Microsoft.Extensions.Primitives;
 
 namespace Lykke.Service.HFT.Middleware
@@ -12,23 +15,21 @@ namespace Lykke.Service.HFT.Middleware
 		private readonly IApiKeyValidator _apiKeyValidator;
 		private readonly IClientResolver _clientResolver;
 
-		public KeyAuthHandler(
-			IApiKeyValidator apiKeyValidator,
-			IClientResolver clientResolver)
-		{
+		public KeyAuthHandler(IOptionsMonitor<KeyAuthOptions> options, ILoggerFactory logger, UrlEncoder encoder, ISystemClock clock,
+            IApiKeyValidator apiKeyValidator,IClientResolver clientResolver)
+		    : base(options, logger, encoder, clock)
+        {
 			_apiKeyValidator = apiKeyValidator;
 			_clientResolver = clientResolver;
 		}
 		protected override async Task<AuthenticateResult> HandleAuthenticateAsync()
 		{
-			StringValues headerValue;
-
-			if (!Context.Request.Headers.TryGetValue(Options.KeyHeaderName, out headerValue))
-			{
-				return AuthenticateResult.Fail("No api key header.");
-			}
-
-			var apiKey = headerValue.First();
+		    if (!Context.Request.Headers.TryGetValue(KeyAuthOptions.DefaultHeaderName, out var headerValue))
+		    {
+		        return AuthenticateResult.Fail("No api key header.");
+		    }
+            
+            var apiKey = headerValue.First();
 			if (!(await _apiKeyValidator.ValidateAsync(apiKey)))
 			{
 				return AuthenticateResult.Fail("Invalid API key.");

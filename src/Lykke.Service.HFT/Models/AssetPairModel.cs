@@ -1,6 +1,6 @@
 ﻿namespace Lykke.Service.HFT.Models
 {
-	public class ApiAssetPairModel
+	public class AssetPairModel
 	{
 		public string Id { get; set; }
 		public string Name { get; set; }

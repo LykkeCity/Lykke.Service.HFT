@@ -12,7 +12,6 @@ namespace Lykke.Service.HFT.Services
 	public class LimitOrdersConsumer : IDisposable
 	{
 		private readonly ILog _log;
-		private readonly AppSettings.RabbitMqSettings _settings;
 		private readonly IRepository<LimitOrderState> _orderStateRepository;
 		private readonly RabbitMqSubscriber<LimitOrderMessage> _subscriber;
 		private const string QueueName = "highfrequencytrading";
@@ -20,17 +19,18 @@ namespace Lykke.Service.HFT.Services
 
 		public LimitOrdersConsumer(ILog log, AppSettings.RabbitMqSettings settings, IRepository<LimitOrderState> orderStateRepository)
 		{
-			_log = log ?? throw new ArgumentNullException(nameof(log));
-			_settings = settings ?? throw new ArgumentNullException(nameof(settings));
-			_orderStateRepository = orderStateRepository ?? throw new ArgumentNullException(nameof(orderStateRepository));
+		    _log = log ?? throw new ArgumentNullException(nameof(log));
+		    if (settings == null)
+                throw new ArgumentNullException(nameof(settings));
+            _orderStateRepository = orderStateRepository ?? throw new ArgumentNullException(nameof(orderStateRepository));
 
 			try
 			{
 				var subscriptionSettings = new RabbitMqSubscriptionSettings
 				{
-					ConnectionString = _settings.ConnectionString,
-					QueueName = $"{_settings.ExchangeName}.{QueueName}",
-					ExchangeName = _settings.ExchangeName,
+					ConnectionString = settings.ConnectionString,
+					QueueName = $"{settings.ExchangeName}.{QueueName}",
+					ExchangeName = settings.ExchangeName,
 					IsDurable = QueueDurable
 				};
 				_subscriber = new RabbitMqSubscriber<LimitOrderMessage>(subscriptionSettings, new DefaultErrorHandlingStrategy(_log, subscriptionSettings))

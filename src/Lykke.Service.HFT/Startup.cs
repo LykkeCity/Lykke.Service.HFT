@@ -1,4 +1,6 @@
 ﻿using System;
+using System.Linq;
+using System.Threading.Tasks;
 using AspNetCoreRateLimit;
 using Autofac;
 using Autofac.Extensions.DependencyInjection;
@@ -22,137 +24,195 @@ using Microsoft.Extensions.DependencyInjection;
 
 namespace Lykke.Service.HFT
 {
-	public class Startup
-	{
-		public IHostingEnvironment Environment { get; }
-		public IContainer ApplicationContainer { get; set; }
-		public IConfigurationRoot Configuration { get; }
+    public class Startup
+    {
+        public IHostingEnvironment Environment { get; }
+        public IContainer ApplicationContainer { get; private set; }
+        public IConfigurationRoot Configuration { get; }
+        public ILog Log { get; private set; }
 
-		public Startup(IHostingEnvironment env)
-		{
-			var builder = new ConfigurationBuilder()
-				.SetBasePath(env.ContentRootPath)
-				.AddJsonFile("appsettings.json", optional: true, reloadOnChange: true)
-				.AddJsonFile($"appsettings.{env.EnvironmentName}.json", optional: true)
-				.AddEnvironmentVariables();
-			Configuration = builder.Build();
+        public Startup(IHostingEnvironment env)
+        {
+            var builder = new ConfigurationBuilder()
+                .SetBasePath(env.ContentRootPath)
+                .AddEnvironmentVariables();
+            Configuration = builder.Build();
 
-			Environment = env;
+            Environment = env;
+        }
 
-			Console.WriteLine($"ENV_INFO: {System.Environment.GetEnvironmentVariable("ENV_INFO")}");
-		}
+        public IServiceProvider ConfigureServices(IServiceCollection services)
+        {
+            try
+            {
+                services.AddMvc()
+                        .AddJsonOptions(options =>
+                        {
+                            options.SerializerSettings.ContractResolver = new Newtonsoft.Json.Serialization.DefaultContractResolver();
+                            options.SerializerSettings.Converters.Add(new Newtonsoft.Json.Converters.StringEnumConverter());
+                        });
+                services.AddAuthentication(KeyAuthOptions.AuthenticationScheme)
+                    .AddScheme<KeyAuthOptions, KeyAuthHandler>(KeyAuthOptions.AuthenticationScheme, "", options => { });
 
-		public IServiceProvider ConfigureServices(IServiceCollection services)
-		{
-			services.AddMvc()
-				.AddJsonOptions(options =>
-				{
-					options.SerializerSettings.ContractResolver = new Newtonsoft.Json.Serialization.DefaultContractResolver();
-					options.SerializerSettings.Converters.Add(new Newtonsoft.Json.Converters.StringEnumConverter());
-				});
+                services.AddSwaggerGen(options =>
+                {
+                    options.DefaultLykkeConfiguration("v1", "HighFrequencyTrading API");
+                    options.OperationFilter<ApiKeyHeaderOperationFilter>();
+                    options.DescribeAllEnumsAsStrings();
+                });
 
-			services.AddSwaggerGen(options =>
-			{
-				options.DefaultLykkeConfiguration("v1", "HighFrequencyTrading API");
-				options.OperationFilter<ApiKeyHeaderOperationFilter>();
-				options.DescribeAllEnumsAsStrings();
-			});
+                services.AddOptions();
 
-			services.AddOptions();
+                var builder = new ContainerBuilder();
+                var appSettings = Configuration.LoadSettings<AppSettings>();
+                Log = CreateLogWithSlack(services, appSettings);
 
-			ConfigureRateLimits(services);
+                ConfigureRateLimits(services, appSettings.CurrentValue.HighFrequencyTradingService.IpRateLimiting);
 
-			var builder = new ContainerBuilder();
-			var appSettings = Environment.IsDevelopment()
-				? Configuration.Get<AppSettings>()
-				: HttpSettingsLoader.Load<AppSettings>(Configuration.GetValue<string>("SettingsUrl"));
-			var log = CreateLogWithSlack(services, appSettings);
+                builder.RegisterModule(new ServiceModule(appSettings, Log));
+                builder.RegisterModule(new MatchingEngineModule(appSettings.Nested(x => x.MatchingEngineClient)));
+                builder.RegisterModule(new MongoDbModule(appSettings.Nested(x => x.HighFrequencyTradingService.MongoSettings)));
+                builder.RegisterModule(new RedisModule(appSettings.CurrentValue.HighFrequencyTradingService.CacheSettings));
+                builder.Populate(services);
 
-			builder.RegisterModule(new ServiceModule(appSettings, log));
-		    builder.RegisterModule(new RedisModule(appSettings));
-            builder.Populate(services);
+                ApplicationContainer = builder.Build();
 
-			ApplicationContainer = builder.Build();
+                return new AutofacServiceProvider(ApplicationContainer);
+            }
+            catch (Exception ex)
+            {
+                Log?.WriteFatalErrorAsync(nameof(Startup), nameof(ConfigureServices), "", ex).Wait();
+                throw;
+            }
+        }
 
-		    ApplicationContainer.Resolve<IApiKeyCacheInitializer>().InitApiKeyCache().Wait();
+        public void Configure(IApplicationBuilder app, IHostingEnvironment env, IApplicationLifetime appLifetime)
+        {
+            try
+            {
+                if (env.IsDevelopment())
+                {
+                    app.UseDeveloperExceptionPage();
+                }
+
+                app.UseLykkeMiddleware("HighFrequencyTrading", ex => new { Message = "Technical problem" });
+                app.UseClientRateLimiting();
+
+                app.UseAuthentication();
+                app.UseMvc();
+                app.UseSwagger();
+                app.UseSwaggerUi();
+                app.UseStaticFiles();
+
+                appLifetime.ApplicationStarted.Register(() => StartApplication().Wait());
+                appLifetime.ApplicationStopped.Register(() => CleanUp().Wait());
+            }
+            catch (Exception ex)
+            {
+                Log?.WriteFatalErrorAsync(nameof(Startup), nameof(ConfigureServices), "", ex).Wait();
+                throw;
+            }
+        }
+
+        private async Task StartApplication()
+        {
+            try
+            {
+                // NOTE: Service not yet recieve and process requests here
+
+                await ApplicationContainer.Resolve<IApiKeyCacheInitializer>().InitApiKeyCache();
+
+                await Log.WriteMonitorAsync("", "", "Started");
+            }
+            catch (Exception ex)
+            {
+                await Log.WriteFatalErrorAsync(nameof(Startup), nameof(StartApplication), "", ex);
+                throw;
+            }
+        }
 
 
-            return new AutofacServiceProvider(ApplicationContainer);
-		}
+        private async Task CleanUp()
+        {
+            try
+            {
+                // NOTE: Service can't recieve and process requests here, so you can destroy all resources
 
-		public void Configure(IApplicationBuilder app, IHostingEnvironment env, IApplicationLifetime appLifetime)
-		{
-			if (env.IsDevelopment())
-			{
-				app.UseDeveloperExceptionPage();
-			}
+                if (Log != null)
+                {
+                    await Log.WriteMonitorAsync("", "", "Terminating");
+                }
 
-			app.UseLykkeMiddleware("HighFrequencyTrading", ex => new { Message = "Technical problem" });
-			app.UseMiddleware<KeyAuthMiddleware>();
-			app.UseMiddleware<CustomThrottlingMiddleware>();
-
-			// Use API Authentication
-			//app.UseLykkeApiAuth(conf =>
-			//    conf.ApiId = Configuration.GetValue<string>("LykkeTempApi:ApiId"));
-
-			app.UseMvc();
-			app.UseSwagger();
-			app.UseSwaggerUi();
-
-			appLifetime.ApplicationStopped.Register(() =>
-			{
-				ApplicationContainer.Dispose();
-			});
-		}
+                ApplicationContainer.Dispose();
+            }
+            catch (Exception ex)
+            {
+                if (Log != null)
+                {
+                    await Log.WriteFatalErrorAsync(nameof(Startup), nameof(CleanUp), "", ex);
+                    (Log as IDisposable)?.Dispose();
+                }
+                throw;
+            }
+        }
 
 
-		private static ILog CreateLogWithSlack(IServiceCollection services, AppSettings settings)
-		{
-			var consoleLogger = new LogToConsole();
-			var aggregateLogger = new AggregateLogger();
+        private static ILog CreateLogWithSlack(IServiceCollection services, IReloadingManager<AppSettings> settings)
+        {
+            var consoleLogger = new LogToConsole();
+            var aggregateLogger = new AggregateLogger();
 
-			aggregateLogger.AddLog(consoleLogger);
+            aggregateLogger.AddLog(consoleLogger);
 
-			// Creating slack notification service, which logs own azure queue processing messages to aggregate log
-			var slackService = services.UseSlackNotificationsSenderViaAzureQueue(new AzureQueueIntegration.AzureQueueSettings
-			{
-				ConnectionString = settings.SlackNotifications.AzureQueue.ConnectionString,
-				QueueName = settings.SlackNotifications.AzureQueue.QueueName
-			}, aggregateLogger);
+            // Creating slack notification service, which logs own azure queue processing messages to aggregate log
+            var slackService = services.UseSlackNotificationsSenderViaAzureQueue(new AzureQueueIntegration.AzureQueueSettings
+            {
+                ConnectionString = settings.CurrentValue.SlackNotifications.AzureQueue.ConnectionString,
+                QueueName = settings.CurrentValue.SlackNotifications.AzureQueue.QueueName
+            }, aggregateLogger);
 
-			var dbLogConnectionString = settings.HighFrequencyTradingService.Db.LogsConnString;
+            var dbLogConnectionStringManager = settings.Nested(x => x.HighFrequencyTradingService.Db.LogsConnString);
+            var dbLogConnectionString = dbLogConnectionStringManager.CurrentValue;
 
-			// Creating azure storage logger, which logs own messages to concole log
-			if (!string.IsNullOrEmpty(dbLogConnectionString) && !(dbLogConnectionString.StartsWith("${") && dbLogConnectionString.EndsWith("}")))
-			{
-				const string appName = Constants.ComponentName;
+            // Creating azure storage logger, which logs own messages to concole log
+            if (!string.IsNullOrEmpty(dbLogConnectionString) && !(dbLogConnectionString.StartsWith("${") && dbLogConnectionString.EndsWith("}")))
+            {
+                var persistenceManager = new LykkeLogToAzureStoragePersistenceManager(
+                    AzureTableStorage<LogEntity>.Create(dbLogConnectionStringManager, "HighFrequencyTradingLog", consoleLogger),
+                    consoleLogger);
 
-				var persistenceManager = new LykkeLogToAzureStoragePersistenceManager(
-					appName,
-					AzureTableStorage<LogEntity>.Create(() => dbLogConnectionString, "HighFrequencyTradingLog", consoleLogger),
-					consoleLogger);
+                var slackNotificationsManager = new LykkeLogToAzureSlackNotificationsManager(slackService, consoleLogger);
 
-				var slackNotificationsManager = new LykkeLogToAzureSlackNotificationsManager(appName, slackService, consoleLogger);
+                var azureStorageLogger = new LykkeLogToAzureStorage(
+                    persistenceManager,
+                    slackNotificationsManager,
+                    consoleLogger);
 
-				var azureStorageLogger = new LykkeLogToAzureStorage(
-					appName,
-					persistenceManager,
-					slackNotificationsManager,
-					consoleLogger);
+                azureStorageLogger.Start();
 
-				azureStorageLogger.Start();
+                aggregateLogger.AddLog(azureStorageLogger);
+            }
 
-				aggregateLogger.AddLog(azureStorageLogger);
-			}
+            return aggregateLogger;
+        }
 
-			return aggregateLogger;
-		}
+        private void ConfigureRateLimits(IServiceCollection services, RateLimitSettings.RateLimitCoreOptions rateLimitOptions)
+        {
+            services.Configure<ClientRateLimitOptions>(options =>
+            {
+                options.EnableEndpointRateLimiting = rateLimitOptions.EnableEndpointRateLimiting;
+                options.ClientIdHeader = KeyAuthOptions.DefaultHeaderName;
+                options.StackBlockedRequests = rateLimitOptions.StackBlockedRequests;
+                options.GeneralRules = rateLimitOptions.GeneralRules.Select(x => new RateLimitRule
+                {
+                    Endpoint = x.Endpoint,
+                    Limit = x.Limit,
+                    Period = x.Period
+                }).ToList();
+            });
 
-		private void ConfigureRateLimits(IServiceCollection services)
-		{
-			services.Configure<IpRateLimitOptions>(Configuration.GetSection("HighFrequencyTradingService:IpRateLimiting"));
-			services.AddSingleton<IIpPolicyStore, DistributedCacheIpPolicyStore>();
-			services.AddSingleton<IRateLimitCounterStore, DistributedCacheRateLimitCounterStore>();
-		}
-	}
+            services.AddSingleton<IClientPolicyStore, DistributedCacheClientPolicyStore>();
+            services.AddSingleton<IRateLimitCounterStore, DistributedCacheRateLimitCounterStore>();
+        }
+    }
 }

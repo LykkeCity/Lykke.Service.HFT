@@ -7,29 +7,29 @@
 namespace Lykke.Service.HFT.Client.AutorestClient.Models
 {
     using Newtonsoft.Json;
-    using System.Collections;
-    using System.Collections.Generic;
     using System.Linq;
 
-    public partial class IsAliveResponse
+    public partial class MarketOrderRequest
     {
         /// <summary>
-        /// Initializes a new instance of the IsAliveResponse class.
+        /// Initializes a new instance of the MarketOrderRequest class.
         /// </summary>
-        public IsAliveResponse()
+        public MarketOrderRequest()
         {
             CustomInit();
         }
 
         /// <summary>
-        /// Initializes a new instance of the IsAliveResponse class.
+        /// Initializes a new instance of the MarketOrderRequest class.
         /// </summary>
-        public IsAliveResponse(bool isDebug, string version = default(string), string env = default(string), IList<IssueIndicator> issueIndicators = default(IList<IssueIndicator>))
+        /// <param name="orderAction">Possible values include: 'Buy',
+        /// 'Sell'</param>
+        public MarketOrderRequest(OrderAction orderAction, double volume, string assetPairId = default(string), string asset = default(string))
         {
-            Version = version;
-            Env = env;
-            IsDebug = isDebug;
-            IssueIndicators = issueIndicators;
+            AssetPairId = assetPairId;
+            Asset = asset;
+            OrderAction = orderAction;
+            Volume = volume;
             CustomInit();
         }
 
@@ -40,23 +40,24 @@ namespace Lykke.Service.HFT.Client.AutorestClient.Models
 
         /// <summary>
         /// </summary>
-        [JsonProperty(PropertyName = "Version")]
-        public string Version { get; set; }
+        [JsonProperty(PropertyName = "AssetPairId")]
+        public string AssetPairId { get; set; }
 
         /// <summary>
         /// </summary>
-        [JsonProperty(PropertyName = "Env")]
-        public string Env { get; set; }
+        [JsonProperty(PropertyName = "Asset")]
+        public string Asset { get; set; }
+
+        /// <summary>
+        /// Gets or sets possible values include: 'Buy', 'Sell'
+        /// </summary>
+        [JsonProperty(PropertyName = "OrderAction")]
+        public OrderAction OrderAction { get; set; }
 
         /// <summary>
         /// </summary>
-        [JsonProperty(PropertyName = "IsDebug")]
-        public bool IsDebug { get; set; }
-
-        /// <summary>
-        /// </summary>
-        [JsonProperty(PropertyName = "IssueIndicators")]
-        public IList<IssueIndicator> IssueIndicators { get; set; }
+        [JsonProperty(PropertyName = "Volume")]
+        public double Volume { get; set; }
 
         /// <summary>
         /// Validate the object.

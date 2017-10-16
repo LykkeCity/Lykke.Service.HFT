@@ -9,23 +9,22 @@ namespace Lykke.Service.HFT.Client.AutorestClient.Models
     using Newtonsoft.Json;
     using System.Linq;
 
-    public partial class IssueIndicator
+    public partial class ResponseModel
     {
         /// <summary>
-        /// Initializes a new instance of the IssueIndicator class.
+        /// Initializes a new instance of the ResponseModel class.
         /// </summary>
-        public IssueIndicator()
+        public ResponseModel()
         {
             CustomInit();
         }
 
         /// <summary>
-        /// Initializes a new instance of the IssueIndicator class.
+        /// Initializes a new instance of the ResponseModel class.
         /// </summary>
-        public IssueIndicator(string type = default(string), string value = default(string))
+        public ResponseModel(ErrorModel error = default(ErrorModel))
         {
-            Type = type;
-            Value = value;
+            Error = error;
             CustomInit();
         }
 
@@ -36,13 +35,21 @@ namespace Lykke.Service.HFT.Client.AutorestClient.Models
 
         /// <summary>
         /// </summary>
-        [JsonProperty(PropertyName = "Type")]
-        public string Type { get; set; }
+        [JsonProperty(PropertyName = "Error")]
+        public ErrorModel Error { get; set; }
 
         /// <summary>
+        /// Validate the object.
         /// </summary>
-        [JsonProperty(PropertyName = "Value")]
-        public string Value { get; set; }
-
+        /// <exception cref="Microsoft.Rest.ValidationException">
+        /// Thrown if validation fails
+        /// </exception>
+        public virtual void Validate()
+        {
+            if (Error != null)
+            {
+                Error.Validate();
+            }
+        }
     }
 }
