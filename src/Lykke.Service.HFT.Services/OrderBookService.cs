@@ -61,21 +61,23 @@ namespace Lykke.Service.HFT.Services
                 new OrderBook { AssetPair = assetPair, IsBuy = buy, Timestamp = DateTime.UtcNow };
         }
 
-        public async Task<double> GetBestPrice(string assetPair, bool buy)
+        public async Task<double?> GetBestPrice(string assetPair, bool buy)
         {
             var orderBook = await GetOrderBook(assetPair, buy);
 
             var price = GetBestPrice(orderBook);
-
-            if (price > 0)
+            if (price.HasValue && price.Value > 0)
                 return price;
 
             orderBook = await GetOrderBook(assetPair, !buy);
-            return GetBestPrice(orderBook);
+            price = GetBestPrice(orderBook);
+            return price;
         }
 
-        private double GetBestPrice(IOrderBook orderBook)
+        private double? GetBestPrice(IOrderBook orderBook)
         {
+            if (orderBook.Prices.Count == 0)
+                return null;
             return orderBook.IsBuy ? orderBook.Prices.Min(x => x.Price) : orderBook.Prices.Max(x => x.Price);
         }
     }
