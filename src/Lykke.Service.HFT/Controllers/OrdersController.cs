@@ -136,10 +136,13 @@ namespace Lykke.Service.HFT.Controllers
             }
 
             var bestPrice = await _orderBooksService.GetBestPrice(order.AssetPairId, order.OrderAction == OrderAction.Buy);
-            if (order.OrderAction == OrderAction.Buy && bestPrice * (1 - _deviation) > order.Price
-                || order.OrderAction == OrderAction.Sell && bestPrice * (1 + _deviation) < order.Price)
+            if (bestPrice.HasValue)
             {
-                return BadRequest(ResponseModel.CreateFail(ResponseModel.ErrorCodeType.PriceGapTooHigh));
+                if (order.OrderAction == OrderAction.Buy && bestPrice * (1 - _deviation) > order.Price
+                    || order.OrderAction == OrderAction.Sell && bestPrice * (1 + _deviation) < order.Price)
+                {
+                    return BadRequest(ResponseModel.CreateFail(ResponseModel.ErrorCodeType.PriceGapTooHigh));
+                }
             }
 
             var asset = await _assetPairsManager.TryGetEnabledAssetAsync(assetPair.BaseAssetId);
