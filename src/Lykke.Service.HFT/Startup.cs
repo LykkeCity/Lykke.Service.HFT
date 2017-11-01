@@ -156,7 +156,6 @@ namespace Lykke.Service.HFT
             }
         }
 
-
         private static ILog CreateLogWithSlack(IServiceCollection services, IReloadingManager<AppSettings> settings)
         {
             var consoleLogger = new LogToConsole();
