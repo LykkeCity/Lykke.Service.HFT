@@ -10,7 +10,7 @@
   <ItemGroup>
     <PackageReference Include="Lykke.Common" Version="3.0.2" />
     <PackageReference Include="Lykke.MatchingEngineConnector.Abstractions" Version="1.0.14" />
-    <PackageReference Include="Lykke.RabbitMqBroker" Version="4.0.0" />
+    <PackageReference Include="Lykke.RabbitMqBroker" Version="4.0.2" />
     <PackageReference Include="NetJSON" Version="1.2.1.10" />
     <PackageReference Include="StackExchange.Redis" Version="1.2.6" />
   </ItemGroup>
