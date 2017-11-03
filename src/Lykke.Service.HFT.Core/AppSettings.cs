@@ -18,6 +18,7 @@ namespace Lykke.Service.HFT.Core
             public RabbitMqSettings LimitOrdersFeed { get; set; }
             public MongoSettings MongoSettings { get; set; }
             public RateLimitSettings.RateLimitCoreOptions IpRateLimiting { get; set; }
+            public FeesSettings Fees { get; set; }
         }
 
         public class MongoSettings
@@ -62,6 +63,7 @@ namespace Lykke.Service.HFT.Core
         public class DictionariesSettings
         {
             public string AssetsServiceUrl { get; set; }
+            public string FeeCalculatorServiceUrl { get; set; }
             public TimeSpan CacheExpirationPeriod { get; set; }
         }
     }
@@ -106,5 +108,10 @@ namespace Lykke.Service.HFT.Core
     public class ExchangeSettings
     {
         public decimal MaxLimitOrderDeviationPercent { get; set; }
+    }
+
+    public class FeesSettings
+    {
+        public string TargetClientId { get; set; }
     }
 }

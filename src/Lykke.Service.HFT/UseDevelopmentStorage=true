@@ -1,0 +1,96 @@
+{
+  "Exchange": 
+  {
+    "MinBtcOrderAmount": 0.0000273,
+    "MaxLimitOrderDeviationPercent": 20
+  },
+  "HighFrequencyTradingService": 
+  {
+    "ApiKey": "73f0bf03-a2f4-42df-be38-a67dd5c0940e",
+    "Db": 
+    {
+      "BalancesInfoConnString": "DefaultEndpointsProtocol=https;AccountName=lkedevmain;AccountKey=l0W0CaoNiRZQIqJ536sIScSV5fUuQmPYRQYohj/UjO7+ZVdpUiEsRLtQMxD+1szNuAeJ351ndkOsdWFzWBXmdw==",
+      "LogsConnString": "DefaultEndpointsProtocol=https;AccountName=lkedevlogs;AccountKey=mhOA//Lv9BvDyIBFqDRNsdSa+hgr2Mix+9dCOAnJUT3EHx0fQrl7itHrEsOcosCcovWNNSw+r5+lYfQ8+H9V4A=="
+    },
+    "Dictionaries": 
+    {
+      "AssetsServiceUrl": "http://assets.lykke-service.svc.cluster.local",
+      "CacheExpirationPeriod": "00:01:00",
+      "FeeCalculatorServiceUrl": "http://fee-calculator.lykke-service.svc.cluster.local"
+    },
+    "CacheSettings": 
+    {
+      "RedisConfiguration": "abortConnect=false,syncTimeout=2000,redis-master.lykke-sessions.svc.cluster.local:6379",
+      "ApiKeyCacheInstance": "HftCacheInstance",
+      "ApiKeyCacheKeyPattern": ":apiKey:{0}",
+      "FinanceDataCacheInstance": "FinanceDataCacheInstance",
+      "OrderBooksCacheKeyPattern": ":OrderBooks:{0}_{1}__"
+    },
+    "LimitOrdersFeed": 
+    {
+      "ConnectionString": "amqp://lykke.history:lykke.history@rabbit-me.lykke-me.svc.cluster.local:5672",
+      "ExchangeName": "lykke.limitorders.clients"
+    },
+    "MongoSettings": 
+    {
+      "ConnectionString": "mongodb://high-frequency-trading-mongo.lykke-service.svc.cluster.local/hft"
+    },
+    "IpRateLimiting": 
+    {
+      "EnableEndpointRateLimiting": true,
+      "StackBlockedRequests": false,
+      "RealIpHeader": "X-Real-IP",
+      "ClientIdHeader": "api-key",
+      "HttpStatusCode": 429,
+      "GeneralRules": 
+      [
+        {
+          "Endpoint": "*",
+          "Period": "1s",
+          "Limit": 1000
+        }
+      ]
+    },
+    "Fees": 
+    {
+      "TargetClientId": "1a731ab7-4fe0-4346-be13-728c1e08223d"
+    }
+  },
+  "MatchingEngineClient": 
+  {
+    "IpEndpoint": 
+    {
+      "Port": 8888,
+      "Host": "me.lykke-me.svc.cluster.local",
+      "InternalHost": "me.lykke-me.svc.cluster.local",
+      "MaxConnections": 100
+    }
+  },
+  "RabbitMq": 
+  {
+    "ConnectionString": "amqp://lykke.history:lykke.history@rabbit-me.lykke-me.svc.cluster.local:5672",
+    "Host": "rabbit-me.lykke-me.svc.cluster.local",
+    "ExternalHost": "rabbit-me.lykke-me.svc.cluster.local",
+    "Port": 5672,
+    "Username": "lykke.history",
+    "Password": "lykke.history",
+    "ExchangeOrderbook": "lykke.orderbook",
+    "QuoteFeed": "lykke.quotefeed",
+    "ExchangeSwap": "lykke.trades",
+    "ExchangeCashOperation": "lykke.cashinout",
+    "ExchangeTransfer": "lykke.transfers",
+    "ExchangeSwapOperation": "lyyke.cashswap",
+    "ExchangeLimit": "lykke.limitorders.clients",
+    "ExchangeEthereumCashIn": "lykke.ethereum.core",
+    "ExchangeDlx": "lykke.transaction-handler.dlx"
+  },
+  "SlackNotifications": 
+  {
+    "AzureQueue": 
+    {
+      "ConnectionString": "DefaultEndpointsProtocol=https;AccountName=lkedevshared;AccountKey=deMBXlOj0telRE7poKY+2P9MwPcSsOJ+1IUqG6xoQ3kdDAMhxzvh22zKAXnlaKyPeF0gpbzgK4k7M9ZLdlTx+w==",
+      "QueueName": "slack-notifications"
+    },
+    "ThrottlingLimitSeconds": 60
+  }
+}

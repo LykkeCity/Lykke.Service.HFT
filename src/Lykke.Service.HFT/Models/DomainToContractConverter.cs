@@ -1,10 +1,10 @@
-﻿using Lykke.Service.Assets.Client.Custom;
+﻿using Lykke.Service.Assets.Client.Models;
 
 namespace Lykke.Service.HFT.Models
 {
 	public static class DomainToContractConverter
 	{
-		public static AssetPairModel ConvertToApiModel(this IAssetPair src)
+		public static AssetPairModel ConvertToApiModel(this AssetPair src)
 		{
 			if (src == null)
 				return null;
