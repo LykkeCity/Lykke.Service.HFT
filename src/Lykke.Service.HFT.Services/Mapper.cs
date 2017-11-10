@@ -1,6 +1,6 @@
 ﻿using System;
 using Lykke.Service.HFT.Core.Domain;
-using FeeOrderAction = Lykke.Service.FeeCalculator.Client.AutorestClient.Models.OrderAction;
+using FeeOrderAction = Lykke.Service.FeeCalculator.AutorestClient.Models.OrderAction;
 using MeOrderAction = Lykke.MatchingEngine.Connector.Abstractions.Models.OrderAction;
 
 namespace Lykke.Service.HFT.Services

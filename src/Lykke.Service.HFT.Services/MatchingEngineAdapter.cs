@@ -8,7 +8,6 @@ using Lykke.Service.FeeCalculator.Client;
 using Lykke.Service.HFT.Core;
 using Lykke.Service.HFT.Core.Domain;
 using Lykke.Service.HFT.Core.Services;
-using OrderAction = Lykke.MatchingEngine.Connector.Abstractions.Models.OrderAction;
 
 namespace Lykke.Service.HFT.Services
 {
@@ -127,11 +126,10 @@ namespace Lykke.Service.HFT.Services
             var id = GetNextRequestId();
 
             var assetPair = await _assetsService.AssetPairGetAsync(assetPairId);
-            var fee = await _feeCalculatorClient.GetTradeFees(fromClientId, assetPairId, assetPair.BaseAssetId,
-                FeeCalculator.Client.AutorestClient.Models.OrderAction.Sell);
+            var fee = await _feeCalculatorClient.GetMarketOrderFees(fromClientId, assetPairId, assetPair.BaseAssetId, FeeCalculator.AutorestClient.Models.OrderAction.Sell);
 
             var response = await _matchingEngineClient.TransferAsync(id, fromClientId, toClientId,
-                assetPair.BaseAssetId, amount, _feesSettings.TargetClientId, (double) fee.Value);
+                assetPair.BaseAssetId, amount, _feesSettings.TargetClientId, (double) fee.DefaultFeeSize);
 
             return ConvertToApiModel(response.Status);
         }
@@ -167,11 +165,12 @@ namespace Lykke.Service.HFT.Services
         private async Task<MarketOrderFeeModel> GetMarketOrderFee(string clientId, string assetPairId, Core.Domain.OrderAction orderAction)
         {
             var assetPair = await _assetsService.AssetPairGetAsync(assetPairId);
-            var fee = await _feeCalculatorClient.GetTradeFees(clientId, assetPairId, assetPair?.BaseAssetId, orderAction.ToFeeOrderAction());
+            var fee = await _feeCalculatorClient.GetMarketOrderFees(clientId, assetPairId, assetPair?.BaseAssetId,
+                orderAction.ToFeeOrderAction());
 
             return new MarketOrderFeeModel
             {
-                Size = (double) fee.Value,
+                Size = (double) fee.DefaultFeeSize,
                 SourceClientId = clientId,
                 TargetClientId = _feesSettings.TargetClientId,
                 Type = (int) MarketOrderFeeType.CLIENT_FEE
@@ -181,12 +180,12 @@ namespace Lykke.Service.HFT.Services
         private async Task<LimitOrderFeeModel> GetLimitOrderFee(string clientId, string assetPairId, Core.Domain.OrderAction orderAction)
         {
             var assetPair = await _assetsService.AssetPairGetAsync(assetPairId);
-            var fee = await _feeCalculatorClient.GetTradeFees(clientId, assetPairId, assetPair?.BaseAssetId, orderAction.ToFeeOrderAction());
+            var fee = await _feeCalculatorClient.GetLimitOrderFees(clientId, assetPairId, assetPair?.BaseAssetId, orderAction.ToFeeOrderAction());
 
             return new LimitOrderFeeModel
             {
-                MakerSize = (double) fee.Value,
-                TakerSize = default(double),
+                MakerSize = (double) fee.MakerFeeSize,
+                TakerSize = (double) fee.TakerFeeSize,
                 SourceClientId = clientId,
                 TargetClientId = _feesSettings.TargetClientId,
                 Type = (int) LimitOrderFeeType.CLIENT_FEE

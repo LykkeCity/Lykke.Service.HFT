@@ -12,7 +12,7 @@
     <PackageReference Include="Lykke.MatchingEngineConnector.Abstractions" Version="1.0.20-beta" />
     <PackageReference Include="Lykke.RabbitMqBroker" Version="4.0.2" />
     <PackageReference Include="Lykke.Service.Assets.Client" Version="2.0.8.2" />
-    <PackageReference Include="Lykke.Service.FeeCalculator.Client" Version="1.0.3-beta" />
+    <PackageReference Include="Lykke.Service.FeeCalculator.Client" Version="1.0.5" />
     <PackageReference Include="NetJSON" Version="1.2.1.10" />
     <PackageReference Include="StackExchange.Redis" Version="1.2.6" />
   </ItemGroup>
