@@ -12,10 +12,12 @@ namespace Lykke.Service.HFT.Modules
     public class MatchingEngineModule : Module
     {
         private readonly IReloadingManager<AppSettings.MatchingEngineSettings> _settings;
+        private readonly IReloadingManager<AppSettings.HighFrequencyTradingSettings> _hftSettings;
 
-        public MatchingEngineModule(IReloadingManager<AppSettings.MatchingEngineSettings> settings)
+        public MatchingEngineModule(IReloadingManager<AppSettings.MatchingEngineSettings> settings, IReloadingManager<AppSettings.HighFrequencyTradingSettings> hftSettings)
         {
             _settings = settings;
+            _hftSettings = hftSettings;
         }
 
         protected override void Load(ContainerBuilder builder)
@@ -26,6 +28,7 @@ namespace Lykke.Service.HFT.Modules
 
             builder.RegisterType<MatchingEngineAdapter>()
                 .As<IMatchingEngineAdapter>()
+                .WithParameter(TypedParameter.From(_hftSettings.CurrentValue.Fees))
                 .SingleInstance();
         }
     }

@@ -70,7 +70,8 @@ namespace Lykke.Service.HFT
                 ConfigureRateLimits(services, appSettings.CurrentValue.HighFrequencyTradingService.IpRateLimiting);
 
                 builder.RegisterModule(new ServiceModule(appSettings, Log));
-                builder.RegisterModule(new MatchingEngineModule(appSettings.Nested(x => x.MatchingEngineClient)));
+                builder.RegisterModule(new MatchingEngineModule(appSettings.Nested(x => x.MatchingEngineClient),
+                    appSettings.Nested(x => x.HighFrequencyTradingService)));
                 builder.RegisterModule(new MongoDbModule(appSettings.Nested(x => x.HighFrequencyTradingService.MongoSettings)));
                 builder.RegisterModule(new RedisModule(appSettings.CurrentValue.HighFrequencyTradingService.CacheSettings));
                 builder.Populate(services);

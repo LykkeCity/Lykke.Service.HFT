@@ -14,6 +14,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.ModelBinding;
 using Swashbuckle.SwaggerGen.Annotations;
+using Lykke.Service.FeeCalculator.Client;
 
 namespace Lykke.Service.HFT.Controllers
 {
@@ -38,6 +39,7 @@ namespace Lykke.Service.HFT.Controllers
             _assetPairsManager = assetPairsManager ?? throw new ArgumentNullException(nameof(assetPairsManager));
             _orderStateRepository = orderStateRepository ?? throw new ArgumentNullException(nameof(orderStateRepository));
             _orderBooksService = orderBooksService ?? throw new ArgumentNullException(nameof(orderBooksService));
+
             if (settings == null)
                 throw new ArgumentNullException(nameof(settings));
             _deviation = (double)settings.MaxLimitOrderDeviationPercent / 100;

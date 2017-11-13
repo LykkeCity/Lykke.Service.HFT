@@ -3,7 +3,7 @@ using Autofac;
 using Autofac.Core;
 using Autofac.Extensions.DependencyInjection;
 using Common.Log;
-using Lykke.Service.Assets.Client.Custom;
+using Lykke.Service.Assets.Client;
 using Lykke.Service.HFT.AzureRepositories;
 using Lykke.Service.HFT.Core;
 using Lykke.Service.HFT.Core.Accounts;
@@ -15,6 +15,7 @@ using Lykke.Service.HFT.MongoRepositories;
 using Lykke.Service.HFT.Services;
 using Lykke.Service.HFT.Services.Assets;
 using Lykke.SettingsReader;
+using Lykke.Service.FeeCalculator.Client;
 using Microsoft.Extensions.Caching.Distributed;
 using Microsoft.Extensions.Caching.Redis;
 using Microsoft.Extensions.DependencyInjection;
@@ -56,6 +57,8 @@ namespace Lykke.Service.HFT.Modules
             RegisterAssets(builder, currentSettings.HighFrequencyTradingService.Dictionaries);
 
             RegisterOrderBookStates(builder);
+
+            RegisterOtherClients(builder);
 
             BindRedis(builder, currentSettings.HighFrequencyTradingService.CacheSettings);
             BindRabbitMq(builder, currentSettings.HighFrequencyTradingService.LimitOrdersFeed);
@@ -134,7 +137,7 @@ namespace Lykke.Service.HFT.Modules
 
         private void RegisterAssets(ContainerBuilder builder, AppSettings.DictionariesSettings settings)
         {
-            _services.UseAssetsClient(AssetServiceSettings.Create(
+            _services.RegisterAssetsClient(AssetServiceSettings.Create(
                 new Uri(settings.AssetsServiceUrl),
                 settings.CacheExpirationPeriod));
 
@@ -157,5 +160,10 @@ namespace Lykke.Service.HFT.Modules
                 .SingleInstance();
         }
 
+        private void RegisterOtherClients(ContainerBuilder builder)
+        {
+            builder.RegisterFeeCalculatorClient(
+                _settings.CurrentValue.HighFrequencyTradingService.Dictionaries.FeeCalculatorServiceUrl, _log);
+        }
     }
 }
