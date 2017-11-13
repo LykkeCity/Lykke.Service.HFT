@@ -46,7 +46,7 @@ namespace Lykke.Service.HFT.Services
                 orderStateRepository ?? throw new ArgumentNullException(nameof(orderStateRepository));
             _feeCalculatorClient = feeCalculatorClient ?? throw new ArgumentNullException(nameof(feeCalculatorClient));
             _assetsService = assetsService ?? throw new ArgumentNullException(nameof(assetsService));
-            _feesSettings = feesSettings ?? throw new ArgumentNullException(nameof(assetsService));
+            _feesSettings = feesSettings ?? throw new ArgumentNullException(nameof(feesSettings));
         }
 
         public bool IsConnected => _matchingEngineClient.IsConnected;
@@ -69,7 +69,7 @@ namespace Lykke.Service.HFT.Services
         {
             var order = new MarketOrderModel
             {
-                Id = GetNextRequestGuid().ToString(),
+                Id = GetNextRequestId(),
                 AssetPairId = assetPairId,
                 ClientId = clientId,
                 ReservedLimitVolume = reservedLimitVolume,

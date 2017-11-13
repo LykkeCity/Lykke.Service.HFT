@@ -164,9 +164,6 @@ namespace Lykke.Service.HFT.Modules
         {
             builder.RegisterFeeCalculatorClient(
                 _settings.CurrentValue.HighFrequencyTradingService.Dictionaries.FeeCalculatorServiceUrl, _log);
-
-            builder.RegisterInstance<IAssetsService>(new AssetsService(new Uri(_settings.CurrentValue
-                .HighFrequencyTradingService.Dictionaries.AssetsServiceUrl)));
         }
     }
 }
