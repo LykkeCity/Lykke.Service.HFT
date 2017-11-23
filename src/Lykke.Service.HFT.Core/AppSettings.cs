@@ -9,6 +9,7 @@ namespace Lykke.Service.HFT.Core
         public MatchingEngineSettings MatchingEngineClient { get; set; }
         public SlackNotificationsSettings SlackNotifications { get; set; }
         public ExchangeSettings Exchange { get; set; }
+        public BalancesServiceClient BalancesServiceClient { get; set; }
 
         public class HighFrequencyTradingSettings
         {
@@ -56,7 +57,6 @@ namespace Lykke.Service.HFT.Core
         public class DbSettings
         {
             public string LogsConnString { get; set; }
-            public string BalancesInfoConnString { get; set; }
         }
 
         public class DictionariesSettings
@@ -112,5 +112,10 @@ namespace Lykke.Service.HFT.Core
     public class FeesSettings
     {
         public string TargetClientId { get; set; }
+    }
+
+    public class BalancesServiceClient
+    {
+        public string ServiceUrl { get; set; }
     }
 }

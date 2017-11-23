@@ -4,9 +4,7 @@ using Autofac.Core;
 using Autofac.Extensions.DependencyInjection;
 using Common.Log;
 using Lykke.Service.Assets.Client;
-using Lykke.Service.HFT.AzureRepositories;
 using Lykke.Service.HFT.Core;
-using Lykke.Service.HFT.Core.Accounts;
 using Lykke.Service.HFT.Core.Domain;
 using Lykke.Service.HFT.Core.Services;
 using Lykke.Service.HFT.Core.Services.ApiKey;
@@ -49,8 +47,6 @@ namespace Lykke.Service.HFT.Modules
                 .SingleInstance();
 
             RegisterApiKeyService(builder);
-
-            RegisterBalances(builder, _settings.Nested(x => x.HighFrequencyTradingService.Db));
 
             RegisterOrderBooks(builder);
 
@@ -127,12 +123,6 @@ namespace Lykke.Service.HFT.Modules
                         (pi, ctx) => pi.ParameterType == typeof(IDistributedCache),
                         (pi, ctx) => ctx.ResolveKeyed<IDistributedCache>("financeData")))
                 .SingleInstance();
-        }
-
-        private void RegisterBalances(ContainerBuilder builder, IReloadingManager<AppSettings.DbSettings> settings)
-        {
-            builder.RegisterInstance<IWalletsRepository>(
-                AzureRepoFactories.CreateAccountsRepository(settings.Nested(x => x.BalancesInfoConnString), _log));
         }
 
         private void RegisterAssets(ContainerBuilder builder, AppSettings.DictionariesSettings settings)
