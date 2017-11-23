@@ -56,7 +56,7 @@ namespace Lykke.Service.HFT
 
                 services.AddSwaggerGen(options =>
                 {
-                    options.DefaultLykkeConfiguration("v1", "HighFrequencyTrading API");
+                    options.DefaultLykkeConfiguration("v1", "High-frequency trading API");
                     options.OperationFilter<ApiKeyHeaderOperationFilter>();
                     options.DescribeAllEnumsAsStrings();
                 });
@@ -97,7 +97,7 @@ namespace Lykke.Service.HFT
                     app.UseDeveloperExceptionPage();
                 }
 
-                app.UseLykkeMiddleware("HighFrequencyTrading", ex => new { Message = "Technical problem" });
+                app.UseLykkeMiddleware(Constants.ComponentName, ex => new { Message = "Technical problem" });
                 app.UseClientRateLimiting();
 
                 app.UseAuthentication();

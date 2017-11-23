@@ -10,7 +10,7 @@ namespace Lykke.Service.HFT
         public static string EnvInfo => Environment.GetEnvironmentVariable("ENV_INFO");
         public static void Main(string[] args)
         {
-            Console.WriteLine($"Lykke.Service.HFT version {Microsoft.Extensions.PlatformAbstractions.PlatformServices.Default.Application.ApplicationVersion}");
+            Console.WriteLine($"{Core.Constants.ComponentName} version {Microsoft.Extensions.PlatformAbstractions.PlatformServices.Default.Application.ApplicationVersion}");
 #if DEBUG
             Console.WriteLine("Is DEBUG");
 #else
