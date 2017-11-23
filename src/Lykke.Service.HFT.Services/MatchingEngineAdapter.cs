@@ -49,18 +49,9 @@ namespace Lykke.Service.HFT.Services
             _feesSettings = feesSettings ?? throw new ArgumentNullException(nameof(feesSettings));
         }
 
-        public bool IsConnected => _matchingEngineClient.IsConnected;
-
         public async Task<ResponseModel> CancelLimitOrderAsync(Guid limitOrderId)
         {
             var response = await _matchingEngineClient.CancelLimitOrderAsync(limitOrderId.ToString());
-            return ConvertToApiModel(response.Status);
-        }
-
-        public async Task<ResponseModel> CashInOutAsync(string clientId, string assetId, double amount)
-        {
-            var id = GetNextRequestId();
-            var response = await _matchingEngineClient.CashInOutAsync(id, clientId, assetId, amount);
             return ConvertToApiModel(response.Status);
         }
 
@@ -69,7 +60,7 @@ namespace Lykke.Service.HFT.Services
         {
             var order = new MarketOrderModel
             {
-                Id = GetNextRequestId(),
+                Id = GetNextRequestId().ToString(),
                 AssetPairId = assetPairId,
                 ClientId = clientId,
                 ReservedLimitVolume = reservedLimitVolume,
@@ -90,7 +81,7 @@ namespace Lykke.Service.HFT.Services
         public async Task<ResponseModel<Guid>> PlaceLimitOrderAsync(string clientId, string assetPairId, Core.Domain.OrderAction orderAction, double volume,
             double price, bool cancelPreviousOrders = false)
         {
-            var requestId = GetNextRequestGuid();
+            var requestId = GetNextRequestId();
 
             await _orderStateRepository.Add(new LimitOrderState { Id = requestId, ClientId = clientId, AssetPairId = assetPairId, Volume = volume, Price = price });
 
@@ -114,39 +105,9 @@ namespace Lykke.Service.HFT.Services
             return ConvertToApiModel<Guid>(response.Status);
         }
 
-        public async Task<ResponseModel> SwapAsync(string clientId1, string assetId1, double amount1, string clientId2, string assetId2, double amount2)
-        {
-            var id = GetNextRequestId();
-            var response = await _matchingEngineClient.SwapAsync(id, clientId1, assetId1, amount1, clientId2, assetId2, amount2);
-            return ConvertToApiModel(response.Status);
-        }
-
-        public async Task<ResponseModel> TransferAsync(string fromClientId, string toClientId, string assetPairId, double amount)
-        {
-            var id = GetNextRequestId();
-
-            var assetPair = await _assetsService.AssetPairGetAsync(assetPairId);
-            var fee = await _feeCalculatorClient.GetMarketOrderFees(fromClientId, assetPairId, assetPair.BaseAssetId, FeeCalculator.AutorestClient.Models.OrderAction.Sell);
-
-            var response = await _matchingEngineClient.TransferAsync(id, fromClientId, toClientId,
-                assetPair.BaseAssetId, amount, _feesSettings.TargetClientId, (double)fee.DefaultFeeSize);
-
-            return ConvertToApiModel(response.Status);
-        }
-
-        public async Task UpdateBalanceAsync(string clientId, string assetId, double value)
-        {
-            var id = GetNextRequestId();
-            await _matchingEngineClient.UpdateBalanceAsync(id, clientId, assetId, value);
-        }
-
-        private Guid GetNextRequestGuid()
+        private Guid GetNextRequestId()
         {
             return Guid.NewGuid();
-        }
-        private string GetNextRequestId()
-        {
-            return Guid.NewGuid().ToString();
         }
 
         private ResponseModel ConvertToApiModel(MeStatusCodes status)
