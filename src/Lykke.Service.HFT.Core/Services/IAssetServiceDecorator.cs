@@ -1,8 +1,8 @@
-﻿using Lykke.Service.Assets.Client.Models;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Threading.Tasks;
+using Lykke.Service.Assets.Client.Models;
 
-namespace Lykke.Service.HFT.Core.Services.Assets
+namespace Lykke.Service.HFT.Core.Services
 {
     public interface IAssetServiceDecorator
     {

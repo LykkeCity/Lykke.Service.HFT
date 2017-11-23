@@ -4,7 +4,6 @@ using System.Net;
 using System.Threading.Tasks;
 using Lykke.Service.HFT.Core.Domain;
 using Lykke.Service.HFT.Core.Services;
-using Lykke.Service.HFT.Core.Services.Assets;
 using Microsoft.AspNetCore.Mvc;
 using Swashbuckle.AspNetCore.SwaggerGen;
 

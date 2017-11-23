@@ -7,7 +7,6 @@ using Common;
 using Lykke.Service.HFT.Core;
 using Lykke.Service.HFT.Core.Domain;
 using Lykke.Service.HFT.Core.Services;
-using Lykke.Service.HFT.Core.Services.Assets;
 using Lykke.Service.HFT.Helpers;
 using Lykke.Service.HFT.Models.Requests;
 using Microsoft.AspNetCore.Authorization;

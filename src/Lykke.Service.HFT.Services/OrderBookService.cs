@@ -5,7 +5,6 @@ using System.Threading.Tasks;
 using Lykke.Service.HFT.Core;
 using Lykke.Service.HFT.Core.Domain;
 using Lykke.Service.HFT.Core.Services;
-using Lykke.Service.HFT.Core.Services.Assets;
 using Microsoft.Extensions.Caching.Distributed;
 
 namespace Lykke.Service.HFT.Services

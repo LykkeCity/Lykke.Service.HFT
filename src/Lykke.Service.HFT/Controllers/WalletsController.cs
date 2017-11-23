@@ -5,7 +5,7 @@ using System.Net;
 using System.Threading.Tasks;
 using Common;
 using Lykke.Service.Balances.Client;
-using Lykke.Service.HFT.Core.Services.Assets;
+using Lykke.Service.HFT.Core.Services;
 using Lykke.Service.HFT.Helpers;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;

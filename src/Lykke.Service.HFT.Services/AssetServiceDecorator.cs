@@ -2,10 +2,10 @@
 using System.Linq;
 using System.Threading.Tasks;
 using Lykke.Service.Assets.Client;
-using Lykke.Service.HFT.Core.Services.Assets;
 using Lykke.Service.Assets.Client.Models;
+using Lykke.Service.HFT.Core.Services;
 
-namespace Lykke.Service.HFT.Services.Assets
+namespace Lykke.Service.HFT.Services
 {
     public class AssetServiceDecorator : IAssetServiceDecorator
     {
