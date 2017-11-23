@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Net;
 using System.Threading.Tasks;
 using Lykke.Service.HFT.Core.Domain;
@@ -33,7 +32,7 @@ namespace Lykke.Service.HFT.Controllers
         public async Task<IActionResult> GetOrderBooks()
         {
             var orderBooks = await _orderBooksService.GetAllAsync();
-            return Ok(orderBooks.Cast<OrderBook>());
+            return Ok(orderBooks);
 
         }
 
@@ -60,7 +59,7 @@ namespace Lykke.Service.HFT.Controllers
             }
 
             var orderBooks = await _orderBooksService.GetAsync(assetPairId);
-            return Ok(orderBooks.Cast<OrderBook>());
+            return Ok(orderBooks);
         }
     }
 }
