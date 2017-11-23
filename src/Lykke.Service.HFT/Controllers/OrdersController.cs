@@ -60,6 +60,31 @@ namespace Lykke.Service.HFT.Controllers
         }
 
         /// <summary>
+        /// Get the order info.
+        /// </summary>
+        /// <param name="id">Limit order id</param>
+        /// <returns>Order info.</returns>
+        [HttpGet("{id}")]
+        [SwaggerOperation("GetOrder")]
+        [ProducesResponseType(typeof(LimitOrderState), (int)HttpStatusCode.OK)]
+        [ProducesResponseType((int)HttpStatusCode.NotFound)]
+        public async Task<IActionResult> GetOrder(Guid id)
+        {
+            if (id == Guid.Empty)
+            {
+                return NotFound();
+            }
+
+            var order = await _orderStateRepository.Get(id);
+            if (order == null)
+            {
+                return NotFound();
+            }
+
+            return Ok(order);
+        }
+
+        /// <summary>
         /// Place a market order.
         /// </summary>
         /// <returns>Average strike price.</returns>
@@ -73,6 +98,7 @@ namespace Lykke.Service.HFT.Controllers
             {
                 return BadRequest(ToResponseModel(ModelState));
             }
+
             var assetPair = await _assetServiceDecorator.GetEnabledAssetPairAsync(order.AssetPairId);
             if (assetPair == null)
             {
@@ -106,7 +132,6 @@ namespace Lykke.Service.HFT.Controllers
 
             if (response.Error != null)
             {
-                // todo: produce valid http status codes based on ME response 
                 return BadRequest(response);
             }
 
@@ -166,7 +191,6 @@ namespace Lykke.Service.HFT.Controllers
                 price: order.Price.TruncateDecimalPlaces(assetPair.Accuracy));
             if (response.Error != null)
             {
-                // todo: produce valid http status codes based on ME response 
                 return BadRequest(response);
             }
 
@@ -176,7 +200,7 @@ namespace Lykke.Service.HFT.Controllers
         /// <summary>
         /// Cancel the limit order.
         /// </summary>
-        /// <param name="id">Limit order id (Guid)</param>
+        /// <param name="id">Limit order id</param>
         [HttpPost("{id}/Cancel")]
         [SwaggerOperation("CancelLimitOrder")]
         [ProducesResponseType((int)HttpStatusCode.OK)]
@@ -204,39 +228,13 @@ namespace Lykke.Service.HFT.Controllers
             {
                 return Ok();
             }
-            // todo: produce valid http status code if status is 'Matched' or 'Pending'
 
             var response = await _matchingEngineAdapter.CancelLimitOrderAsync(id);
             if (response.Error != null)
-            {
-                // todo: produce valid http status codes based on ME response 
+            { 
                 return BadRequest();
             }
             return Ok();
-        }
-
-        /// <summary>
-        /// Get the order info.
-        /// </summary>
-        /// <param name="id">Limit order id (Guid)</param>
-        /// <returns>Order info.</returns>
-        [HttpGet("{id}")]
-        [SwaggerOperation("GetOrderInfo")]
-        [ProducesResponseType(typeof(LimitOrderState), (int)HttpStatusCode.OK)]
-        [ProducesResponseType((int)HttpStatusCode.NotFound)]
-        public async Task<IActionResult> GetOrderInfo(Guid id)
-        {
-            if (id == Guid.Empty)
-            {
-                return NotFound();
-            }
-            var order = await _orderStateRepository.Get(id);
-            if (order != null)
-            {
-                return Ok(order);
-            }
-
-            return NotFound();
         }
 
         private static ResponseModel ToResponseModel(ModelStateDictionary modelState)
@@ -245,6 +243,5 @@ namespace Lykke.Service.HFT.Controllers
             var message = modelState[field].Errors.First().ErrorMessage;
             return ResponseModel.CreateInvalidFieldError(field, message);
         }
-
     }
 }

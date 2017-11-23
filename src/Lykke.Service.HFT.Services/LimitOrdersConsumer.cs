@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Async;
 using System.Threading.Tasks;
 using Common.Log;
 using Lykke.RabbitMqBroker;
@@ -47,22 +48,19 @@ namespace Lykke.Service.HFT.Services
             }
         }
 
-        private async Task ProcessLimitOrder(LimitOrderMessage limitOrder)
+        private async Task ProcessLimitOrder(LimitOrderMessage ordersUpdateMessage)
         {
-            foreach (var order in limitOrder.Orders)
+            await ordersUpdateMessage.Orders.ParallelForEachAsync(async order =>
             {
                 if (Guid.TryParse(order.Order.ExternalId, out Guid orderId))
                 {
-                    // todo: use 'update' request only for better performance
                     var orderState = await _orderStateRepository.Get(orderId);
+                    // we are processing orders made by this service only
                     if (orderState != null)
                     {
-                        // todo: use automapper
+                        // these properties cannot change: Id, ClientId, AssetPairId, Price; ignoring them
                         orderState.Status = order.Order.Status;
-                        //orderState.ClientId = order.Order.ClientId;
-                        //orderState.AssetPairId = order.Order.AssetPairId;
                         orderState.Volume = order.Order.Volume;
-                        //orderState.Price = order.Order.Price;
                         orderState.RemainingVolume = order.Order.RemainingVolume;
                         orderState.LastMatchTime = order.Order.LastMatchTime;
                         orderState.CreatedAt = order.Order.CreatedAt;
@@ -70,7 +68,7 @@ namespace Lykke.Service.HFT.Services
                         await _orderStateRepository.Update(orderState);
                     }
                 }
-            }
+            }).ConfigureAwait(false);
         }
 
         public void Dispose()

@@ -8,6 +8,7 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <PackageReference Include="AsyncEnumerator" Version="2.1.0" />
     <PackageReference Include="Lykke.Common" Version="3.0.2" />
     <PackageReference Include="Lykke.MatchingEngineConnector.Abstractions" Version="1.0.21" />
     <PackageReference Include="Lykke.RabbitMqBroker" Version="4.1.0" />

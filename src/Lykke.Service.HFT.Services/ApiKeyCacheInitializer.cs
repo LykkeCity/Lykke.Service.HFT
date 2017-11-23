@@ -33,7 +33,7 @@ namespace Lykke.Service.HFT.Services
             var keys = _apiKeyRepository.FilterBy(x => x.ValidTill == null).ToList();
             foreach (var key in keys)
             {
-                await _distributedCache.SetStringAsync(GetCacheKey(key.Id.ToString()), key.WalletId ?? key.ClientId);   // todo: remove ClientId usage here after DB migration
+                await _distributedCache.SetStringAsync(GetCacheKey(key.Id.ToString()), key.WalletId);
             }
         }
 
