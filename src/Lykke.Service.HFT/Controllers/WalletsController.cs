@@ -9,7 +9,7 @@ using Lykke.Service.HFT.Core.Services.Assets;
 using Lykke.Service.HFT.Helpers;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using Swashbuckle.SwaggerGen.Annotations;
+using Swashbuckle.AspNetCore.SwaggerGen;
 
 namespace Lykke.Service.HFT.Controllers
 {

@@ -33,7 +33,7 @@
   <ItemGroup>
     <PackageReference Include="AspNetCoreRateLimit" Version="2.1.0" />
     <PackageReference Include="Lykke.Common" Version="3.0.2" />
-    <PackageReference Include="Lykke.Common.ApiLibrary" Version="1.0.14" />
+    <PackageReference Include="Lykke.Common.ApiLibrary" Version="1.0.16" />
     <PackageReference Include="Lykke.Http" Version="1.0.0" />
     <PackageReference Include="Lykke.Logs" Version="3.2.3" />
     <PackageReference Include="Lykke.MatchingEngineConnector" Version="1.0.21" />
@@ -49,9 +49,8 @@
     <PackageReference Include="Microsoft.AspNetCore.StaticFiles" Version="2.0.0" />
     <PackageReference Include="Microsoft.Extensions.Caching.Redis" Version="2.0.0" />
     <PackageReference Include="Microsoft.Extensions.Logging.Debug" Version="2.0.0" />
-    <PackageReference Include="Swashbuckle.SwaggerGen" Version="6.0.0-beta902" />
-    <PackageReference Include="Swashbuckle.SwaggerUi" Version="6.0.0-beta902" />
     <PackageReference Include="Autofac.Extensions.DependencyInjection" Version="4.2.0" />
+    <PackageReference Include="Swashbuckle.AspNetCore" Version="1.1.0" />
   </ItemGroup>
   
   <ItemGroup>

@@ -7,6 +7,7 @@ namespace Lykke.Service.HFT
 {
     public class Program
     {
+        public static string EnvInfo => Environment.GetEnvironmentVariable("ENV_INFO");
         public static void Main(string[] args)
         {
             Console.WriteLine($"Lykke.Service.HFT version {Microsoft.Extensions.PlatformAbstractions.PlatformServices.Default.Application.ApplicationVersion}");
@@ -15,7 +16,7 @@ namespace Lykke.Service.HFT
 #else
             Console.WriteLine("Is RELEASE");
 #endif           
-            Console.WriteLine($"ENV_INFO: {Environment.GetEnvironmentVariable("ENV_INFO")}");
+            Console.WriteLine($"ENV_INFO: {EnvInfo}");
 
             try
             {

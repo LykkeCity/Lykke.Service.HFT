@@ -103,7 +103,11 @@ namespace Lykke.Service.HFT
                 app.UseAuthentication();
                 app.UseMvc();
                 app.UseSwagger();
-                app.UseSwaggerUi();
+                app.UseSwaggerUI(x =>
+                {
+                    x.RoutePrefix = "swagger/ui";
+                    x.SwaggerEndpoint("/swagger/v1/swagger.json", "v1");
+                });
                 app.UseStaticFiles();
 
                 appLifetime.ApplicationStarted.Register(() => StartApplication().Wait());
@@ -111,7 +115,7 @@ namespace Lykke.Service.HFT
             }
             catch (Exception ex)
             {
-                Log?.WriteFatalErrorAsync(nameof(Startup), nameof(ConfigureServices), "", ex).Wait();
+                Log?.WriteFatalErrorAsync(nameof(Startup), nameof(Configure), "", ex).Wait();
                 throw;
             }
         }
@@ -124,7 +128,7 @@ namespace Lykke.Service.HFT
 
                 await ApplicationContainer.Resolve<IApiKeyCacheInitializer>().InitApiKeyCache();
 
-                await Log.WriteMonitorAsync("", "", "Started");
+                await Log.WriteMonitorAsync("", $"Env: {Program.EnvInfo}", "Started");
             }
             catch (Exception ex)
             {
@@ -142,7 +146,7 @@ namespace Lykke.Service.HFT
 
                 if (Log != null)
                 {
-                    await Log.WriteMonitorAsync("", "", "Terminating");
+                    await Log.WriteMonitorAsync("", $"Env: {Program.EnvInfo}", "Terminating");
                 }
 
                 ApplicationContainer.Dispose();

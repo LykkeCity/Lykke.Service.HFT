@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 using Lykke.Service.HFT.Core.Services.Assets;
 using Lykke.Service.HFT.Models;
 using Microsoft.AspNetCore.Mvc;
-using Swashbuckle.SwaggerGen.Annotations;
+using Swashbuckle.AspNetCore.SwaggerGen;
 
 namespace Lykke.Service.HFT.Controllers
 {
