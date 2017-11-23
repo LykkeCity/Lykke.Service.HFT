@@ -13,7 +13,6 @@ using Lykke.Service.HFT.MongoRepositories;
 using Lykke.Service.HFT.Services;
 using Lykke.Service.HFT.Services.Assets;
 using Lykke.SettingsReader;
-using Lykke.Service.FeeCalculator.Client;
 using Microsoft.Extensions.Caching.Distributed;
 using Microsoft.Extensions.Caching.Redis;
 using Microsoft.Extensions.DependencyInjection;
@@ -53,8 +52,6 @@ namespace Lykke.Service.HFT.Modules
             RegisterAssets(builder, currentSettings.HighFrequencyTradingService.Dictionaries);
 
             RegisterOrderBookStates(builder);
-
-            RegisterOtherClients(builder);
 
             BindRedis(builder, currentSettings.HighFrequencyTradingService.CacheSettings);
             BindRabbitMq(builder, currentSettings.HighFrequencyTradingService.LimitOrdersFeed);
@@ -148,12 +145,6 @@ namespace Lykke.Service.HFT.Modules
             builder.RegisterType<MongoRepository<LimitOrderState>>()
                 .As<IRepository<LimitOrderState>>()
                 .SingleInstance();
-        }
-
-        private void RegisterOtherClients(ContainerBuilder builder)
-        {
-            builder.RegisterFeeCalculatorClient(
-                _settings.CurrentValue.HighFrequencyTradingService.Dictionaries.FeeCalculatorServiceUrl, _log);
         }
     }
 }

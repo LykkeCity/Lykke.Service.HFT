@@ -1,6 +1,7 @@
 ﻿using Autofac;
 using Common.Log;
 using Lykke.Service.Balances.Client;
+using Lykke.Service.FeeCalculator.Client;
 using Lykke.SettingsReader;
 using Lykke.Service.HFT.Core;
 
@@ -20,6 +21,8 @@ namespace Lykke.Service.HFT.Modules
         protected override void Load(ContainerBuilder builder)
         {
             builder.RegisterBalancesClient(_settings.CurrentValue.BalancesServiceClient.ServiceUrl, _log);
+
+            builder.RegisterFeeCalculatorClient(_settings.CurrentValue.FeeCalculatorServiceClient.ServiceUrl, _log);
         }
     }
 }
