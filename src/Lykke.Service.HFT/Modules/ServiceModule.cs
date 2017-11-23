@@ -1,9 +1,6 @@
-﻿using System;
-using Autofac;
+﻿using Autofac;
 using Autofac.Core;
-using Autofac.Extensions.DependencyInjection;
 using Common.Log;
-using Lykke.Service.Assets.Client;
 using Lykke.Service.HFT.Core;
 using Lykke.Service.HFT.Core.Domain;
 using Lykke.Service.HFT.Core.Services;
@@ -15,22 +12,18 @@ using Lykke.Service.HFT.Services.Assets;
 using Lykke.SettingsReader;
 using Microsoft.Extensions.Caching.Distributed;
 using Microsoft.Extensions.Caching.Redis;
-using Microsoft.Extensions.DependencyInjection;
 
 namespace Lykke.Service.HFT.Modules
 {
     public class ServiceModule : Module
     {
         private readonly IReloadingManager<AppSettings> _settings;
-        private readonly IServiceCollection _services;
         private readonly ILog _log;
 
         public ServiceModule(IReloadingManager<AppSettings> settings, ILog log)
         {
             _settings = settings;
             _log = log;
-
-            _services = new ServiceCollection();
         }
 
         protected override void Load(ContainerBuilder builder)
@@ -49,14 +42,12 @@ namespace Lykke.Service.HFT.Modules
 
             RegisterOrderBooks(builder);
 
-            RegisterAssets(builder, currentSettings.HighFrequencyTradingService.Dictionaries);
+            RegisterAssets(builder);
 
             RegisterOrderBookStates(builder);
 
             BindRedis(builder, currentSettings.HighFrequencyTradingService.CacheSettings);
             BindRabbitMq(builder, currentSettings.HighFrequencyTradingService.LimitOrdersFeed);
-
-            builder.Populate(_services);
         }
 
         private void BindRedis(ContainerBuilder builder, CacheSettings settings)
@@ -122,12 +113,8 @@ namespace Lykke.Service.HFT.Modules
                 .SingleInstance();
         }
 
-        private void RegisterAssets(ContainerBuilder builder, AppSettings.DictionariesSettings settings)
+        private void RegisterAssets(ContainerBuilder builder)
         {
-            _services.RegisterAssetsClient(AssetServiceSettings.Create(
-                new Uri(settings.AssetsServiceUrl),
-                settings.CacheExpirationPeriod));
-
             builder.RegisterType<AssetPairsManager>()
                 .As<IAssetPairsManager>()
                 .SingleInstance();

@@ -9,6 +9,7 @@ namespace Lykke.Service.HFT.Core
         public MatchingEngineSettings MatchingEngineClient { get; set; }
         public SlackNotificationsSettings SlackNotifications { get; set; }
         public ExchangeSettings Exchange { get; set; }
+        public AssetsServiceClient AssetsServiceClient { get; set; }
         public BalancesServiceClient BalancesServiceClient { get; set; }
         public FeeCalculatorServiceClient FeeCalculatorServiceClient { get; set; }
 
@@ -62,7 +63,6 @@ namespace Lykke.Service.HFT.Core
 
         public class DictionariesSettings
         {
-            public string AssetsServiceUrl { get; set; }
             public TimeSpan CacheExpirationPeriod { get; set; }
         }
     }
@@ -114,6 +114,10 @@ namespace Lykke.Service.HFT.Core
         public string TargetClientId { get; set; }
     }
 
+    public class AssetsServiceClient
+    {
+        public string ServiceUrl { get; set; }
+    }
     public class BalancesServiceClient
     {
         public string ServiceUrl { get; set; }
