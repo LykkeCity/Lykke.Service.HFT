@@ -4,11 +4,11 @@ using System.Threading.Tasks;
 
 namespace Lykke.Service.HFT.Core.Services.Assets
 {
-    public interface IAssetPairsManager
+    public interface IAssetServiceDecorator
     {
-        Task<AssetPair> TryGetEnabledAssetPairAsync(string assetPairId);
+        Task<AssetPair> GetEnabledAssetPairAsync(string assetPairId);
         Task<IEnumerable<AssetPair>> GetAllEnabledAssetPairsAsync();
-        Task<Asset> TryGetEnabledAssetAsync(string assetPairId);
+        Task<Asset> GetEnabledAssetAsync(string assetPairId);
         Task<IEnumerable<Asset>> GetAllEnabledAssetsAsync();
     }
 }

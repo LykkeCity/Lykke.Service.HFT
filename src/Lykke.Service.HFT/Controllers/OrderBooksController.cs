@@ -14,12 +14,12 @@ namespace Lykke.Service.HFT.Controllers
     public class OrderBooksController : Controller
     {
         private readonly IOrderBooksService _orderBooksService;
-        private readonly IAssetPairsManager _assetPairsManager;
+        private readonly IAssetServiceDecorator _assetServiceDecorator;
 
-        public OrderBooksController(IOrderBooksService orderBooksService, IAssetPairsManager assetPairsManager)
+        public OrderBooksController(IOrderBooksService orderBooksService, IAssetServiceDecorator assetServiceDecorator)
         {
             _orderBooksService = orderBooksService ?? throw new ArgumentNullException(nameof(orderBooksService));
-            _assetPairsManager = assetPairsManager ?? throw new ArgumentNullException(nameof(assetPairsManager));
+            _assetServiceDecorator = assetServiceDecorator ?? throw new ArgumentNullException(nameof(assetServiceDecorator));
         }
 
         /// <summary>
@@ -52,7 +52,7 @@ namespace Lykke.Service.HFT.Controllers
                 return BadRequest(ModelState);
             }
 
-            var assetPair = await _assetPairsManager.TryGetEnabledAssetPairAsync(assetPairId);
+            var assetPair = await _assetServiceDecorator.GetEnabledAssetPairAsync(assetPairId);
             if (assetPair == null)
             {
                 return NotFound();

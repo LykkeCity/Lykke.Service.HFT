@@ -22,20 +22,20 @@ namespace Lykke.Service.HFT.Controllers
     public class OrdersController : Controller
     {
         private readonly IMatchingEngineAdapter _matchingEngineAdapter;
-        private readonly IAssetPairsManager _assetPairsManager;
+        private readonly IAssetServiceDecorator _assetServiceDecorator;
         private readonly IRepository<LimitOrderState> _orderStateRepository;
         private readonly IOrderBooksService _orderBooksService;
         private readonly double _deviation;
 
         public OrdersController(
             IMatchingEngineAdapter frequencyTradingService,
-            IAssetPairsManager assetPairsManager,
+            IAssetServiceDecorator assetServiceDecorator,
             IRepository<LimitOrderState> orderStateRepository,
             IOrderBooksService orderBooksService,
             ExchangeSettings settings)
         {
             _matchingEngineAdapter = frequencyTradingService ?? throw new ArgumentNullException(nameof(frequencyTradingService));
-            _assetPairsManager = assetPairsManager ?? throw new ArgumentNullException(nameof(assetPairsManager));
+            _assetServiceDecorator = assetServiceDecorator ?? throw new ArgumentNullException(nameof(assetServiceDecorator));
             _orderStateRepository = orderStateRepository ?? throw new ArgumentNullException(nameof(orderStateRepository));
             _orderBooksService = orderBooksService ?? throw new ArgumentNullException(nameof(orderBooksService));
 
@@ -74,15 +74,15 @@ namespace Lykke.Service.HFT.Controllers
             {
                 return BadRequest(ToResponseModel(ModelState));
             }
-            var assetPair = await _assetPairsManager.TryGetEnabledAssetPairAsync(order.AssetPairId);
+            var assetPair = await _assetServiceDecorator.GetEnabledAssetPairAsync(order.AssetPairId);
             if (assetPair == null)
             {
                 var model = ResponseModel<double>.CreateFail(ResponseModel.ErrorCodeType.UnknownAsset);
                 return BadRequest(model);
             }
 
-            var baseAsset = await _assetPairsManager.TryGetEnabledAssetAsync(assetPair.BaseAssetId);
-            var quotingAsset = await _assetPairsManager.TryGetEnabledAssetAsync(assetPair.QuotingAssetId);
+            var baseAsset = await _assetServiceDecorator.GetEnabledAssetAsync(assetPair.BaseAssetId);
+            var quotingAsset = await _assetServiceDecorator.GetEnabledAssetAsync(assetPair.QuotingAssetId);
             if (order.Asset != baseAsset.Id && order.Asset != baseAsset.Name && order.Asset != quotingAsset.Id && order.Asset != quotingAsset.Name)
             {
                 var model = ResponseModel.CreateInvalidFieldError("Asset", $"Asset <{order.Asset}> is not valid for asset pair <{assetPair.Id}>.");
@@ -129,7 +129,7 @@ namespace Lykke.Service.HFT.Controllers
                 return BadRequest(ToResponseModel(ModelState));
             }
 
-            var assetPair = await _assetPairsManager.TryGetEnabledAssetPairAsync(order.AssetPairId);
+            var assetPair = await _assetServiceDecorator.GetEnabledAssetPairAsync(order.AssetPairId);
             if (assetPair == null)
             {
                 var model = ResponseModel.CreateFail(ResponseModel.ErrorCodeType.UnknownAsset);
@@ -146,7 +146,7 @@ namespace Lykke.Service.HFT.Controllers
                 }
             }
 
-            var asset = await _assetPairsManager.TryGetEnabledAssetAsync(assetPair.BaseAssetId);
+            var asset = await _assetServiceDecorator.GetEnabledAssetAsync(assetPair.BaseAssetId);
             if (asset == null)
             {
                 throw new InvalidOperationException($"Base asset '{assetPair.BaseAssetId}' for asset pair '{assetPair.Id}' not found.");

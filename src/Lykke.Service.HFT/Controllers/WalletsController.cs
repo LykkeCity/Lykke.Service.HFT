@@ -18,12 +18,12 @@ namespace Lykke.Service.HFT.Controllers
     public class WalletsController : Controller
     {
         private readonly IBalancesClient _balancesClient;
-        private readonly IAssetPairsManager _assetPairsManager;
+        private readonly IAssetServiceDecorator _assetServiceDecorator;
 
-        public WalletsController(IAssetPairsManager assetPairsManager, IBalancesClient balancesClient)
+        public WalletsController(IAssetServiceDecorator assetServiceDecorator, IBalancesClient balancesClient)
         {
             _balancesClient = balancesClient ?? throw new ArgumentNullException(nameof(balancesClient));
-            _assetPairsManager = assetPairsManager ?? throw new ArgumentNullException(nameof(assetPairsManager));
+            _assetServiceDecorator = assetServiceDecorator ?? throw new ArgumentNullException(nameof(assetServiceDecorator));
         }
 
         /// <summary>
@@ -40,7 +40,7 @@ namespace Lykke.Service.HFT.Controllers
             var walletBalances = balances?.Select(Models.ClientBalanceResponseModel.Create) ?? new Models.ClientBalanceResponseModel[0].ToList();
             foreach (var wallet in walletBalances)
             {
-                var asset = await _assetPairsManager.TryGetEnabledAssetAsync(wallet.AssetId);
+                var asset = await _assetServiceDecorator.GetEnabledAssetAsync(wallet.AssetId);
                 if (asset != null)
                 {
                     wallet.Balance = wallet.Balance.TruncateDecimalPlaces(asset.Accuracy);

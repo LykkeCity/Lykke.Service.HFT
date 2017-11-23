@@ -13,11 +13,11 @@ namespace Lykke.Service.HFT.Controllers
     [Route("api/[controller]")]
     public class AssetPairsController : Controller
     {
-        private readonly IAssetPairsManager _assetPairsManager;
+        private readonly IAssetServiceDecorator _assetServiceDecorator;
 
-        public AssetPairsController(IAssetPairsManager assetPairsManager)
+        public AssetPairsController(IAssetServiceDecorator assetServiceDecorator)
         {
-            _assetPairsManager = assetPairsManager ?? throw new ArgumentNullException(nameof(assetPairsManager));
+            _assetServiceDecorator = assetServiceDecorator ?? throw new ArgumentNullException(nameof(assetServiceDecorator));
         }
 
         /// <summary>
@@ -29,7 +29,7 @@ namespace Lykke.Service.HFT.Controllers
         [ProducesResponseType(typeof(IEnumerable<AssetPairModel>), (int)HttpStatusCode.OK)]
         public async Task<IActionResult> GetAssetPairs()
         {
-            var assetPairs = await _assetPairsManager.GetAllEnabledAssetPairsAsync();
+            var assetPairs = await _assetServiceDecorator.GetAllEnabledAssetPairsAsync();
             return Ok(assetPairs.Select(x => x.ConvertToApiModel()));
         }
 
@@ -44,7 +44,7 @@ namespace Lykke.Service.HFT.Controllers
         [ProducesResponseType((int)HttpStatusCode.NotFound)]
         public async Task<IActionResult> GetAssetPair(string id)
         {
-            var assetPair = await _assetPairsManager.TryGetEnabledAssetPairAsync(id);
+            var assetPair = await _assetServiceDecorator.GetEnabledAssetPairAsync(id);
             if (assetPair == null)
             {
                 return NotFound();

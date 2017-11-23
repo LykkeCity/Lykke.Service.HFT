@@ -7,16 +7,16 @@ using Lykke.Service.Assets.Client.Models;
 
 namespace Lykke.Service.HFT.Services.Assets
 {
-    public class AssetPairsManager : IAssetPairsManager
+    public class AssetServiceDecorator : IAssetServiceDecorator
     {
         private readonly IAssetsServiceWithCache _apiService;
 
-        public AssetPairsManager(IAssetsServiceWithCache apiService)
+        public AssetServiceDecorator(IAssetsServiceWithCache apiService)
         {
             _apiService = apiService;
         }
 
-        public async Task<AssetPair> TryGetEnabledAssetPairAsync(string assetPairId)
+        public async Task<AssetPair> GetEnabledAssetPairAsync(string assetPairId)
         {
             var pair = await _apiService.TryGetAssetPairAsync(assetPairId);
 
@@ -29,7 +29,7 @@ namespace Lykke.Service.HFT.Services.Assets
         }
 
 
-        public async Task<Asset> TryGetEnabledAssetAsync(string assetId)
+        public async Task<Asset> GetEnabledAssetAsync(string assetId)
         {
             var asset = await _apiService.TryGetAssetAsync(assetId);
 

@@ -115,8 +115,8 @@ namespace Lykke.Service.HFT.Modules
 
         private void RegisterAssets(ContainerBuilder builder)
         {
-            builder.RegisterType<AssetPairsManager>()
-                .As<IAssetPairsManager>()
+            builder.RegisterType<AssetServiceDecorator>()
+                .As<IAssetServiceDecorator>()
                 .SingleInstance();
         }
 
