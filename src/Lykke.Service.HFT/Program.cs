@@ -49,7 +49,7 @@ namespace Lykke.Service.HFT
                     .Wait();
             }
 
-            Console.WriteLine("Terminated"); ;
+            Console.WriteLine("Terminated");
         }
     }
 }

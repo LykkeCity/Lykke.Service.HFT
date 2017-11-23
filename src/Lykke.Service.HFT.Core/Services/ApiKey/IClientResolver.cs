@@ -2,8 +2,8 @@
 
 namespace Lykke.Service.HFT.Core.Services.ApiKey
 {
-	public interface IClientResolver
-	{
-		Task<string> GetClientAsync(string apiKey);
-	}
+    public interface IClientResolver
+    {
+        Task<string> GetClientAsync(string apiKey);
+    }
 }

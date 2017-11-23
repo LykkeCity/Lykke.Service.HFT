@@ -14,7 +14,6 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.ModelBinding;
 using Swashbuckle.SwaggerGen.Annotations;
-using Lykke.Service.FeeCalculator.Client;
 
 namespace Lykke.Service.HFT.Controllers
 {

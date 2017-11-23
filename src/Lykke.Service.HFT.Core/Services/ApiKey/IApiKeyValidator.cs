@@ -2,8 +2,8 @@
 
 namespace Lykke.Service.HFT.Core.Services.ApiKey
 {
-	public interface IApiKeyValidator
-	{
-		Task<bool> ValidateAsync(string apiKey);
-	}
+    public interface IApiKeyValidator
+    {
+        Task<bool> ValidateAsync(string apiKey);
+    }
 }

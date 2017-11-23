@@ -45,8 +45,7 @@ namespace Lykke.Service.HFT.Core
             {
                 string host = useInternal ? InternalHost : Host;
 
-                IPAddress ipAddress;
-                if (IPAddress.TryParse(host, out ipAddress))
+                if (IPAddress.TryParse(host, out var ipAddress))
                     return new IPEndPoint(ipAddress, Port);
 
                 var addresses = Dns.GetHostAddressesAsync(host).Result;

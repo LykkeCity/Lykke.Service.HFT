@@ -129,7 +129,7 @@ namespace Lykke.Service.HFT.Services
             var fee = await _feeCalculatorClient.GetMarketOrderFees(fromClientId, assetPairId, assetPair.BaseAssetId, FeeCalculator.AutorestClient.Models.OrderAction.Sell);
 
             var response = await _matchingEngineClient.TransferAsync(id, fromClientId, toClientId,
-                assetPair.BaseAssetId, amount, _feesSettings.TargetClientId, (double) fee.DefaultFeeSize);
+                assetPair.BaseAssetId, amount, _feesSettings.TargetClientId, (double)fee.DefaultFeeSize);
 
             return ConvertToApiModel(response.Status);
         }
@@ -170,10 +170,10 @@ namespace Lykke.Service.HFT.Services
 
             return new MarketOrderFeeModel
             {
-                Size = (double) fee.DefaultFeeSize,
+                Size = (double)fee.DefaultFeeSize,
                 SourceClientId = clientId,
                 TargetClientId = _feesSettings.TargetClientId,
-                Type = (int) MarketOrderFeeType.CLIENT_FEE
+                Type = (int)MarketOrderFeeType.CLIENT_FEE
             };
         }
 
@@ -184,11 +184,11 @@ namespace Lykke.Service.HFT.Services
 
             return new LimitOrderFeeModel
             {
-                MakerSize = (double) fee.MakerFeeSize,
-                TakerSize = (double) fee.TakerFeeSize,
+                MakerSize = (double)fee.MakerFeeSize,
+                TakerSize = (double)fee.TakerFeeSize,
                 SourceClientId = clientId,
                 TargetClientId = _feesSettings.TargetClientId,
-                Type = (int) LimitOrderFeeType.CLIENT_FEE
+                Type = (int)LimitOrderFeeType.CLIENT_FEE
             };
         }
     }

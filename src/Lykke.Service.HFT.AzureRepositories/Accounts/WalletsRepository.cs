@@ -36,7 +36,7 @@ namespace Lykke.Service.HFT.AzureRepositories.Accounts
         public string ClientId => RowKey;
 
         public string Balances { get; set; }
-        
+
         internal static readonly TheWallet[] EmptyList = new TheWallet[0];
 
         internal TheWallet[] Get()
