@@ -27,6 +27,7 @@ namespace Lykke.Service.HFT
     public class Startup
     {
         private const string ApiVersion = "v1";
+        private const string ApiTitle = "High-frequency trading API";
 
         public IHostingEnvironment Environment { get; }
         public IContainer ApplicationContainer { get; private set; }
@@ -58,7 +59,7 @@ namespace Lykke.Service.HFT
 
                 services.AddSwaggerGen(options =>
                 {
-                    options.DefaultLykkeConfiguration(ApiVersion, "High-frequency trading API");
+                    options.DefaultLykkeConfiguration(ApiVersion, ApiTitle);
                     options.OperationFilter<ApiKeyHeaderOperationFilter>();
                     options.DescribeAllEnumsAsStrings();
                 });
