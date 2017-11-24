@@ -15,12 +15,17 @@ using Lykke.Service.HFT.Infrastructure;
 using Lykke.Service.HFT.Middleware;
 using Lykke.Service.HFT.Modules;
 using Lykke.Service.HFT.Services;
+using Lykke.Service.HFT.Wamp;
+using Lykke.Service.HFT.Wamp.Modules;
 using Lykke.SettingsReader;
 using Lykke.SlackNotification.AzureQueue;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using WampSharp.V2;
+using WampSharp.V2.MetaApi;
+using WampSharp.V2.Realm;
 
 namespace Lykke.Service.HFT
 {
@@ -78,6 +83,7 @@ namespace Lykke.Service.HFT
                 builder.RegisterModule(new MongoDbModule(appSettings.Nested(x => x.HighFrequencyTradingService.MongoSettings)));
                 builder.RegisterModule(new RedisModule(appSettings.CurrentValue.HighFrequencyTradingService.CacheSettings));
                 builder.RegisterModule(new ClientsModule(appSettings, Log));
+                builder.RegisterModule(new WampModule());
                 builder.Populate(services);
 
                 ApplicationContainer = builder.Build();
@@ -112,6 +118,9 @@ namespace Lykke.Service.HFT
                     x.SwaggerEndpoint("/swagger/v1/swagger.json", ApiVersion);
                 });
                 app.UseStaticFiles();
+
+                var host = ApplicationContainer.Resolve<IWampHost>();
+                app.UseWampHost(host);
 
                 appLifetime.ApplicationStarted.Register(() => StartApplication().Wait());
                 appLifetime.ApplicationStopped.Register(() => CleanUp().Wait());
@@ -160,6 +169,8 @@ namespace Lykke.Service.HFT
                 {
                     await Log.WriteFatalErrorAsync(nameof(Startup), nameof(CleanUp), "", ex);
                     (Log as IDisposable)?.Dispose();
+
+                    ApplicationContainer.Resolve<IWampHostedRealm>()?.HostMetaApiService()?.Dispose();
                 }
                 throw;
             }
@@ -222,5 +233,6 @@ namespace Lykke.Service.HFT
             services.AddSingleton<IClientPolicyStore, DistributedCacheClientPolicyStore>();
             services.AddSingleton<IRateLimitCounterStore, DistributedCacheRateLimitCounterStore>();
         }
+
     }
 }

@@ -29,6 +29,8 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Lykke.Service.HFT", "src\Ly
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Lykke.Service.HFT.MongoRepositories", "src\Lykke.Service.HFT.MongoRepositories\Lykke.Service.HFT.MongoRepositories.csproj", "{02024DDF-76AB-4B0A-9019-DEEBA3168946}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Lykke.Service.HFT.Wamp", "src\Lykke.Service.HFT.Wamp\Lykke.Service.HFT.Wamp.csproj", "{D17D9288-7F81-43F8-B9D8-2B9FA9971025}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -59,6 +61,10 @@ Global
 		{02024DDF-76AB-4B0A-9019-DEEBA3168946}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{02024DDF-76AB-4B0A-9019-DEEBA3168946}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{02024DDF-76AB-4B0A-9019-DEEBA3168946}.Release|Any CPU.Build.0 = Release|Any CPU
+		{D17D9288-7F81-43F8-B9D8-2B9FA9971025}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{D17D9288-7F81-43F8-B9D8-2B9FA9971025}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{D17D9288-7F81-43F8-B9D8-2B9FA9971025}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{D17D9288-7F81-43F8-B9D8-2B9FA9971025}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

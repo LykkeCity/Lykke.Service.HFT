@@ -61,6 +61,7 @@
     <ProjectReference Include="..\Lykke.Service.HFT.MongoRepositories\Lykke.Service.HFT.MongoRepositories.csproj" />
     <ProjectReference Include="..\Lykke.Service.HFT.Core\Lykke.Service.HFT.Core.csproj" />
     <ProjectReference Include="..\Lykke.Service.HFT.Services\Lykke.Service.HFT.Services.csproj" />
+    <ProjectReference Include="..\Lykke.Service.HFT.Wamp\Lykke.Service.HFT.Wamp.csproj" />
   </ItemGroup>
 
   <Target Name="PrepublishScript" BeforeTargets="PrepareForPublish">

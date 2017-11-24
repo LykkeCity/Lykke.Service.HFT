@@ -28,6 +28,7 @@ namespace Lykke.Service.HFT.Services
 
         public async Task InitApiKeyCache()
         {
+            return;
             ClearExistingRecords();
 
             var keys = _apiKeyRepository.FilterBy(x => x.ValidTill == null).ToList();

@@ -1,0 +1,21 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>netcoreapp2.0</TargetFramework>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="AsyncEnumerator" Version="2.1.0" />
+    <PackageReference Include="Autofac.Extensions.DependencyInjection" Version="4.2.0" />
+    <PackageReference Include="Lykke.RabbitMqBroker" Version="4.1.0" />
+    <PackageReference Include="Lykke.WampSharp" Version="1.0.2" />
+    <PackageReference Include="Lykke.WampSharp.AspNetCore.WebSockets.Server" Version="1.0.2" />
+    <PackageReference Include="Lykke.WampSharp.NewtonsoftJson" Version="1.0.2" />
+    <PackageReference Include="Lykke.WampSharp.NewtonsoftMsgpack" Version="1.0.2" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Lykke.Service.HFT.Core\Lykke.Service.HFT.Core.csproj" />
+  </ItemGroup>
+
+</Project>

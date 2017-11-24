@@ -31,6 +31,8 @@ namespace Lykke.Service.HFT.Modules
                 .SingleInstance();
             builder.RegisterInstance(currentSettings.HighFrequencyTradingService.CacheSettings)
                 .SingleInstance();
+            builder.RegisterInstance(currentSettings.HighFrequencyTradingService.LimitOrdersFeed)
+                .SingleInstance();
 
             builder.RegisterInstance(_log)
                 .As<ILog>()
@@ -42,7 +44,7 @@ namespace Lykke.Service.HFT.Modules
 
             RegisterAssets(builder);
 
-            RegisterOrderBookStates(builder);
+            RegisterOrderStates(builder);
 
             BindRedis(builder, currentSettings.HighFrequencyTradingService.CacheSettings);
             BindRabbitMq(builder, currentSettings.HighFrequencyTradingService.LimitOrdersFeed);
@@ -125,7 +127,7 @@ namespace Lykke.Service.HFT.Modules
                 .SingleInstance().AutoActivate();
         }
 
-        private void RegisterOrderBookStates(ContainerBuilder builder)
+        private void RegisterOrderStates(ContainerBuilder builder)
         {
             builder.RegisterType<MongoRepository<LimitOrderState>>()
                 .As<IRepository<LimitOrderState>>()

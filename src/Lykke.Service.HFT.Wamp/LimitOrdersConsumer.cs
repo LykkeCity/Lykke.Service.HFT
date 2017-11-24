@@ -1,29 +1,34 @@
 ﻿using System;
 using System.Collections.Async;
+using System.Linq;
 using System.Threading.Tasks;
 using Common.Log;
 using Lykke.RabbitMqBroker;
 using Lykke.RabbitMqBroker.Subscriber;
 using Lykke.Service.HFT.Core;
 using Lykke.Service.HFT.Core.Domain;
-using Lykke.Service.HFT.Services.Messages;
+using Lykke.Service.HFT.Wamp.Events;
+using Lykke.Service.HFT.Wamp.Messages;
+using WampSharp.V2.Realm;
+using LimitOrderState = Lykke.Service.HFT.Core.Domain.LimitOrderState;
 
-namespace Lykke.Service.HFT.Services
+namespace Lykke.Service.HFT.Wamp
 {
     public class LimitOrdersConsumer : IDisposable
     {
         private readonly ILog _log;
         private readonly IRepository<LimitOrderState> _orderStateRepository;
         private readonly RabbitMqSubscriber<LimitOrderMessage> _subscriber;
-        private const string QueueName = "highfrequencytrading";
+        private const string QueueName = "highfrequencytrading-wamp";
         private const bool QueueDurable = false;
+        private readonly IWampHostedRealm _realm;
 
-        public LimitOrdersConsumer(ILog log, AppSettings.RabbitMqSettings settings, IRepository<LimitOrderState> orderStateRepository)
+        public LimitOrdersConsumer(ILog log, AppSettings.RabbitMqSettings settings, IRepository<LimitOrderState> orderStateRepository, IWampHostedRealm realm)
         {
-            return;
             _log = log ?? throw new ArgumentNullException(nameof(log));
             if (settings == null)
                 throw new ArgumentNullException(nameof(settings));
+            _realm = realm ?? throw new ArgumentNullException(nameof(realm));
             _orderStateRepository = orderStateRepository ?? throw new ArgumentNullException(nameof(orderStateRepository));
 
             try
@@ -44,7 +49,7 @@ namespace Lykke.Service.HFT.Services
             }
             catch (Exception ex)
             {
-                _log.WriteErrorAsync(Constants.ComponentName, null, null, ex).Wait();
+                _log.WriteErrorAsync(nameof(LimitOrdersConsumer), null, null, ex).Wait();
                 throw;
             }
         }
@@ -59,14 +64,33 @@ namespace Lykke.Service.HFT.Services
                     // we are processing orders made by this service only
                     if (orderState != null)
                     {
-                        // these properties cannot change: Id, ClientId, AssetPairId, Price; ignoring them
-                        orderState.Status = order.Order.Status;
-                        orderState.Volume = order.Order.Volume;
-                        orderState.RemainingVolume = order.Order.RemainingVolume;
-                        orderState.LastMatchTime = order.Order.LastMatchTime;
-                        orderState.CreatedAt = order.Order.CreatedAt;
-                        orderState.Registered = order.Order.Registered;
-                        await _orderStateRepository.Update(orderState);
+                        var userTopic = _realm.Services.GetSubject<LimitOrderUpdateEvent>($"orders.limit.wallet.{order.Order.ClientId}");
+
+                        var notifyResponse = new LimitOrderUpdateEvent
+                        {
+                            Order = new Events.Order
+                            {
+                                Id = orderId,
+                                Status = order.Order.Status,
+                                AssetPairId = order.Order.AssetPairId,
+                                Volume = order.Order.Volume,
+                                Price = order.Order.Price,
+                                RemainingVolume = order.Order.RemainingVolume,
+                                LastMatchTime = order.Order.LastMatchTime
+                            },
+                            Trades = order.Trades.Select(x => new Events.Trade
+                            {
+                                Asset = x.Asset,
+                                Volume = x.Volume,
+                                Price = x.Price,
+                                Timestamp = x.Timestamp,
+                                OppositeAsset = x.OppositeAsset,
+                                OppositeVolume = x.OppositeVolume
+                            }).ToArray()
+                        };
+
+                        userTopic.OnNext(notifyResponse);
+
                     }
                 }
             }).ConfigureAwait(false);
