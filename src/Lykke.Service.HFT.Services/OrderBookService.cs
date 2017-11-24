@@ -5,7 +5,6 @@ using System.Threading.Tasks;
 using Lykke.Service.HFT.Core;
 using Lykke.Service.HFT.Core.Domain;
 using Lykke.Service.HFT.Core.Services;
-using Lykke.Service.HFT.Core.Services.Assets;
 using Microsoft.Extensions.Caching.Distributed;
 
 namespace Lykke.Service.HFT.Services
@@ -13,23 +12,23 @@ namespace Lykke.Service.HFT.Services
     public class OrderBookService : IOrderBooksService
     {
         private readonly IDistributedCache _distributedCache;
-        private readonly IAssetPairsManager _assetPairsManager;
+        private readonly IAssetServiceDecorator _assetServiceDecorator;
         private readonly CacheSettings _settings;
 
         public OrderBookService(
             IDistributedCache distributedCache,
-            IAssetPairsManager assetPairsManager,
+            IAssetServiceDecorator assetServiceDecorator,
             CacheSettings settings)
         {
             _distributedCache = distributedCache;
-            _assetPairsManager = assetPairsManager ?? throw new ArgumentNullException(nameof(assetPairsManager));
+            _assetServiceDecorator = assetServiceDecorator ?? throw new ArgumentNullException(nameof(assetServiceDecorator));
             _settings = settings;
         }
 
-        public async Task<IEnumerable<IOrderBook>> GetAllAsync()
+        public async Task<IEnumerable<OrderBook>> GetAllAsync()
         {
-            var assetPairs = await _assetPairsManager.GetAllEnabledAssetPairsAsync();
-            var orderBooks = new List<IOrderBook>();
+            var assetPairs = await _assetServiceDecorator.GetAllEnabledAssetPairsAsync();
+            var orderBooks = new List<OrderBook>();
             foreach (var pair in assetPairs)
             {
                 var buyBook = await GetOrderBook(pair.Id, true);
@@ -44,7 +43,7 @@ namespace Lykke.Service.HFT.Services
             return orderBooks;
         }
 
-        public async Task<IEnumerable<IOrderBook>> GetAsync(string assetPairId)
+        public async Task<IEnumerable<OrderBook>> GetAsync(string assetPairId)
         {
             if (string.IsNullOrWhiteSpace(assetPairId)) throw new ArgumentException(nameof(assetPairId));
 
@@ -54,7 +53,7 @@ namespace Lykke.Service.HFT.Services
             return new[] { sellBook, buyBook };
         }
 
-        private async Task<IOrderBook> GetOrderBook(string assetPair, bool buy)
+        private async Task<OrderBook> GetOrderBook(string assetPair, bool buy)
         {
             var orderBook = await _distributedCache.GetStringAsync(_settings.GetOrderBookKey(assetPair, buy));
             return orderBook != null ? NetJSON.NetJSON.Deserialize<OrderBook>(orderBook) :
@@ -74,7 +73,7 @@ namespace Lykke.Service.HFT.Services
             return price;
         }
 
-        private double? GetBestPrice(IOrderBook orderBook)
+        private double? GetBestPrice(OrderBook orderBook)
         {
             if (orderBook.Prices.Count == 0)
                 return null;

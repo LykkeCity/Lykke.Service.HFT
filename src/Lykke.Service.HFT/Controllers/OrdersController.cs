@@ -7,14 +7,12 @@ using Common;
 using Lykke.Service.HFT.Core;
 using Lykke.Service.HFT.Core.Domain;
 using Lykke.Service.HFT.Core.Services;
-using Lykke.Service.HFT.Core.Services.Assets;
 using Lykke.Service.HFT.Helpers;
 using Lykke.Service.HFT.Models.Requests;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.ModelBinding;
-using Swashbuckle.SwaggerGen.Annotations;
-using Lykke.Service.FeeCalculator.Client;
+using Swashbuckle.AspNetCore.SwaggerGen;
 
 namespace Lykke.Service.HFT.Controllers
 {
@@ -23,20 +21,20 @@ namespace Lykke.Service.HFT.Controllers
     public class OrdersController : Controller
     {
         private readonly IMatchingEngineAdapter _matchingEngineAdapter;
-        private readonly IAssetPairsManager _assetPairsManager;
+        private readonly IAssetServiceDecorator _assetServiceDecorator;
         private readonly IRepository<LimitOrderState> _orderStateRepository;
         private readonly IOrderBooksService _orderBooksService;
         private readonly double _deviation;
 
         public OrdersController(
             IMatchingEngineAdapter frequencyTradingService,
-            IAssetPairsManager assetPairsManager,
+            IAssetServiceDecorator assetServiceDecorator,
             IRepository<LimitOrderState> orderStateRepository,
             IOrderBooksService orderBooksService,
             ExchangeSettings settings)
         {
             _matchingEngineAdapter = frequencyTradingService ?? throw new ArgumentNullException(nameof(frequencyTradingService));
-            _assetPairsManager = assetPairsManager ?? throw new ArgumentNullException(nameof(assetPairsManager));
+            _assetServiceDecorator = assetServiceDecorator ?? throw new ArgumentNullException(nameof(assetServiceDecorator));
             _orderStateRepository = orderStateRepository ?? throw new ArgumentNullException(nameof(orderStateRepository));
             _orderBooksService = orderBooksService ?? throw new ArgumentNullException(nameof(orderBooksService));
 
@@ -62,6 +60,31 @@ namespace Lykke.Service.HFT.Controllers
         }
 
         /// <summary>
+        /// Get the order info.
+        /// </summary>
+        /// <param name="id">Limit order id</param>
+        /// <returns>Order info.</returns>
+        [HttpGet("{id}")]
+        [SwaggerOperation("GetOrder")]
+        [ProducesResponseType(typeof(LimitOrderState), (int)HttpStatusCode.OK)]
+        [ProducesResponseType((int)HttpStatusCode.NotFound)]
+        public async Task<IActionResult> GetOrder(Guid id)
+        {
+            if (id == Guid.Empty)
+            {
+                return NotFound();
+            }
+
+            var order = await _orderStateRepository.Get(id);
+            if (order == null)
+            {
+                return NotFound();
+            }
+
+            return Ok(order);
+        }
+
+        /// <summary>
         /// Place a market order.
         /// </summary>
         /// <returns>Average strike price.</returns>
@@ -75,15 +98,16 @@ namespace Lykke.Service.HFT.Controllers
             {
                 return BadRequest(ToResponseModel(ModelState));
             }
-            var assetPair = await _assetPairsManager.TryGetEnabledAssetPairAsync(order.AssetPairId);
+
+            var assetPair = await _assetServiceDecorator.GetEnabledAssetPairAsync(order.AssetPairId);
             if (assetPair == null)
             {
                 var model = ResponseModel<double>.CreateFail(ResponseModel.ErrorCodeType.UnknownAsset);
                 return BadRequest(model);
             }
 
-            var baseAsset = await _assetPairsManager.TryGetEnabledAssetAsync(assetPair.BaseAssetId);
-            var quotingAsset = await _assetPairsManager.TryGetEnabledAssetAsync(assetPair.QuotingAssetId);
+            var baseAsset = await _assetServiceDecorator.GetEnabledAssetAsync(assetPair.BaseAssetId);
+            var quotingAsset = await _assetServiceDecorator.GetEnabledAssetAsync(assetPair.QuotingAssetId);
             if (order.Asset != baseAsset.Id && order.Asset != baseAsset.Name && order.Asset != quotingAsset.Id && order.Asset != quotingAsset.Name)
             {
                 var model = ResponseModel.CreateInvalidFieldError("Asset", $"Asset <{order.Asset}> is not valid for asset pair <{assetPair.Id}>.");
@@ -108,7 +132,6 @@ namespace Lykke.Service.HFT.Controllers
 
             if (response.Error != null)
             {
-                // todo: produce valid http status codes based on ME response 
                 return BadRequest(response);
             }
 
@@ -130,7 +153,7 @@ namespace Lykke.Service.HFT.Controllers
                 return BadRequest(ToResponseModel(ModelState));
             }
 
-            var assetPair = await _assetPairsManager.TryGetEnabledAssetPairAsync(order.AssetPairId);
+            var assetPair = await _assetServiceDecorator.GetEnabledAssetPairAsync(order.AssetPairId);
             if (assetPair == null)
             {
                 var model = ResponseModel.CreateFail(ResponseModel.ErrorCodeType.UnknownAsset);
@@ -147,7 +170,7 @@ namespace Lykke.Service.HFT.Controllers
                 }
             }
 
-            var asset = await _assetPairsManager.TryGetEnabledAssetAsync(assetPair.BaseAssetId);
+            var asset = await _assetServiceDecorator.GetEnabledAssetAsync(assetPair.BaseAssetId);
             if (asset == null)
             {
                 throw new InvalidOperationException($"Base asset '{assetPair.BaseAssetId}' for asset pair '{assetPair.Id}' not found.");
@@ -168,7 +191,6 @@ namespace Lykke.Service.HFT.Controllers
                 price: order.Price.TruncateDecimalPlaces(assetPair.Accuracy));
             if (response.Error != null)
             {
-                // todo: produce valid http status codes based on ME response 
                 return BadRequest(response);
             }
 
@@ -178,13 +200,13 @@ namespace Lykke.Service.HFT.Controllers
         /// <summary>
         /// Cancel the limit order.
         /// </summary>
-        /// <param name="id">Limit order id (Guid)</param>
+        /// <param name="id">Limit order id</param>
         [HttpPost("{id}/Cancel")]
         [SwaggerOperation("CancelLimitOrder")]
         [ProducesResponseType((int)HttpStatusCode.OK)]
         [ProducesResponseType((int)HttpStatusCode.NotFound)]
         [ProducesResponseType((int)HttpStatusCode.Forbidden)]
-        [ProducesResponseType((int)HttpStatusCode.BadRequest)]
+        [ProducesResponseType(typeof(ResponseModel), (int)HttpStatusCode.BadRequest)]
         public async Task<IActionResult> CancelLimitOrder(Guid id)
         {
             if (id == Guid.Empty)
@@ -206,39 +228,13 @@ namespace Lykke.Service.HFT.Controllers
             {
                 return Ok();
             }
-            // todo: produce valid http status code if status is 'Matched' or 'Pending'
 
             var response = await _matchingEngineAdapter.CancelLimitOrderAsync(id);
             if (response.Error != null)
-            {
-                // todo: produce valid http status codes based on ME response 
-                return BadRequest();
+            { 
+                return BadRequest(response);
             }
             return Ok();
-        }
-
-        /// <summary>
-        /// Get the order info.
-        /// </summary>
-        /// <param name="id">Limit order id (Guid)</param>
-        /// <returns>Order info.</returns>
-        [HttpGet("{id}")]
-        [SwaggerOperation("GetOrderInfo")]
-        [ProducesResponseType(typeof(LimitOrderState), (int)HttpStatusCode.OK)]
-        [ProducesResponseType((int)HttpStatusCode.NotFound)]
-        public async Task<IActionResult> GetOrderInfo(Guid id)
-        {
-            if (id == Guid.Empty)
-            {
-                return NotFound();
-            }
-            var order = await _orderStateRepository.Get(id);
-            if (order != null)
-            {
-                return Ok(order);
-            }
-
-            return NotFound();
         }
 
         private static ResponseModel ToResponseModel(ModelStateDictionary modelState)
@@ -247,6 +243,5 @@ namespace Lykke.Service.HFT.Controllers
             var message = modelState[field].Errors.First().ErrorMessage;
             return ResponseModel.CreateInvalidFieldError(field, message);
         }
-
     }
 }

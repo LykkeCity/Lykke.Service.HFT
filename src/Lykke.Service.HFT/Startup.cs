@@ -26,6 +26,9 @@ namespace Lykke.Service.HFT
 {
     public class Startup
     {
+        private const string ApiVersion = "v1";
+        private const string ApiTitle = "High-frequency trading API";
+
         public IHostingEnvironment Environment { get; }
         public IContainer ApplicationContainer { get; private set; }
         public IConfigurationRoot Configuration { get; }
@@ -56,7 +59,7 @@ namespace Lykke.Service.HFT
 
                 services.AddSwaggerGen(options =>
                 {
-                    options.DefaultLykkeConfiguration("v1", "HighFrequencyTrading API");
+                    options.DefaultLykkeConfiguration(ApiVersion, ApiTitle);
                     options.OperationFilter<ApiKeyHeaderOperationFilter>();
                     options.DescribeAllEnumsAsStrings();
                 });
@@ -74,6 +77,7 @@ namespace Lykke.Service.HFT
                     appSettings.Nested(x => x.HighFrequencyTradingService)));
                 builder.RegisterModule(new MongoDbModule(appSettings.Nested(x => x.HighFrequencyTradingService.MongoSettings)));
                 builder.RegisterModule(new RedisModule(appSettings.CurrentValue.HighFrequencyTradingService.CacheSettings));
+                builder.RegisterModule(new ClientsModule(appSettings, Log));
                 builder.Populate(services);
 
                 ApplicationContainer = builder.Build();
@@ -96,13 +100,17 @@ namespace Lykke.Service.HFT
                     app.UseDeveloperExceptionPage();
                 }
 
-                app.UseLykkeMiddleware("HighFrequencyTrading", ex => new { Message = "Technical problem" });
+                app.UseLykkeMiddleware(Constants.ComponentName, ex => new { Message = "Technical problem" });
                 app.UseClientRateLimiting();
 
                 app.UseAuthentication();
                 app.UseMvc();
                 app.UseSwagger();
-                app.UseSwaggerUi();
+                app.UseSwaggerUI(x =>
+                {
+                    x.RoutePrefix = "swagger/ui";
+                    x.SwaggerEndpoint("/swagger/v1/swagger.json", ApiVersion);
+                });
                 app.UseStaticFiles();
 
                 appLifetime.ApplicationStarted.Register(() => StartApplication().Wait());
@@ -110,7 +118,7 @@ namespace Lykke.Service.HFT
             }
             catch (Exception ex)
             {
-                Log?.WriteFatalErrorAsync(nameof(Startup), nameof(ConfigureServices), "", ex).Wait();
+                Log?.WriteFatalErrorAsync(nameof(Startup), nameof(Configure), "", ex).Wait();
                 throw;
             }
         }
@@ -119,11 +127,11 @@ namespace Lykke.Service.HFT
         {
             try
             {
-                // NOTE: Service not yet recieve and process requests here
+                // NOTE: Service not yet receive and process requests here
 
                 await ApplicationContainer.Resolve<IApiKeyCacheInitializer>().InitApiKeyCache();
 
-                await Log.WriteMonitorAsync("", "", "Started");
+                await Log.WriteMonitorAsync("", $"Env: {Program.EnvInfo}", "Started");
             }
             catch (Exception ex)
             {
@@ -137,11 +145,11 @@ namespace Lykke.Service.HFT
         {
             try
             {
-                // NOTE: Service can't recieve and process requests here, so you can destroy all resources
+                // NOTE: Service can't receive and process requests here, so you can destroy all resources
 
                 if (Log != null)
                 {
-                    await Log.WriteMonitorAsync("", "", "Terminating");
+                    await Log.WriteMonitorAsync("", $"Env: {Program.EnvInfo}", "Terminating");
                 }
 
                 ApplicationContainer.Dispose();
@@ -174,7 +182,7 @@ namespace Lykke.Service.HFT
             var dbLogConnectionStringManager = settings.Nested(x => x.HighFrequencyTradingService.Db.LogsConnString);
             var dbLogConnectionString = dbLogConnectionStringManager.CurrentValue;
 
-            // Creating azure storage logger, which logs own messages to concole log
+            // Creating azure storage logger, which logs own messages to console log
             if (!string.IsNullOrEmpty(dbLogConnectionString) && !(dbLogConnectionString.StartsWith("${") && dbLogConnectionString.EndsWith("}")))
             {
                 var persistenceManager = new LykkeLogToAzureStoragePersistenceManager(

@@ -2,8 +2,8 @@
 using System.Linq;
 using Lykke.Service.HFT.Middleware;
 using Microsoft.AspNetCore.Mvc.Authorization;
-using Swashbuckle.Swagger.Model;
-using Swashbuckle.SwaggerGen.Generator;
+using Swashbuckle.AspNetCore.Swagger;
+using Swashbuckle.AspNetCore.SwaggerGen;
 
 namespace Lykke.Service.HFT.Infrastructure
 {

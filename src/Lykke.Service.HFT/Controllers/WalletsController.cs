@@ -4,12 +4,12 @@ using System.Linq;
 using System.Net;
 using System.Threading.Tasks;
 using Common;
-using Lykke.Service.HFT.Core.Accounts;
-using Lykke.Service.HFT.Core.Services.Assets;
+using Lykke.Service.Balances.Client;
+using Lykke.Service.HFT.Core.Services;
 using Lykke.Service.HFT.Helpers;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using Swashbuckle.SwaggerGen.Annotations;
+using Swashbuckle.AspNetCore.SwaggerGen;
 
 namespace Lykke.Service.HFT.Controllers
 {
@@ -17,13 +17,13 @@ namespace Lykke.Service.HFT.Controllers
     [Route("api/[controller]")]
     public class WalletsController : Controller
     {
-        private readonly IWalletsRepository _walletsRepository;
-        private readonly IAssetPairsManager _assetPairsManager;
+        private readonly IBalancesClient _balancesClient;
+        private readonly IAssetServiceDecorator _assetServiceDecorator;
 
-        public WalletsController(IWalletsRepository walletsRepository, IAssetPairsManager assetPairsManager)
+        public WalletsController(IAssetServiceDecorator assetServiceDecorator, IBalancesClient balancesClient)
         {
-            _walletsRepository = walletsRepository ?? throw new ArgumentNullException(nameof(walletsRepository));
-            _assetPairsManager = assetPairsManager ?? throw new ArgumentNullException(nameof(assetPairsManager));
+            _balancesClient = balancesClient ?? throw new ArgumentNullException(nameof(balancesClient));
+            _assetServiceDecorator = assetServiceDecorator ?? throw new ArgumentNullException(nameof(assetServiceDecorator));
         }
 
         /// <summary>
@@ -32,14 +32,15 @@ namespace Lykke.Service.HFT.Controllers
         /// <returns>Client balance.</returns>
         [HttpGet]
         [SwaggerOperation("Wallets")]
-        [ProducesResponseType(typeof(IEnumerable<Wallet>), (int)HttpStatusCode.OK)]
+        [ProducesResponseType(typeof(IEnumerable<Models.ClientBalanceResponseModel>), (int)HttpStatusCode.OK)]
         public async Task<IActionResult> GetWallets()
         {
             var clientId = User.GetUserId();
-            var wallets = (await _walletsRepository.GetAsync(clientId)).Select(x => new Wallet { Balance = x.Balance, AssetId = x.AssetId, Reserved = x.Reserved }).ToList();
-            foreach (var wallet in wallets)
+            var balances = await _balancesClient.GetClientBalances(clientId);
+            var walletBalances = balances?.Select(Models.ClientBalanceResponseModel.Create) ?? new Models.ClientBalanceResponseModel[0].ToList();
+            foreach (var wallet in walletBalances)
             {
-                var asset = await _assetPairsManager.TryGetEnabledAssetAsync(wallet.AssetId);
+                var asset = await _assetServiceDecorator.GetEnabledAssetAsync(wallet.AssetId);
                 if (asset != null)
                 {
                     wallet.Balance = wallet.Balance.TruncateDecimalPlaces(asset.Accuracy);
@@ -47,7 +48,7 @@ namespace Lykke.Service.HFT.Controllers
                 }
             }
 
-            return Ok(wallets);
+            return Ok(walletBalances);
         }
     }
 }

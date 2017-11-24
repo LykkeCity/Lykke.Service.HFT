@@ -3,15 +3,7 @@ using System.Collections.Generic;
 
 namespace Lykke.Service.HFT.Core.Domain
 {
-    public interface IOrderBook
-    {
-        string AssetPair { get; }
-        bool IsBuy { get; }
-        DateTime Timestamp { get; }
-        List<VolumePrice> Prices { get; set; }
-    }
-
-    public class OrderBook : IOrderBook
+    public class OrderBook
     {
         public string AssetPair { get; set; }
         public bool IsBuy { get; set; }

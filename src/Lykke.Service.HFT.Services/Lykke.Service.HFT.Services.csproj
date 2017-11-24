@@ -8,9 +8,10 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <PackageReference Include="AsyncEnumerator" Version="2.1.0" />
     <PackageReference Include="Lykke.Common" Version="3.0.2" />
-    <PackageReference Include="Lykke.MatchingEngineConnector.Abstractions" Version="1.0.20-beta" />
-    <PackageReference Include="Lykke.RabbitMqBroker" Version="4.0.2" />
+    <PackageReference Include="Lykke.MatchingEngineConnector.Abstractions" Version="1.0.21" />
+    <PackageReference Include="Lykke.RabbitMqBroker" Version="4.1.0" />
     <PackageReference Include="Lykke.Service.Assets.Client" Version="2.0.8.2" />
     <PackageReference Include="Lykke.Service.FeeCalculator.Client" Version="1.0.5" />
     <PackageReference Include="NetJSON" Version="1.2.1.10" />

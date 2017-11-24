@@ -1,10 +1,9 @@
-﻿using System;
-using System.Linq;
+﻿using System.Linq;
 using System.Net;
 using Lykke.Service.HFT.Core.Services;
 using Lykke.Service.HFT.Models;
 using Microsoft.AspNetCore.Mvc;
-using Swashbuckle.SwaggerGen.Annotations;
+using Swashbuckle.AspNetCore.SwaggerGen;
 
 namespace Lykke.Service.HFT.Controllers
 {
@@ -41,7 +40,7 @@ namespace Lykke.Service.HFT.Controllers
             return Ok(new IsAliveResponse
             {
                 Version = Microsoft.Extensions.PlatformAbstractions.PlatformServices.Default.Application.ApplicationVersion,
-                Env = Environment.GetEnvironmentVariable("ENV_INFO"),
+                Env = Program.EnvInfo,
 #if DEBUG
                 IsDebug = true,
 #else

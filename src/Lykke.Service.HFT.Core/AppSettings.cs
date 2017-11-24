@@ -9,6 +9,9 @@ namespace Lykke.Service.HFT.Core
         public MatchingEngineSettings MatchingEngineClient { get; set; }
         public SlackNotificationsSettings SlackNotifications { get; set; }
         public ExchangeSettings Exchange { get; set; }
+        public AssetsServiceClient AssetsServiceClient { get; set; }
+        public BalancesServiceClient BalancesServiceClient { get; set; }
+        public FeeCalculatorServiceClient FeeCalculatorServiceClient { get; set; }
 
         public class HighFrequencyTradingSettings
         {
@@ -45,8 +48,7 @@ namespace Lykke.Service.HFT.Core
             {
                 string host = useInternal ? InternalHost : Host;
 
-                IPAddress ipAddress;
-                if (IPAddress.TryParse(host, out ipAddress))
+                if (IPAddress.TryParse(host, out var ipAddress))
                     return new IPEndPoint(ipAddress, Port);
 
                 var addresses = Dns.GetHostAddressesAsync(host).Result;
@@ -57,13 +59,10 @@ namespace Lykke.Service.HFT.Core
         public class DbSettings
         {
             public string LogsConnString { get; set; }
-            public string BalancesInfoConnString { get; set; }
         }
 
         public class DictionariesSettings
         {
-            public string AssetsServiceUrl { get; set; }
-            public string FeeCalculatorServiceUrl { get; set; }
             public TimeSpan CacheExpirationPeriod { get; set; }
         }
     }
@@ -113,5 +112,18 @@ namespace Lykke.Service.HFT.Core
     public class FeesSettings
     {
         public string TargetClientId { get; set; }
+    }
+
+    public class AssetsServiceClient
+    {
+        public string ServiceUrl { get; set; }
+    }
+    public class BalancesServiceClient
+    {
+        public string ServiceUrl { get; set; }
+    }
+    public class FeeCalculatorServiceClient
+    {
+        public string ServiceUrl { get; set; }
     }
 }
