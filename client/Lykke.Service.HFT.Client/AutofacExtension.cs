@@ -15,7 +15,7 @@ namespace Lykke.Service.HFT.Client
             if (string.IsNullOrWhiteSpace(serviceUrl))
                 throw new ArgumentException("Value cannot be null or whitespace.", nameof(serviceUrl));
 
-            builder.RegisterInstance(new HighFrequencyTradingAPI(new Uri(serviceUrl))).As<IHighFrequencyTradingAPI>().SingleInstance();
+            builder.RegisterInstance(new HighFrequencytradingAPI(new Uri(serviceUrl))).As<IHighFrequencytradingAPI>().SingleInstance();
         }
     }
 }
