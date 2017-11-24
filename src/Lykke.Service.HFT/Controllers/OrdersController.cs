@@ -206,7 +206,7 @@ namespace Lykke.Service.HFT.Controllers
         [ProducesResponseType((int)HttpStatusCode.OK)]
         [ProducesResponseType((int)HttpStatusCode.NotFound)]
         [ProducesResponseType((int)HttpStatusCode.Forbidden)]
-        [ProducesResponseType((int)HttpStatusCode.BadRequest)]
+        [ProducesResponseType(typeof(ResponseModel), (int)HttpStatusCode.BadRequest)]
         public async Task<IActionResult> CancelLimitOrder(Guid id)
         {
             if (id == Guid.Empty)
@@ -232,7 +232,7 @@ namespace Lykke.Service.HFT.Controllers
             var response = await _matchingEngineAdapter.CancelLimitOrderAsync(id);
             if (response.Error != null)
             { 
-                return BadRequest();
+                return BadRequest(response);
             }
             return Ok();
         }
