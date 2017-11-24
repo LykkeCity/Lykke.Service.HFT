@@ -16,7 +16,7 @@ namespace Lykke.Service.HFT.Client.AutorestClient
 
     /// <summary>
     /// </summary>
-    public partial interface IHighFrequencyTradingAPI : System.IDisposable
+    public partial interface IHighFrequencytradingAPI : System.IDisposable
     {
         /// <summary>
         /// The base URI of the service.
@@ -35,11 +35,6 @@ namespace Lykke.Service.HFT.Client.AutorestClient
 
 
         /// <summary>
-        /// Gets the IOrderBooks.
-        /// </summary>
-        IOrderBooks OrderBooks { get; }
-
-        /// <summary>
         /// Get all asset pairs.
         /// </summary>
         /// <param name='customHeaders'>
@@ -48,7 +43,7 @@ namespace Lykke.Service.HFT.Client.AutorestClient
         /// <param name='cancellationToken'>
         /// The cancellation token.
         /// </param>
-        Task<HttpOperationResponse<IList<AssetPairModel>>> AssetPairsWithHttpMessagesAsync(Dictionary<string, List<string>> customHeaders = null, CancellationToken cancellationToken = default(CancellationToken));
+        Task<HttpOperationResponse<IList<AssetPairModel>>> GetAssetPairsWithHttpMessagesAsync(Dictionary<string, List<string>> customHeaders = null, CancellationToken cancellationToken = default(CancellationToken));
 
         /// <summary>
         /// Get specified asset pair.
@@ -62,7 +57,7 @@ namespace Lykke.Service.HFT.Client.AutorestClient
         /// <param name='cancellationToken'>
         /// The cancellation token.
         /// </param>
-        Task<HttpOperationResponse<AssetPairModel>> AssetPairsidWithHttpMessagesAsync(string id, Dictionary<string, List<string>> customHeaders = null, CancellationToken cancellationToken = default(CancellationToken));
+        Task<HttpOperationResponse<AssetPairModel>> GetAssetPairWithHttpMessagesAsync(string id, Dictionary<string, List<string>> customHeaders = null, CancellationToken cancellationToken = default(CancellationToken));
 
         /// <summary>
         /// Checks service is alive
@@ -84,7 +79,21 @@ namespace Lykke.Service.HFT.Client.AutorestClient
         /// <param name='cancellationToken'>
         /// The cancellation token.
         /// </param>
-        Task<HttpOperationResponse<IList<OrderBook>>> OrderBooksWithHttpMessagesAsync(Dictionary<string, List<string>> customHeaders = null, CancellationToken cancellationToken = default(CancellationToken));
+        Task<HttpOperationResponse<IList<OrderBook>>> GetOrderBooksWithHttpMessagesAsync(Dictionary<string, List<string>> customHeaders = null, CancellationToken cancellationToken = default(CancellationToken));
+
+        /// <summary>
+        /// Get order books for a specified asset pair.
+        /// </summary>
+        /// <param name='assetPairId'>
+        /// Asset pair ID. Example: AUDUSD
+        /// </param>
+        /// <param name='customHeaders'>
+        /// The headers that will be added to request.
+        /// </param>
+        /// <param name='cancellationToken'>
+        /// The cancellation token.
+        /// </param>
+        Task<HttpOperationResponse<IList<OrderBook>>> GetOrderBookWithHttpMessagesAsync(string assetPairId, Dictionary<string, List<string>> customHeaders = null, CancellationToken cancellationToken = default(CancellationToken));
 
         /// <summary>
         /// Get all client orders.
@@ -104,6 +113,23 @@ namespace Lykke.Service.HFT.Client.AutorestClient
         /// The cancellation token.
         /// </param>
         Task<HttpOperationResponse<IList<LimitOrderState>>> GetOrdersWithHttpMessagesAsync(string apiKey, string status = default(string), Dictionary<string, List<string>> customHeaders = null, CancellationToken cancellationToken = default(CancellationToken));
+
+        /// <summary>
+        /// Get the order info.
+        /// </summary>
+        /// <param name='id'>
+        /// Limit order id
+        /// </param>
+        /// <param name='apiKey'>
+        /// access token
+        /// </param>
+        /// <param name='customHeaders'>
+        /// The headers that will be added to request.
+        /// </param>
+        /// <param name='cancellationToken'>
+        /// The cancellation token.
+        /// </param>
+        Task<HttpOperationResponse<LimitOrderState>> GetOrderWithHttpMessagesAsync(System.Guid id, string apiKey, Dictionary<string, List<string>> customHeaders = null, CancellationToken cancellationToken = default(CancellationToken));
 
         /// <summary>
         /// Place a market order.
@@ -141,7 +167,7 @@ namespace Lykke.Service.HFT.Client.AutorestClient
         /// Cancel the limit order.
         /// </summary>
         /// <param name='id'>
-        /// Limit order id (Guid)
+        /// Limit order id
         /// </param>
         /// <param name='apiKey'>
         /// access token
@@ -152,27 +178,10 @@ namespace Lykke.Service.HFT.Client.AutorestClient
         /// <param name='cancellationToken'>
         /// The cancellation token.
         /// </param>
-        Task<HttpOperationResponse> CancelLimitOrderWithHttpMessagesAsync(System.Guid id, string apiKey, Dictionary<string, List<string>> customHeaders = null, CancellationToken cancellationToken = default(CancellationToken));
+        Task<HttpOperationResponse<ResponseModel>> CancelLimitOrderWithHttpMessagesAsync(System.Guid id, string apiKey, Dictionary<string, List<string>> customHeaders = null, CancellationToken cancellationToken = default(CancellationToken));
 
         /// <summary>
-        /// Get the order info.
-        /// </summary>
-        /// <param name='id'>
-        /// Limit order id (Guid)
-        /// </param>
-        /// <param name='apiKey'>
-        /// access token
-        /// </param>
-        /// <param name='customHeaders'>
-        /// The headers that will be added to request.
-        /// </param>
-        /// <param name='cancellationToken'>
-        /// The cancellation token.
-        /// </param>
-        Task<HttpOperationResponse<LimitOrderState>> GetOrderInfoWithHttpMessagesAsync(System.Guid id, string apiKey, Dictionary<string, List<string>> customHeaders = null, CancellationToken cancellationToken = default(CancellationToken));
-
-        /// <summary>
-        /// Get balance.
+        /// Get balances.
         /// </summary>
         /// <param name='apiKey'>
         /// access token
@@ -183,7 +192,7 @@ namespace Lykke.Service.HFT.Client.AutorestClient
         /// <param name='cancellationToken'>
         /// The cancellation token.
         /// </param>
-        Task<HttpOperationResponse<IList<Wallet>>> WalletsWithHttpMessagesAsync(string apiKey, Dictionary<string, List<string>> customHeaders = null, CancellationToken cancellationToken = default(CancellationToken));
+        Task<HttpOperationResponse<IList<ClientBalanceResponseModel>>> GetBalancesWithHttpMessagesAsync(string apiKey, Dictionary<string, List<string>> customHeaders = null, CancellationToken cancellationToken = default(CancellationToken));
 
     }
 }
