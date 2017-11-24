@@ -26,7 +26,7 @@ namespace Lykke.Service.HFT.Controllers
         /// </summary>
         /// <returns>All order books.</returns>
         [HttpGet]
-        [SwaggerOperation("OrderBooks")]
+        [SwaggerOperation("GetOrderBooks")]
         [ProducesResponseType(typeof(IEnumerable<OrderBook>), (int)HttpStatusCode.OK)]
         public async Task<IActionResult> GetOrderBooks()
         {
@@ -41,7 +41,7 @@ namespace Lykke.Service.HFT.Controllers
         /// <param name="assetPairId">Asset pair ID. Example: AUDUSD</param>
         /// <returns>Order books for a specified asset pair.</returns>
         [HttpGet("{assetPairId}")]
-        [SwaggerOperation("OrderBooks_id")]
+        [SwaggerOperation("GetOrderBook")]
         [ProducesResponseType(typeof(IEnumerable<OrderBook>), (int)HttpStatusCode.OK)]
         [ProducesResponseType((int)HttpStatusCode.NotFound)]
         public async Task<IActionResult> GetOrderBook(string assetPairId)

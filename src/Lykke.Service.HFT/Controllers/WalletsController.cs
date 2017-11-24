@@ -27,13 +27,13 @@ namespace Lykke.Service.HFT.Controllers
         }
 
         /// <summary>
-        /// Get balance.
+        /// Get balances.
         /// </summary>
-        /// <returns>Client balance.</returns>
+        /// <returns>Account balances.</returns>
         [HttpGet]
-        [SwaggerOperation("Wallets")]
+        [SwaggerOperation("GetBalances")]
         [ProducesResponseType(typeof(IEnumerable<Models.ClientBalanceResponseModel>), (int)HttpStatusCode.OK)]
-        public async Task<IActionResult> GetWallets()
+        public async Task<IActionResult> GetBalances()
         {
             var clientId = User.GetUserId();
             var balances = await _balancesClient.GetClientBalances(clientId);
