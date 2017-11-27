@@ -2,6 +2,7 @@
 using System.Collections.Async;
 using System.Linq;
 using System.Threading.Tasks;
+using Common;
 using Common.Log;
 using Lykke.RabbitMqBroker;
 using Lykke.RabbitMqBroker.Subscriber;
@@ -11,6 +12,7 @@ using Lykke.Service.HFT.Wamp.Events;
 using Lykke.Service.HFT.Wamp.Messages;
 using WampSharp.V2.Realm;
 using LimitOrderState = Lykke.Service.HFT.Core.Domain.LimitOrderState;
+using Konscious.Security.Cryptography;
 
 namespace Lykke.Service.HFT.Wamp
 {
@@ -22,9 +24,13 @@ namespace Lykke.Service.HFT.Wamp
         private const string QueueName = "highfrequencytrading-wamp";
         private const bool QueueDurable = false;
         private readonly IWampHostedRealm _realm;
+        private readonly HMACBlake2B _hashAlgorithm;
 
         public LimitOrdersConsumer(ILog log, AppSettings.RabbitMqSettings settings, IRepository<LimitOrderState> orderStateRepository, IWampHostedRealm realm)
         {
+            _hashAlgorithm = new HMACBlake2B(128);
+            _hashAlgorithm.Initialize();
+
             _log = log ?? throw new ArgumentNullException(nameof(log));
             if (settings == null)
                 throw new ArgumentNullException(nameof(settings));
@@ -64,7 +70,10 @@ namespace Lykke.Service.HFT.Wamp
                     // we are processing orders made by this service only
                     if (orderState != null)
                     {
-                        var userTopic = _realm.Services.GetSubject<LimitOrderUpdateEvent>($"orders.limit.wallet.{order.Order.ClientId}");
+                        // todo: get api-key by clientId
+                        var clientId = order.Order.ClientId;
+                        var subscriptionId = _hashAlgorithm.ComputeHash(clientId.ToUtf8Bytes()).ToBase64();
+                        var userTopic = _realm.Services.GetSubject<LimitOrderUpdateEvent>($"orders.limit.wallet.{subscriptionId}");
 
                         var notifyResponse = new LimitOrderUpdateEvent
                         {
