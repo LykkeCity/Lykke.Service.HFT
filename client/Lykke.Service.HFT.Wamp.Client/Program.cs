@@ -56,7 +56,7 @@ namespace Lykke.Service.HFT.Wamp.Client
             hashAlgorithm.Initialize();
 
             var subscriptionId = hashAlgorithm.ComputeHash(clientId.ToUtf8Bytes()).ToBase64();
-            var subscription = proxy.Services.GetSubject<LimitOrderUpdateEvent>($"orders.limit.wallet.{subscriptionId}")
+            var subscription = proxy.Services.GetSubject<LimitOrderUpdateEvent>($"orders.limit.{subscriptionId}")
                 .Subscribe(info =>
                 {
                     Console.WriteLine($"Got event: {info.ToJson()}");

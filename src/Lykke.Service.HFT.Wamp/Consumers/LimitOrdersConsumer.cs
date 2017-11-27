@@ -73,7 +73,7 @@ namespace Lykke.Service.HFT.Wamp.Consumers
                         // todo: get api-key by clientId
                         var clientId = order.Order.ClientId;
                         var subscriptionId = _hashAlgorithm.ComputeHash(clientId.ToUtf8Bytes()).ToBase64();
-                        var userTopic = _realm.Services.GetSubject<LimitOrderUpdateEvent>($"orders.limit.wallet.{subscriptionId}");
+                        var userTopic = _realm.Services.GetSubject<LimitOrderUpdateEvent>($"orders.limit.{subscriptionId}");
 
                         var notifyResponse = new LimitOrderUpdateEvent
                         {
