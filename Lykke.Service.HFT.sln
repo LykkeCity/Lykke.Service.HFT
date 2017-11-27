@@ -33,6 +33,8 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Lykke.Service.HFT.Wamp", "s
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Lykke.Service.HFT.Wamp.Client", "client\Lykke.Service.HFT.Wamp.Client\Lykke.Service.HFT.Wamp.Client.csproj", "{94D0E456-D50F-4A46-AFC5-A63E9F179F64}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Lykke.Service.HFT.Contracts", "src\Lykke.Service.HFT.Contracts\Lykke.Service.HFT.Contracts.csproj", "{C36462AE-8ADB-428C-8695-D4CA9F82DEB4}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -71,6 +73,10 @@ Global
 		{94D0E456-D50F-4A46-AFC5-A63E9F179F64}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{94D0E456-D50F-4A46-AFC5-A63E9F179F64}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{94D0E456-D50F-4A46-AFC5-A63E9F179F64}.Release|Any CPU.Build.0 = Release|Any CPU
+		{C36462AE-8ADB-428C-8695-D4CA9F82DEB4}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{C36462AE-8ADB-428C-8695-D4CA9F82DEB4}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{C36462AE-8ADB-428C-8695-D4CA9F82DEB4}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{C36462AE-8ADB-428C-8695-D4CA9F82DEB4}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -82,6 +88,7 @@ Global
 		{A61FFDEE-5725-4650-A788-6E55EE5EFD5B} = {8F9036B1-5106-4C69-B2D2-B78EE52687A0}
 		{02024DDF-76AB-4B0A-9019-DEEBA3168946} = {BF745453-B940-470E-81BC-43FB67703D4E}
 		{94D0E456-D50F-4A46-AFC5-A63E9F179F64} = {C9A2CFDE-EA32-4946-B679-7CE6EFA816B8}
+		{C36462AE-8ADB-428C-8695-D4CA9F82DEB4} = {CC2067D7-1971-47BB-B491-5649EA3C18B2}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {B4EF6613-0DD1-42AE-B52D-CD122AD00DFE}

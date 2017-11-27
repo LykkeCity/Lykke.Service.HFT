@@ -4,17 +4,17 @@ using System.Linq;
 using System.Threading.Tasks;
 using Common;
 using Common.Log;
+using Konscious.Security.Cryptography;
 using Lykke.RabbitMqBroker;
 using Lykke.RabbitMqBroker.Subscriber;
+using Lykke.Service.HFT.Contracts.Events;
 using Lykke.Service.HFT.Core;
 using Lykke.Service.HFT.Core.Domain;
-using Lykke.Service.HFT.Wamp.Events;
 using Lykke.Service.HFT.Wamp.Messages;
 using WampSharp.V2.Realm;
 using LimitOrderState = Lykke.Service.HFT.Core.Domain.LimitOrderState;
-using Konscious.Security.Cryptography;
 
-namespace Lykke.Service.HFT.Wamp
+namespace Lykke.Service.HFT.Wamp.Consumers
 {
     public class LimitOrdersConsumer : IDisposable
     {
@@ -77,17 +77,17 @@ namespace Lykke.Service.HFT.Wamp
 
                         var notifyResponse = new LimitOrderUpdateEvent
                         {
-                            Order = new Events.Order
+                            Order = new Order
                             {
                                 Id = orderId,
-                                Status = order.Order.Status,
+                                Status = (Contracts.Events.OrderStatus)order.Order.Status,
                                 AssetPairId = order.Order.AssetPairId,
                                 Volume = order.Order.Volume,
                                 Price = order.Order.Price,
                                 RemainingVolume = order.Order.RemainingVolume,
                                 LastMatchTime = order.Order.LastMatchTime
                             },
-                            Trades = order.Trades.Select(x => new Events.Trade
+                            Trades = order.Trades.Select(x => new Trade
                             {
                                 Asset = x.Asset,
                                 Volume = x.Volume,

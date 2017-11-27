@@ -1,7 +1,7 @@
 ﻿using WampSharp.V2.Authentication;
 using WampSharp.V2.Core.Contracts;
 
-namespace Lykke.Service.HFT.Wamp
+namespace Lykke.Service.HFT.Wamp.Auth
 {
     public class AnonymousWampSessionAuthenticator : WampSessionAuthenticator
     {

@@ -1,6 +1,6 @@
 ﻿using WampSharp.V2.Authentication;
 
-namespace Lykke.Service.HFT.Wamp
+namespace Lykke.Service.HFT.Wamp.Auth
 {
     public class WampSessionAuthenticatorFactory : IWampSessionAuthenticatorFactory
     {

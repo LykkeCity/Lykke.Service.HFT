@@ -1,4 +1,6 @@
 ﻿using Autofac;
+using Lykke.Service.HFT.Wamp.Auth;
+using Lykke.Service.HFT.Wamp.Consumers;
 using WampSharp.V2;
 using WampSharp.V2.Realm;
 

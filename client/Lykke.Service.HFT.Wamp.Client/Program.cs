@@ -1,10 +1,10 @@
 ﻿using System;
 using System.Threading;
 using Common;
-using Lykke.Service.HFT.Wamp.Client.Events;
 using WampSharp.V2;
 using WampSharp.V2.Client;
 using Konscious.Security.Cryptography;
+using Lykke.Service.HFT.Contracts.Events;
 
 namespace Lykke.Service.HFT.Wamp.Client
 {

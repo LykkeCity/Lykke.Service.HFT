@@ -16,6 +16,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\Lykke.Service.HFT.Contracts\Lykke.Service.HFT.Contracts.csproj" />
     <ProjectReference Include="..\Lykke.Service.HFT.Core\Lykke.Service.HFT.Core.csproj" />
   </ItemGroup>
 
