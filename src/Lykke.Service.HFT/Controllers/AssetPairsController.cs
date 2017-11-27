@@ -25,7 +25,7 @@ namespace Lykke.Service.HFT.Controllers
         /// </summary>
         /// <returns>All asset pairs.</returns>
         [HttpGet]
-        [SwaggerOperation("AssetPairs")]
+        [SwaggerOperation("GetAssetPairs")]
         [ProducesResponseType(typeof(IEnumerable<AssetPairModel>), (int)HttpStatusCode.OK)]
         public async Task<IActionResult> GetAssetPairs()
         {
@@ -39,7 +39,7 @@ namespace Lykke.Service.HFT.Controllers
         /// <param name="id">Asset pair ID. Example: AUDUSD</param>
         /// <returns>Specified asset pair.</returns>
         [HttpGet("{id}")]
-        [SwaggerOperation("AssetPairs/{id}")]
+        [SwaggerOperation("GetAssetPair")]
         [ProducesResponseType(typeof(AssetPairModel), (int)HttpStatusCode.OK)]
         [ProducesResponseType((int)HttpStatusCode.NotFound)]
         public async Task<IActionResult> GetAssetPair(string id)

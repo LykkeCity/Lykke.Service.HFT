@@ -9,24 +9,24 @@ namespace Lykke.Service.HFT.Client.AutorestClient.Models
     using Newtonsoft.Json;
     using System.Linq;
 
-    public partial class Wallet
+    public partial class ClientBalanceResponseModel
     {
         /// <summary>
-        /// Initializes a new instance of the Wallet class.
+        /// Initializes a new instance of the ClientBalanceResponseModel class.
         /// </summary>
-        public Wallet()
+        public ClientBalanceResponseModel()
         {
             CustomInit();
         }
 
         /// <summary>
-        /// Initializes a new instance of the Wallet class.
+        /// Initializes a new instance of the ClientBalanceResponseModel class.
         /// </summary>
-        public Wallet(double reserved, double balance, string assetId = default(string))
+        public ClientBalanceResponseModel(double balance, double reserved, string assetId = default(string))
         {
             AssetId = assetId;
-            Reserved = reserved;
             Balance = balance;
+            Reserved = reserved;
             CustomInit();
         }
 
@@ -42,13 +42,13 @@ namespace Lykke.Service.HFT.Client.AutorestClient.Models
 
         /// <summary>
         /// </summary>
-        [JsonProperty(PropertyName = "Reserved")]
-        public double Reserved { get; set; }
+        [JsonProperty(PropertyName = "Balance")]
+        public double Balance { get; set; }
 
         /// <summary>
         /// </summary>
-        [JsonProperty(PropertyName = "Balance")]
-        public double Balance { get; set; }
+        [JsonProperty(PropertyName = "Reserved")]
+        public double Reserved { get; set; }
 
         /// <summary>
         /// Validate the object.
