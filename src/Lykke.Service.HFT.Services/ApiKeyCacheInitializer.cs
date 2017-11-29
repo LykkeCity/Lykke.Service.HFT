@@ -1,25 +1,23 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Lykke.Service.HFT.Core;
 using Lykke.Service.HFT.Core.Domain;
 using Lykke.Service.HFT.Core.Services.ApiKey;
-using Microsoft.Extensions.Caching.Distributed;
 using StackExchange.Redis;
 
 namespace Lykke.Service.HFT.Services
 {
     public class ApiKeyCacheInitializer : IApiKeyCacheInitializer
     {
-        private readonly IDistributedCache _distributedCache;
         private readonly CacheSettings _settings;
         private readonly IRepository<ApiKey> _apiKeyRepository;
         private readonly IServer _redisServer;
         private readonly IDatabase _redisDatabase;
 
-        public ApiKeyCacheInitializer(CacheSettings settings, IRepository<ApiKey> orderStateRepository, IServer redisServer, IDatabase redisDatabase, IDistributedCache distributedCache)
+        public ApiKeyCacheInitializer(CacheSettings settings, IRepository<ApiKey> orderStateRepository, IServer redisServer, IDatabase redisDatabase)
         {
-            _distributedCache = distributedCache ?? throw new ArgumentNullException(nameof(distributedCache));
             _settings = settings ?? throw new ArgumentNullException(nameof(settings));
             _apiKeyRepository = orderStateRepository ?? throw new ArgumentNullException(nameof(orderStateRepository));
             _redisServer = redisServer ?? throw new ArgumentNullException(nameof(redisServer));
@@ -28,25 +26,35 @@ namespace Lykke.Service.HFT.Services
 
         public async Task InitApiKeyCache()
         {
-            return;
-            ClearExistingRecords();
+            await ClearExistingRecords();
+            var keys = GetApiKeys();
+            await InsertValues(keys);
+        }
 
-            var keys = _apiKeyRepository.FilterBy(x => x.ValidTill == null).ToList();
+        private async Task ClearExistingRecords()
+        {
+            var keys = _redisServer.Keys(pattern: _settings.ApiKeyCacheInstance + "*", pageSize: 1000).ToArray();
+            await _redisDatabase.KeyDeleteAsync(keys);
+        }
+
+        private List<ApiKey> GetApiKeys()
+        {
+            return _apiKeyRepository.FilterBy(x => x.ValidTill == null).ToList();
+        }
+
+        private async Task InsertValues(List<ApiKey> keys)
+        {
+            var tasks = new List<Task>();
+            var batch = _redisDatabase.CreateBatch();
             foreach (var key in keys)
             {
-                await _distributedCache.SetStringAsync(GetCacheKey(key.Id.ToString()), key.WalletId);
+                tasks.Add(batch.StringSetAsync(_settings.ApiKeyCacheInstance + _settings.GetApiKey(key.Id.ToString()),
+                    key.WalletId));
+                tasks.Add(batch.StringSetAsync(_settings.ApiKeyCacheInstance + _settings.GetWallet(key.WalletId),
+                    key.Id.ToString()));
             }
-        }
-
-        private string GetCacheKey(string apiKey)
-        {
-            return _settings.GetApiKey(apiKey);
-        }
-
-        private void ClearExistingRecords()
-        {
-            var keys = _redisServer.Keys(pattern: _settings.ApiKeyCacheInstance + "*").ToArray();
-            _redisDatabase.KeyDelete(keys);
+            batch.Execute();
+            await Task.WhenAll(tasks);
         }
     }
 }

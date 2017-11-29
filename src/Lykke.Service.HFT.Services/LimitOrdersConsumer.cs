@@ -15,7 +15,7 @@ namespace Lykke.Service.HFT.Services
         private readonly ILog _log;
         private readonly IRepository<LimitOrderState> _orderStateRepository;
         private readonly RabbitMqSubscriber<LimitOrderMessage> _subscriber;
-        private const string QueueName = "highfrequencytrading";
+        private const string QueueName = "highfrequencytrading-api";
         private const bool QueueDurable = false;
 
         public LimitOrdersConsumer(ILog log, AppSettings.RabbitMqSettings settings, IRepository<LimitOrderState> orderStateRepository)
