@@ -25,12 +25,20 @@ namespace Lykke.Service.HFT.Services
 
         public async Task<string> GetClientAsync(string apiKey)
         {
-            var clientId = await _distributedCache.GetStringAsync(GetCacheKey(apiKey));
+            var clientId = await _distributedCache.GetStringAsync(_settings.GetApiKey(apiKey));
             return clientId;
         }
-        private string GetCacheKey(string apiKey)
+
+        public async Task<string> GetNotificationIdAsync(string walletId)
         {
-            return _settings.GetApiKey(apiKey);
+            var apiKey = await _distributedCache.GetStringAsync(_settings.GetNotificationId(walletId));
+            return apiKey;
+        }
+
+        public async Task SetNotificationIdAsync(string apiKey, string notificationId)
+        {
+            var walletId = await GetClientAsync(apiKey);
+            await _distributedCache.SetStringAsync(_settings.GetNotificationId(walletId), notificationId);
         }
     }
 }

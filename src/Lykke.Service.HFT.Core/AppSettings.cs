@@ -19,7 +19,7 @@ namespace Lykke.Service.HFT.Core
             public DictionariesSettings Dictionaries { get; set; }
             public CacheSettings CacheSettings { get; set; }
             public RabbitMqSettings LimitOrdersFeed { get; set; }
-            public RabbitMqSettings ApiKeysFeed { get; set; }
+            //public RabbitMqSettings ApiKeysFeed { get; set; }
             public MongoSettings MongoSettings { get; set; }
             public RateLimitSettings.RateLimitCoreOptions IpRateLimiting { get; set; }
             public FeesSettings Fees { get; set; }
@@ -87,7 +87,7 @@ namespace Lykke.Service.HFT.Core
             return string.Format(settings.ApiKeyCacheKeyPattern, apiKey);
         }
 
-        public static string GetWallet(this CacheSettings settings, string wallet)
+        public static string GetNotificationId(this CacheSettings settings, string wallet)
         {
             return string.Format(settings.WalletCacheKeyPattern, wallet);
         }

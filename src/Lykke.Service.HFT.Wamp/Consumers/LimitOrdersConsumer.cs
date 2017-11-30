@@ -2,15 +2,17 @@
 using System.Collections.Async;
 using System.Linq;
 using System.Threading.Tasks;
-using Common;
 using Common.Log;
-using Konscious.Security.Cryptography;
+using JetBrains.Annotations;
 using Lykke.RabbitMqBroker;
 using Lykke.RabbitMqBroker.Subscriber;
 using Lykke.Service.HFT.Contracts.Events;
 using Lykke.Service.HFT.Core;
 using Lykke.Service.HFT.Core.Domain;
+using Lykke.Service.HFT.Core.Services.ApiKey;
 using Lykke.Service.HFT.Wamp.Messages;
+using WampSharp.V2;
+using WampSharp.V2.Core.Contracts;
 using WampSharp.V2.Realm;
 using LimitOrderState = Lykke.Service.HFT.Core.Domain.LimitOrderState;
 
@@ -18,18 +20,22 @@ namespace Lykke.Service.HFT.Wamp.Consumers
 {
     public class LimitOrdersConsumer : IDisposable
     {
+        private readonly IClientResolver _clientResolver;
         private readonly ILog _log;
         private readonly IRepository<LimitOrderState> _orderStateRepository;
         private readonly RabbitMqSubscriber<LimitOrderMessage> _subscriber;
         private const string QueueName = "highfrequencytrading-wamp";
         private const bool QueueDurable = false;
         private readonly IWampHostedRealm _realm;
-        private readonly HMACBlake2B _hashAlgorithm;
+        private const string TopicUri = "orders.limit";
 
-        public LimitOrdersConsumer(ILog log, AppSettings.RabbitMqSettings settings, IRepository<LimitOrderState> orderStateRepository, IWampHostedRealm realm)
+        public LimitOrdersConsumer(ILog log,
+            AppSettings.RabbitMqSettings settings,
+            IRepository<LimitOrderState> orderStateRepository,
+            IWampHostedRealm realm,
+            [NotNull] IClientResolver clientResolver)
         {
-            _hashAlgorithm = new HMACBlake2B(128);
-            _hashAlgorithm.Initialize();
+            _clientResolver = clientResolver ?? throw new ArgumentNullException(nameof(clientResolver));
 
             _log = log ?? throw new ArgumentNullException(nameof(log));
             if (settings == null)
@@ -70,13 +76,9 @@ namespace Lykke.Service.HFT.Wamp.Consumers
                     // we are processing orders made by this service only
                     if (orderState != null)
                     {
-                        // todo: get api-key by clientId
-                        var clientId = order.Order.ClientId;
-                        var subscriptionId = _hashAlgorithm.ComputeHash(clientId.ToUtf8Bytes()).ToBase64();
-                        var userTopic = _realm.Services.GetSubject<LimitOrderUpdateEvent>($"orders.limit.{subscriptionId}");
-
                         var notifyResponse = new LimitOrderUpdateEvent
                         {
+                            // todo: use AutoMapper
                             Order = new Order
                             {
                                 Id = orderId,
@@ -98,11 +100,27 @@ namespace Lykke.Service.HFT.Wamp.Consumers
                             }).ToArray()
                         };
 
-                        userTopic.OnNext(notifyResponse);
+                        var notificationId = await _clientResolver.GetNotificationIdAsync(order.Order.ClientId);
+                        if (notificationId == null)
+                            return;
 
+                        PublishEvent(notificationId, notifyResponse);
                     }
                 }
             }).ConfigureAwait(false);
+        }
+
+        private void PublishEvent(string notificationId, LimitOrderUpdateEvent notifyResponse)
+        {
+            _realm.Services.GetSubject(TopicUri)
+                .OnNext(new WampEvent
+                {
+                    Options = new PublishOptions
+                    {
+                        Eligible = new[] { long.Parse(notificationId) }
+                    },
+                    Arguments = new object[] { notifyResponse }
+                });
         }
 
         public void Dispose()

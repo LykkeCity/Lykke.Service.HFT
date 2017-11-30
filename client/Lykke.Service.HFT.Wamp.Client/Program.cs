@@ -3,14 +3,17 @@ using System.Threading;
 using Common;
 using WampSharp.V2;
 using WampSharp.V2.Client;
-using Konscious.Security.Cryptography;
 using Lykke.Service.HFT.Contracts.Events;
 
 namespace Lykke.Service.HFT.Wamp.Client
 {
     public class Program
     {
-        public static string EnvInfo => Environment.GetEnvironmentVariable("ENV_INFO");
+        private const string ServerAddress = "ws://localhost:5002/ws";
+        private const string Realm = "HftApi";
+        private static readonly TimeSpan RetryTimeout = TimeSpan.FromSeconds(5);
+        private const string TopicUri = "orders.limit";
+
         public static int Main(string[] args)
         {
             if (args.Length != 1)
@@ -19,29 +22,32 @@ namespace Lykke.Service.HFT.Wamp.Client
                 return -1;
             }
 
-            var clientId = args[0];
+            var apiKey = args[0];
 
             var factory = new DefaultWampChannelFactory();
-            var serverAddress = "ws://localhost:5000/ws";
-            var realm = "HftApi";
-            var channel = factory.CreateJsonChannel(serverAddress, realm);
+            var authenticator = new TicketAuthenticator(apiKey);
+            var channel = factory.CreateJsonChannel(ServerAddress, Realm, authenticator);
+            channel.RealmProxy.Monitor.ConnectionBroken += Monitor_ConnectionBroken;
+            channel.RealmProxy.Monitor.ConnectionError += Monitor_ConnectionError;
+            channel.RealmProxy.Monitor.ConnectionEstablished += Monitor_ConnectionEstablished;
 
             while (!channel.RealmProxy.Monitor.IsConnected)
             {
                 try
                 {
-                    Console.WriteLine($"Trying to connect to server {serverAddress}...");
+                    Console.WriteLine($"Trying to connect to server {ServerAddress}...");
                     channel.Open().Wait();
                 }
                 catch
                 {
-                    Console.WriteLine("Retrying in 5 sec...");
-                    Thread.Sleep(5000);
+                    Console.WriteLine($"Retrying in {RetryTimeout}...");
+                    Thread.Sleep(RetryTimeout);
                 }
             }
             Console.WriteLine($"Connected to server {channel}");
-            using (Subscribe(channel.RealmProxy, clientId))
+            using (Subscribe(channel.RealmProxy))
             {
+                Console.WriteLine($"Subscribed to events. ClientId: {apiKey}");
                 Console.ReadKey();
             }
             Console.ReadKey();
@@ -50,18 +56,26 @@ namespace Lykke.Service.HFT.Wamp.Client
             return 0;
         }
 
-        private static IDisposable Subscribe(IWampRealmProxy proxy, string clientId)
+        private static void Monitor_ConnectionEstablished(object sender, WampSharp.V2.Realm.WampSessionCreatedEventArgs e)
         {
-            var hashAlgorithm = new HMACBlake2B(128);
-            hashAlgorithm.Initialize();
+        }
 
-            var subscriptionId = hashAlgorithm.ComputeHash(clientId.ToUtf8Bytes()).ToBase64();
-            var subscription = proxy.Services.GetSubject<LimitOrderUpdateEvent>($"orders.limit.{subscriptionId}")
+        private static void Monitor_ConnectionError(object sender, WampSharp.Core.Listener.WampConnectionErrorEventArgs e)
+        {
+        }
+
+        private static void Monitor_ConnectionBroken(object sender, WampSharp.V2.Realm.WampSessionCloseEventArgs e)
+        {
+        }
+
+        private static IDisposable Subscribe(IWampRealmProxy proxy)
+        {
+            var subject = proxy.Services.GetSubject<LimitOrderUpdateEvent>(TopicUri);
+            var subscription = subject
                 .Subscribe(info =>
                 {
                     Console.WriteLine($"Got event: {info.ToJson()}");
                 });
-            Console.WriteLine($"Subscribed to events. ClientId: {clientId}; subscription id: {subscriptionId}");
             return subscription;
         }
     }

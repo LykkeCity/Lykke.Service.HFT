@@ -56,12 +56,11 @@ namespace Lykke.Service.HFT.Services
             if (apiKey.ValidTill.HasValue)
             {
                 await _distributedCache.RemoveAsync(_cacheSettings.GetApiKey(apiKey.Id.ToString()));
-                await _distributedCache.RemoveAsync(_cacheSettings.GetWallet(apiKey.WalletId));
+                await _distributedCache.RemoveAsync(_cacheSettings.GetNotificationId(apiKey.WalletId));
             }
             else
             {
                 await _distributedCache.SetStringAsync(_cacheSettings.GetApiKey(apiKey.Id.ToString()), apiKey.WalletId);
-                await _distributedCache.SetStringAsync(_cacheSettings.GetWallet(apiKey.WalletId), apiKey.Id.ToString());
             }
         }
 
