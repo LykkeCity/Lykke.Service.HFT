@@ -1,16 +1,11 @@
 ﻿using WampSharp.V2.Authentication;
 using WampSharp.V2.Client;
 using WampSharp.V2.Core.Contracts;
-//using Konscious.Security.Cryptography;
 
 namespace Lykke.Service.HFT.Wamp.Client
 {
     public class TicketAuthenticator : IWampClientAuthenticator
     {
-        //var hashAlgorithm = new HMACBlake2B(128);
-        //hashAlgorithm.Initialize();
-        //var subscriptionId = hashAlgorithm.ComputeHash(authId.ToUtf8Bytes()).ToBase64();
-
         private const string AuthMethod = "ticket";
         private static readonly string[] AuthMethods = { AuthMethod };
 
