@@ -6,13 +6,13 @@ using WampSharp.V2.Core.Contracts;
 
 namespace Lykke.Service.HFT.Wamp.Auth
 {
-    public class ApiKeyWampSessionAuthenticator : WampSessionAuthenticator
+    public class TicketSessionAuthenticator : WampSessionAuthenticator
     {
         private readonly IClientResolver _clientResolver;
         private readonly IApiKeyValidator _apiKeyValidator;
         private readonly WampPendingClientDetails _details;
 
-        public ApiKeyWampSessionAuthenticator(
+        public TicketSessionAuthenticator(
             [NotNull] WampPendingClientDetails details,
             [NotNull] IApiKeyValidator apiKeyValidator,
             [NotNull] IClientResolver clientResolver)
@@ -26,8 +26,7 @@ namespace Lykke.Service.HFT.Wamp.Auth
 
         public override void Authenticate(string signature, AuthenticateExtraData extra)
         {
-            // ignoring signature
-            var apiKey = AuthenticationId;
+            var apiKey = signature;
             if (_apiKeyValidator.ValidateAsync(apiKey).Result)
             {
                 _clientResolver.SetNotificationIdAsync(apiKey, _details.SessionId.ToString()).Wait();
@@ -39,12 +38,12 @@ namespace Lykke.Service.HFT.Wamp.Auth
                     AuthenticationRole = "HFT client"
                 };
 
-                Authorizer = new HftClientStaticAuthorizer();
+                Authorizer = HftClientStaticAuthorizer.Instance;
             }
         }
 
         public override string AuthenticationId { get; }
 
-        public override string AuthenticationMethod => "ticket";
+        public override string AuthenticationMethod => AuthMethods.Ticket;
     }
 }

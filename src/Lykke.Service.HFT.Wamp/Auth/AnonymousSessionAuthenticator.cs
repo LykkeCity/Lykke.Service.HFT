@@ -3,13 +3,13 @@ using WampSharp.V2.Core.Contracts;
 
 namespace Lykke.Service.HFT.Wamp.Auth
 {
-    public class AnonymousWampSessionAuthenticator : WampSessionAuthenticator
+    public class AnonymousSessionAuthenticator : WampSessionAuthenticator
     {
         private readonly IWampAuthorizer _authorizer;
 
-        public AnonymousWampSessionAuthenticator()
+        public AnonymousSessionAuthenticator()
         {
-            _authorizer = new AnonymousWampAuthorizer();
+            _authorizer = HftClientStaticAuthorizer.Instance;
         }
 
         public override void Authenticate(string signature, AuthenticateExtraData extra)
@@ -22,6 +22,6 @@ namespace Lykke.Service.HFT.Wamp.Auth
 
         public override string AuthenticationId => "Anonymous";
 
-        public override string AuthenticationMethod => "None";
+        public override string AuthenticationMethod => AuthMethods.Anonymous;
     }
 }

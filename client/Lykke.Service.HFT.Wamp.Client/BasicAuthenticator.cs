@@ -1,20 +1,15 @@
 ﻿using WampSharp.V2.Authentication;
 using WampSharp.V2.Client;
 using WampSharp.V2.Core.Contracts;
-//using Konscious.Security.Cryptography;
 
 namespace Lykke.Service.HFT.Wamp.Client
 {
-    public class TicketAuthenticator : IWampClientAuthenticator
+    public class BasicAuthenticator : IWampClientAuthenticator
     {
-        //var hashAlgorithm = new HMACBlake2B(128);
-        //hashAlgorithm.Initialize();
-        //var subscriptionId = hashAlgorithm.ComputeHash(authId.ToUtf8Bytes()).ToBase64();
-
-        private const string AuthMethod = "ticket";
+        private const string AuthMethod = "anonymous";
         private static readonly string[] AuthMethods = { AuthMethod };
 
-        public TicketAuthenticator(string authId)
+        public BasicAuthenticator(string authId)
         {
             AuthenticationId = authId;
         }
@@ -25,7 +20,7 @@ namespace Lykke.Service.HFT.Wamp.Client
             {
                 throw new WampAuthenticationException("don't know how to authenticate using '" + authmethod + "'");
             }
-            return new AuthenticationResponse { Signature = AuthenticationId };
+            return new AuthenticationResponse();
         }
 
         public string[] AuthenticationMethods => AuthMethods;

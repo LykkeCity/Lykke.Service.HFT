@@ -9,7 +9,7 @@ namespace Lykke.Service.HFT.Wamp.Client
 {
     public class Program
     {
-        private const string ServerAddress = "ws://localhost:5002/ws";
+        private const string ServerAddress = "ws://localhost:5000/ws";
         private const string Realm = "HftApi";
         private static readonly TimeSpan RetryTimeout = TimeSpan.FromSeconds(5);
         private const string TopicUri = "orders.limit";
@@ -25,7 +25,8 @@ namespace Lykke.Service.HFT.Wamp.Client
             var apiKey = args[0];
 
             var factory = new DefaultWampChannelFactory();
-            var authenticator = new TicketAuthenticator(apiKey);
+            //var authenticator = new TicketAuthenticator(apiKey);
+            var authenticator = new BasicAuthenticator(apiKey);
             var channel = factory.CreateJsonChannel(ServerAddress, Realm, authenticator);
             channel.RealmProxy.Monitor.ConnectionBroken += Monitor_ConnectionBroken;
             channel.RealmProxy.Monitor.ConnectionError += Monitor_ConnectionError;

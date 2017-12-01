@@ -5,6 +5,8 @@ namespace Lykke.Service.HFT.Wamp.Auth
 {
     public class HftClientStaticAuthorizer : IWampAuthorizer
     {
+        public static HftClientStaticAuthorizer Instance = new HftClientStaticAuthorizer();
+
         public bool CanRegister(RegisterOptions options, string procedure)
         {
             return false;

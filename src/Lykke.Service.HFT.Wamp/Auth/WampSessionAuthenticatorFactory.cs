@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Linq;
 using JetBrains.Annotations;
 using Lykke.Service.HFT.Core.Services.ApiKey;
 using WampSharp.V2.Authentication;
@@ -19,7 +20,11 @@ namespace Lykke.Service.HFT.Wamp.Auth
 
         public IWampSessionAuthenticator GetSessionAuthenticator(WampPendingClientDetails details, IWampSessionAuthenticator transportAuthenticator)
         {
-            return new ApiKeyWampSessionAuthenticator(details, _apiKeyValidator, _clientResolver);
+            if (details.HelloDetails.AuthenticationMethods.Contains(AuthMethods.Ticket))
+            {
+                return new TicketSessionAuthenticator(details, _apiKeyValidator, _clientResolver);
+            }
+            return new BasicSessionAuthenticator(details, _apiKeyValidator, _clientResolver);
         }
     }
 }
