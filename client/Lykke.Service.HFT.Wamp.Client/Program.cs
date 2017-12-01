@@ -9,25 +9,31 @@ namespace Lykke.Service.HFT.Wamp.Client
 {
     public class Program
     {
-        private const string ServerAddress = "ws://localhost:5000/ws";
-        private const string Realm = "HftApi";
+        private static string _serverAddress = "ws://localhost:5000/ws";
+        private static string _realm = "HftApi";
         private static readonly TimeSpan RetryTimeout = TimeSpan.FromSeconds(5);
-        private const string TopicUri = "orders.limit";
+        private static string _topicUri = "orders.limit";
 
         public static int Main(string[] args)
         {
-            if (args.Length != 1)
+            if (args.Length == 0)
             {
-                Console.WriteLine("Wrong number of arguments. Expected: client id.");
+                Console.WriteLine("Wrong number of arguments. Expected: <client id> <server address> <realm> <topic>.");
                 return -1;
             }
 
             var apiKey = args[0];
+            if (args.Length > 1)
+                _serverAddress = args[1];
+            if (args.Length > 2)
+                _realm = args[2];
+            if (args.Length > 3)
+                _topicUri = args[3];
 
             var factory = new DefaultWampChannelFactory();
             //var authenticator = new TicketAuthenticator(apiKey);
             var authenticator = new BasicAuthenticator(apiKey);
-            var channel = factory.CreateJsonChannel(ServerAddress, Realm, authenticator);
+            var channel = factory.CreateJsonChannel(_serverAddress, _realm, authenticator);
             channel.RealmProxy.Monitor.ConnectionBroken += Monitor_ConnectionBroken;
             channel.RealmProxy.Monitor.ConnectionError += Monitor_ConnectionError;
             channel.RealmProxy.Monitor.ConnectionEstablished += Monitor_ConnectionEstablished;
@@ -36,7 +42,7 @@ namespace Lykke.Service.HFT.Wamp.Client
             {
                 try
                 {
-                    Console.WriteLine($"Trying to connect to server {ServerAddress}...");
+                    Console.WriteLine($"Trying to connect to server {_serverAddress}...");
                     channel.Open().Wait();
                 }
                 catch
@@ -71,7 +77,7 @@ namespace Lykke.Service.HFT.Wamp.Client
 
         private static IDisposable Subscribe(IWampRealmProxy proxy)
         {
-            var subject = proxy.Services.GetSubject<LimitOrderUpdateEvent>(TopicUri);
+            var subject = proxy.Services.GetSubject<LimitOrderUpdateEvent>(_topicUri);
             var subscription = subject
                 .Subscribe(info =>
                 {
