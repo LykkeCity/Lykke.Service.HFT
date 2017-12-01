@@ -48,7 +48,7 @@ namespace Lykke.Service.HFT.Services
             var batch = _redisDatabase.CreateBatch();
             foreach (var key in keys)
             {
-                tasks.Add(batch.HashSetAsync(_settings.ApiKeyCacheInstance + _settings.GetApiKey(key.Id.ToString()),
+                tasks.Add(batch.HashSetAsync(_settings.ApiKeyCacheInstance + _settings.GetKeyForApiKey(key.Id.ToString()),
                     "data", key.WalletId));
             }
             batch.Execute();

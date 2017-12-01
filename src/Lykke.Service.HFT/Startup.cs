@@ -83,7 +83,7 @@ namespace Lykke.Service.HFT
                 builder.RegisterModule(new MongoDbModule(appSettings.Nested(x => x.HighFrequencyTradingService.MongoSettings)));
                 builder.RegisterModule(new RedisModule(appSettings.CurrentValue.HighFrequencyTradingService.CacheSettings));
                 builder.RegisterModule(new ClientsModule(appSettings, Log));
-                builder.RegisterModule(new WampModule());
+                builder.RegisterModule(new WampModule(appSettings.CurrentValue.HighFrequencyTradingService));
                 builder.Populate(services);
 
                 ApplicationContainer = builder.Build();

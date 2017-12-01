@@ -20,6 +20,8 @@ namespace Lykke.Service.HFT.Services.Consumers
 
         public ApiKeysConsumer(ILog log, AppSettings.RabbitMqSettings settings, IDistributedCache distributedCache, CacheSettings cacheSettings)
         {
+            return; // todo: enable when HFT Internal will be ready to publish such messages
+
             _log = log ?? throw new ArgumentNullException(nameof(log));
             if (settings == null)
                 throw new ArgumentNullException(nameof(settings));
@@ -39,7 +41,7 @@ namespace Lykke.Service.HFT.Services.Consumers
                 _subscriber = new RabbitMqSubscriber<ApiKeyUpdatedMessage>(subscriptionSettings, new DefaultErrorHandlingStrategy(_log, subscriptionSettings))
                     .SetMessageDeserializer(new JsonMessageDeserializer<ApiKeyUpdatedMessage>())
                     .SetMessageReadStrategy(new MessageReadWithTemporaryQueueStrategy())
-                    .Subscribe(ProcessLimitOrder)
+                    .Subscribe(Process)
                     .SetLogger(_log)
                     .Start();
             }
@@ -50,17 +52,17 @@ namespace Lykke.Service.HFT.Services.Consumers
             }
         }
 
-        private async Task ProcessLimitOrder(ApiKeyUpdatedMessage ordersUpdateMessage)
+        private async Task Process(ApiKeyUpdatedMessage message)
         {
-            var apiKey = ordersUpdateMessage.ApiKey;
+            var apiKey = message.ApiKey;
             if (apiKey.ValidTill.HasValue)
             {
-                await _distributedCache.RemoveAsync(_cacheSettings.GetApiKey(apiKey.Id.ToString()));
-                await _distributedCache.RemoveAsync(_cacheSettings.GetNotificationId(apiKey.WalletId));
+                await _distributedCache.RemoveAsync(_cacheSettings.GetKeyForApiKey(apiKey.Id.ToString()));
+                await _distributedCache.RemoveAsync(_cacheSettings.GetKeyForNotificationId(apiKey.WalletId));
             }
             else
             {
-                await _distributedCache.SetStringAsync(_cacheSettings.GetApiKey(apiKey.Id.ToString()), apiKey.WalletId);
+                await _distributedCache.SetStringAsync(_cacheSettings.GetKeyForApiKey(apiKey.Id.ToString()), apiKey.WalletId);
             }
         }
 

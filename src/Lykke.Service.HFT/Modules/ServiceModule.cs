@@ -32,8 +32,6 @@ namespace Lykke.Service.HFT.Modules
                 .SingleInstance();
             builder.RegisterInstance(currentSettings.HighFrequencyTradingService.CacheSettings)
                 .SingleInstance();
-            builder.RegisterInstance(currentSettings.HighFrequencyTradingService.LimitOrdersFeed)
-                .SingleInstance();
 
             builder.RegisterInstance(_log)
                 .As<ILog>()
@@ -48,7 +46,7 @@ namespace Lykke.Service.HFT.Modules
             RegisterOrderStates(builder);
 
             BindRedis(builder, currentSettings.HighFrequencyTradingService.CacheSettings);
-            BindRabbitMq(builder, currentSettings.HighFrequencyTradingService.LimitOrdersFeed);
+            BindRabbitMq(builder, currentSettings.HighFrequencyTradingService);
         }
 
         private void BindRedis(ContainerBuilder builder, CacheSettings settings)
@@ -121,10 +119,13 @@ namespace Lykke.Service.HFT.Modules
                 .SingleInstance();
         }
 
-        private void BindRabbitMq(ContainerBuilder builder, AppSettings.RabbitMqSettings settings)
+        private void BindRabbitMq(ContainerBuilder builder, AppSettings.HighFrequencyTradingSettings settings)
         {
             builder.RegisterType<LimitOrdersConsumer>()
-                .WithParameter(TypedParameter.From(settings))
+                .WithParameter(TypedParameter.From(settings.LimitOrdersFeed))
+                .SingleInstance().AutoActivate();
+            builder.RegisterType<ApiKeysConsumer>()
+                .WithParameter(TypedParameter.From(settings.ApiKeysFeed))
                 .SingleInstance().AutoActivate();
         }
 
