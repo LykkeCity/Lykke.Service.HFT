@@ -6,9 +6,9 @@ using Lykke.RabbitMqBroker;
 using Lykke.RabbitMqBroker.Subscriber;
 using Lykke.Service.HFT.Core;
 using Lykke.Service.HFT.Core.Domain;
-using Lykke.Service.HFT.Services.Messages;
+using Lykke.Service.HFT.Services.Consumers.Messages;
 
-namespace Lykke.Service.HFT.Services
+namespace Lykke.Service.HFT.Services.Consumers
 {
     public class LimitOrdersConsumer : IDisposable
     {
@@ -20,7 +20,6 @@ namespace Lykke.Service.HFT.Services
 
         public LimitOrdersConsumer(ILog log, AppSettings.RabbitMqSettings settings, IRepository<LimitOrderState> orderStateRepository)
         {
-            return;
             _log = log ?? throw new ArgumentNullException(nameof(log));
             if (settings == null)
                 throw new ArgumentNullException(nameof(settings));

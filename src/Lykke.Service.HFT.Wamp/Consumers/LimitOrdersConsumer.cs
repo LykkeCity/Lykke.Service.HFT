@@ -10,7 +10,7 @@ using Lykke.Service.HFT.Contracts.Events;
 using Lykke.Service.HFT.Core;
 using Lykke.Service.HFT.Core.Domain;
 using Lykke.Service.HFT.Core.Services.ApiKey;
-using Lykke.Service.HFT.Wamp.Messages;
+using Lykke.Service.HFT.Wamp.Consumers.Messages;
 using WampSharp.V2;
 using WampSharp.V2.Core.Contracts;
 using WampSharp.V2.Realm;

@@ -7,6 +7,7 @@ using Lykke.Service.HFT.Core.Services;
 using Lykke.Service.HFT.Core.Services.ApiKey;
 using Lykke.Service.HFT.MongoRepositories;
 using Lykke.Service.HFT.Services;
+using Lykke.Service.HFT.Services.Consumers;
 using Lykke.SettingsReader;
 using Microsoft.Extensions.Caching.Distributed;
 using Microsoft.Extensions.Caching.Redis;

@@ -1,6 +1,6 @@
 ﻿using Lykke.Service.HFT.Core.Domain;
 
-namespace Lykke.Service.HFT.Services.Messages
+namespace Lykke.Service.HFT.Services.Consumers.Messages
 {
     public class ApiKeyUpdatedMessage
     {

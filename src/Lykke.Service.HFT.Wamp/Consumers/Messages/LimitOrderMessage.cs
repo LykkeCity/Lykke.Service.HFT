@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace Lykke.Service.HFT.Wamp.Messages
+namespace Lykke.Service.HFT.Wamp.Consumers.Messages
 {
     public class LimitOrderMessage
     {
@@ -38,5 +38,45 @@ namespace Lykke.Service.HFT.Wamp.Messages
             public string OppositeClientId { get; set; }
             public double OppositeVolume { get; set; }
         }
+    }
+
+    public enum OrderStatus
+    {
+        /// <summary>
+        /// Initial status, limit order is going to be processed.
+        /// </summary>
+        Pending,
+        /// <summary>
+        /// Limit order in order book.
+        /// </summary>
+        InOrderBook,
+        /// <summary>
+        /// Partially matched.
+        /// </summary>
+        Processing,
+        /// <summary>
+        /// Fully matched.
+        /// </summary>
+        Matched,
+        /// <summary>
+        /// Not enough funds on account.
+        /// </summary>
+        NotEnoughFunds,
+        /// <summary>
+        /// No liquidity.
+        /// </summary>
+        NoLiquidity,
+        /// <summary>
+        /// Unknown asset.
+        /// </summary>
+        UnknownAsset,
+        /// <summary>
+        /// Cancelled.
+        /// </summary>
+        Cancelled,
+        /// <summary>
+        /// Lead to negative spread
+        /// </summary>
+        LeadToNegativeSpread
     }
 }

@@ -4,10 +4,10 @@ using Common.Log;
 using Lykke.RabbitMqBroker;
 using Lykke.RabbitMqBroker.Subscriber;
 using Lykke.Service.HFT.Core;
-using Lykke.Service.HFT.Services.Messages;
+using Lykke.Service.HFT.Services.Consumers.Messages;
 using Microsoft.Extensions.Caching.Distributed;
 
-namespace Lykke.Service.HFT.Services
+namespace Lykke.Service.HFT.Services.Consumers
 {
     public class ApiKeysConsumer : IDisposable
     {
