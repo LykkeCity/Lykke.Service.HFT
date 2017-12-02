@@ -57,6 +57,6 @@ namespace Lykke.Service.HFT.Wamp.Auth
 
         public override string AuthenticationId { get; }
 
-        public override string AuthenticationMethod => AuthMethods.Anonymous;
+        public override string AuthenticationMethod => AuthMethods.Basic;
     }
 }

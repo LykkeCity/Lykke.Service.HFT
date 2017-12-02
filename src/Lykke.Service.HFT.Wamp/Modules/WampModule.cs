@@ -21,22 +21,10 @@ namespace Lykke.Service.HFT.Wamp.Modules
         protected override void Load(ContainerBuilder builder)
         {
             builder.RegisterType<WampSessionAuthenticatorFactory>()
-                .WithParameter(
-                    new ResolvedParameter(
-                        (pi, ctx) => pi.ParameterType == typeof(IApiKeyValidator),
-                        (pi, ctx) => ctx.Resolve<IApiKeyValidator>()))
-                .WithParameter(
-                    new ResolvedParameter(
-                        (pi, ctx) => pi.ParameterType == typeof(IClientResolver),
-                        (pi, ctx) => ctx.Resolve<IClientResolver>()))
                 .As<IWampSessionAuthenticatorFactory>()
                 .SingleInstance();
 
             builder.RegisterType<WampAuthenticationHost>()
-                .WithParameter(
-                    new ResolvedParameter(
-                        (pi, ctx) => pi.ParameterType == typeof(IWampSessionAuthenticatorFactory),
-                        (pi, ctx) => ctx.Resolve<IWampSessionAuthenticatorFactory>()))
                 .As<IWampHost>()
                 .SingleInstance();
 

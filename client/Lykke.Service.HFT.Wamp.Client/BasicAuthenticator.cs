@@ -6,7 +6,7 @@ namespace Lykke.Service.HFT.Wamp.Client
 {
     public class BasicAuthenticator : IWampClientAuthenticator
     {
-        private const string AuthMethod = "anonymous";
+        private const string AuthMethod = "basic";
         private static readonly string[] AuthMethods = { AuthMethod };
 
         public BasicAuthenticator(string authId)
