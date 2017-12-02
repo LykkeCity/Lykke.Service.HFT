@@ -7,6 +7,7 @@ using Lykke.Service.HFT.Core.Services;
 using Lykke.Service.HFT.Core.Services.ApiKey;
 using Lykke.Service.HFT.MongoRepositories;
 using Lykke.Service.HFT.Services;
+using Lykke.Service.HFT.Services.Consumers;
 using Lykke.SettingsReader;
 using Microsoft.Extensions.Caching.Distributed;
 using Microsoft.Extensions.Caching.Redis;
@@ -42,10 +43,10 @@ namespace Lykke.Service.HFT.Modules
 
             RegisterAssets(builder);
 
-            RegisterOrderBookStates(builder);
+            RegisterOrderStates(builder);
 
             BindRedis(builder, currentSettings.HighFrequencyTradingService.CacheSettings);
-            BindRabbitMq(builder, currentSettings.HighFrequencyTradingService.LimitOrdersFeed);
+            BindRabbitMq(builder, currentSettings.HighFrequencyTradingService);
         }
 
         private void BindRedis(ContainerBuilder builder, CacheSettings settings)
@@ -118,14 +119,17 @@ namespace Lykke.Service.HFT.Modules
                 .SingleInstance();
         }
 
-        private void BindRabbitMq(ContainerBuilder builder, AppSettings.RabbitMqSettings settings)
+        private void BindRabbitMq(ContainerBuilder builder, AppSettings.HighFrequencyTradingSettings settings)
         {
             builder.RegisterType<LimitOrdersConsumer>()
-                .WithParameter(TypedParameter.From(settings))
+                .WithParameter(TypedParameter.From(settings.LimitOrdersFeed))
+                .SingleInstance().AutoActivate();
+            builder.RegisterType<ApiKeysConsumer>()
+                .WithParameter(TypedParameter.From(settings.ApiKeysFeed))
                 .SingleInstance().AutoActivate();
         }
 
-        private void RegisterOrderBookStates(ContainerBuilder builder)
+        private void RegisterOrderStates(ContainerBuilder builder)
         {
             builder.RegisterType<MongoRepository<LimitOrderState>>()
                 .As<IRepository<LimitOrderState>>()

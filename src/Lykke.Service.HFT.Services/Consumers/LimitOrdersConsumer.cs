@@ -6,16 +6,16 @@ using Lykke.RabbitMqBroker;
 using Lykke.RabbitMqBroker.Subscriber;
 using Lykke.Service.HFT.Core;
 using Lykke.Service.HFT.Core.Domain;
-using Lykke.Service.HFT.Services.Messages;
+using Lykke.Service.HFT.Services.Consumers.Messages;
 
-namespace Lykke.Service.HFT.Services
+namespace Lykke.Service.HFT.Services.Consumers
 {
     public class LimitOrdersConsumer : IDisposable
     {
         private readonly ILog _log;
         private readonly IRepository<LimitOrderState> _orderStateRepository;
         private readonly RabbitMqSubscriber<LimitOrderMessage> _subscriber;
-        private const string QueueName = "highfrequencytrading";
+        private const string QueueName = "highfrequencytrading-api";
         private const bool QueueDurable = false;
 
         public LimitOrdersConsumer(ILog log, AppSettings.RabbitMqSettings settings, IRepository<LimitOrderState> orderStateRepository)

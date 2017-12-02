@@ -55,7 +55,7 @@ namespace Lykke.Service.HFT.Services
 
         private async Task<OrderBook> GetOrderBook(string assetPair, bool buy)
         {
-            var orderBook = await _distributedCache.GetStringAsync(_settings.GetOrderBookKey(assetPair, buy));
+            var orderBook = await _distributedCache.GetStringAsync(_settings.GetKeyForOrderBook(assetPair, buy));
             return orderBook != null ? NetJSON.NetJSON.Deserialize<OrderBook>(orderBook) :
                 new OrderBook { AssetPair = assetPair, IsBuy = buy, Timestamp = DateTime.UtcNow };
         }
