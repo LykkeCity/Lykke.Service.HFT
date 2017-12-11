@@ -109,7 +109,7 @@ namespace Lykke.Service.HFT.Controllers
                 var model = ResponseModel<double>.CreateFail(ResponseModel.ErrorCodeType.UnknownAsset);
                 return BadRequest(model);
             }
-            if (IsAssetDisabled(assetPair))
+            if (IsAssetPairDisabled(assetPair))
             {
                 return BadRequest(ResponseModel.CreateInvalidFieldError("AssetPairId", $"AssetPair {order.AssetPairId} is temporarily disabled"));
             }
@@ -167,7 +167,7 @@ namespace Lykke.Service.HFT.Controllers
                 var model = ResponseModel.CreateFail(ResponseModel.ErrorCodeType.UnknownAsset);
                 return BadRequest(model);
             }
-            if (IsAssetDisabled(assetPair))
+            if (IsAssetPairDisabled(assetPair))
             {
                 return BadRequest(ResponseModel.CreateInvalidFieldError("AssetPairId", $"AssetPair {order.AssetPairId} is temporarily disabled"));
             }
@@ -256,7 +256,7 @@ namespace Lykke.Service.HFT.Controllers
             return ResponseModel.CreateInvalidFieldError(field, message);
         }
 
-        private bool IsAssetDisabled(Lykke.Service.Assets.Client.Models.AssetPair assetPair)
+        private bool IsAssetPairDisabled(Assets.Client.Models.AssetPair assetPair)
         {
             return IsAssetDisabled(assetPair.BaseAssetId) || IsAssetDisabled(assetPair.QuotingAssetId);
         }
