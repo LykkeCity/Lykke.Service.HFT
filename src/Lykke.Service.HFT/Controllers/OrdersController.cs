@@ -263,7 +263,7 @@ namespace Lykke.Service.HFT.Controllers
 
         private bool IsAssetDisabled(string asset)
         {
-            return _appSettings.DisabledAssets.Contains(asset);
+            return _appSettings.DisabledAssets != null && _appSettings.DisabledAssets.Contains(asset);
         }
     }
 }

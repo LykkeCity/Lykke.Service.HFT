@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Net;
+using Lykke.SettingsReader.Attributes;
 
 namespace Lykke.Service.HFT.Core
 {
@@ -16,6 +17,7 @@ namespace Lykke.Service.HFT.Core
 
         public class HighFrequencyTradingSettings
         {
+            [Optional]
             public List<string> DisabledAssets { get; set; }
             public DbSettings Db { get; set; }
             public DictionariesSettings Dictionaries { get; set; }
