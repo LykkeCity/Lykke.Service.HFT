@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Net;
 
 namespace Lykke.Service.HFT.Core
@@ -15,6 +16,7 @@ namespace Lykke.Service.HFT.Core
 
         public class HighFrequencyTradingSettings
         {
+            public List<string> DisabledAssets { get; set; }
             public DbSettings Db { get; set; }
             public DictionariesSettings Dictionaries { get; set; }
             public CacheSettings CacheSettings { get; set; }

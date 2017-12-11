@@ -32,6 +32,8 @@ namespace Lykke.Service.HFT.Modules
                 .SingleInstance();
             builder.RegisterInstance(currentSettings.HighFrequencyTradingService.CacheSettings)
                 .SingleInstance();
+            builder.RegisterInstance(currentSettings.HighFrequencyTradingService)
+                .SingleInstance();
 
             builder.RegisterInstance(_log)
                 .As<ILog>()

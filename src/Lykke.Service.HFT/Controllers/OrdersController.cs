@@ -4,6 +4,7 @@ using System.Linq;
 using System.Net;
 using System.Threading.Tasks;
 using Common;
+using JetBrains.Annotations;
 using Lykke.Service.HFT.Core;
 using Lykke.Service.HFT.Core.Domain;
 using Lykke.Service.HFT.Core.Services;
@@ -20,6 +21,7 @@ namespace Lykke.Service.HFT.Controllers
     [Route("api/[controller]")]
     public class OrdersController : Controller
     {
+        private readonly AppSettings.HighFrequencyTradingSettings _appSettings;
         private readonly IMatchingEngineAdapter _matchingEngineAdapter;
         private readonly IAssetServiceDecorator _assetServiceDecorator;
         private readonly IRepository<LimitOrderState> _orderStateRepository;
@@ -31,16 +33,18 @@ namespace Lykke.Service.HFT.Controllers
             IAssetServiceDecorator assetServiceDecorator,
             IRepository<LimitOrderState> orderStateRepository,
             IOrderBooksService orderBooksService,
-            ExchangeSettings settings)
+            ExchangeSettings exchangeSettings,
+            [NotNull] AppSettings.HighFrequencyTradingSettings appSettings)
         {
+            _appSettings = appSettings ?? throw new ArgumentNullException(nameof(appSettings));
             _matchingEngineAdapter = frequencyTradingService ?? throw new ArgumentNullException(nameof(frequencyTradingService));
             _assetServiceDecorator = assetServiceDecorator ?? throw new ArgumentNullException(nameof(assetServiceDecorator));
             _orderStateRepository = orderStateRepository ?? throw new ArgumentNullException(nameof(orderStateRepository));
             _orderBooksService = orderBooksService ?? throw new ArgumentNullException(nameof(orderBooksService));
 
-            if (settings == null)
-                throw new ArgumentNullException(nameof(settings));
-            _deviation = (double)settings.MaxLimitOrderDeviationPercent / 100;
+            if (exchangeSettings == null)
+                throw new ArgumentNullException(nameof(exchangeSettings));
+            _deviation = (double)exchangeSettings.MaxLimitOrderDeviationPercent / 100;
         }
 
         /// <summary>
@@ -105,6 +109,10 @@ namespace Lykke.Service.HFT.Controllers
                 var model = ResponseModel<double>.CreateFail(ResponseModel.ErrorCodeType.UnknownAsset);
                 return BadRequest(model);
             }
+            if (IsAssetPairDisabled(assetPair))
+            {
+                return BadRequest(ResponseModel.CreateInvalidFieldError("AssetPairId", $"AssetPair {order.AssetPairId} is temporarily disabled"));
+            }
 
             var baseAsset = await _assetServiceDecorator.GetEnabledAssetAsync(assetPair.BaseAssetId);
             var quotingAsset = await _assetServiceDecorator.GetEnabledAssetAsync(assetPair.QuotingAssetId);
@@ -158,6 +166,10 @@ namespace Lykke.Service.HFT.Controllers
             {
                 var model = ResponseModel.CreateFail(ResponseModel.ErrorCodeType.UnknownAsset);
                 return BadRequest(model);
+            }
+            if (IsAssetPairDisabled(assetPair))
+            {
+                return BadRequest(ResponseModel.CreateInvalidFieldError("AssetPairId", $"AssetPair {order.AssetPairId} is temporarily disabled"));
             }
 
             var bestPrice = await _orderBooksService.GetBestPrice(order.AssetPairId, order.OrderAction == OrderAction.Buy);
@@ -231,7 +243,7 @@ namespace Lykke.Service.HFT.Controllers
 
             var response = await _matchingEngineAdapter.CancelLimitOrderAsync(id);
             if (response.Error != null)
-            { 
+            {
                 return BadRequest(response);
             }
             return Ok();
@@ -242,6 +254,16 @@ namespace Lykke.Service.HFT.Controllers
             var field = modelState.Keys.First();
             var message = modelState[field].Errors.First().ErrorMessage;
             return ResponseModel.CreateInvalidFieldError(field, message);
+        }
+
+        private bool IsAssetPairDisabled(Assets.Client.Models.AssetPair assetPair)
+        {
+            return IsAssetDisabled(assetPair.BaseAssetId) || IsAssetDisabled(assetPair.QuotingAssetId);
+        }
+
+        private bool IsAssetDisabled(string asset)
+        {
+            return _appSettings.DisabledAssets.Contains(asset);
         }
     }
 }
