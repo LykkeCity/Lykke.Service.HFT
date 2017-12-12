@@ -1,6 +1,7 @@
 ﻿using System;
 using Autofac;
-using Common;
+using Common.Log;
+using JetBrains.Annotations;
 using Lykke.MatchingEngine.Connector.Services;
 using Lykke.Service.HFT.Core;
 using Lykke.Service.HFT.Core.Services;
@@ -13,16 +14,21 @@ namespace Lykke.Service.HFT.Modules
     {
         private readonly IReloadingManager<AppSettings.MatchingEngineSettings> _settings;
         private readonly IReloadingManager<AppSettings.HighFrequencyTradingSettings> _hftSettings;
+        private readonly ILog _log;
 
-        public MatchingEngineModule(IReloadingManager<AppSettings.MatchingEngineSettings> settings, IReloadingManager<AppSettings.HighFrequencyTradingSettings> hftSettings)
+        public MatchingEngineModule(
+            [NotNull] IReloadingManager<AppSettings.MatchingEngineSettings> settings,
+            [NotNull] IReloadingManager<AppSettings.HighFrequencyTradingSettings> hftSettings,
+            [NotNull] ILog log)
         {
-            _settings = settings;
-            _hftSettings = hftSettings;
+            _settings = settings ?? throw new ArgumentNullException(nameof(settings));
+            _hftSettings = hftSettings ?? throw new ArgumentNullException(nameof(hftSettings));
+            _log = log ?? throw new ArgumentNullException(nameof(log));
         }
 
         protected override void Load(ContainerBuilder builder)
         {
-            var socketLog = new SocketLogDynamic(i => { }, str => Console.WriteLine(DateTime.UtcNow.ToIsoDateTime() + ": " + str));
+            var socketLog = new SocketLogDynamic(i => { }, str => _log.WriteInfoAsync("Lykke.MatchingEngine.Connector", "IMatchingEngineClient", str).Wait());
 
             builder.BindMeClient(_settings.CurrentValue.IpEndpoint.GetClientIpEndPoint(), socketLog);
 
