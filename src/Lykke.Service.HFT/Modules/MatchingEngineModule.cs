@@ -27,7 +27,7 @@ namespace Lykke.Service.HFT.Modules
 
         protected override void Load(ContainerBuilder builder)
         {
-            builder.BindMeClient(_settings.CurrentValue.IpEndpoint.GetClientIpEndPoint(), null, true);
+            builder.BindMeClient(_settings.CurrentValue.IpEndpoint.GetClientIpEndPoint(), socketLog: null, ignoreErrors: true);
 
             builder.RegisterType<MatchingEngineAdapter>()
                 .As<IMatchingEngineAdapter>()
