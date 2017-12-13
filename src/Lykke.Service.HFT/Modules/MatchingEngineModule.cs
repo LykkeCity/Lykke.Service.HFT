@@ -1,5 +1,6 @@
 ﻿using System;
 using Autofac;
+using Common;
 using Common.Log;
 using JetBrains.Annotations;
 using Lykke.MatchingEngine.Connector.Services;
@@ -28,8 +29,7 @@ namespace Lykke.Service.HFT.Modules
 
         protected override void Load(ContainerBuilder builder)
         {
-            var meVersion = typeof(SocketLogDynamic).Assembly.GetName().Version.ToString();
-            var socketLog = new SocketLogDynamic(i => { }, str => _log.WriteInfoAsync($"ME connector {meVersion}", "socket log", str).Wait());
+            var socketLog = new SocketLogDynamic(i => { }, str => Console.WriteLine(DateTime.UtcNow.ToIsoDateTime() + ": " + str));
 
             builder.BindMeClient(_settings.CurrentValue.IpEndpoint.GetClientIpEndPoint(), socketLog);
 
