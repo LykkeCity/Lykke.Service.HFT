@@ -1,9 +1,7 @@
 ﻿using System;
 using Autofac;
-using Common;
 using Common.Log;
 using JetBrains.Annotations;
-using Lykke.MatchingEngine.Connector.Services;
 using Lykke.Service.HFT.Core;
 using Lykke.Service.HFT.Core.Services;
 using Lykke.Service.HFT.Services;
@@ -29,9 +27,7 @@ namespace Lykke.Service.HFT.Modules
 
         protected override void Load(ContainerBuilder builder)
         {
-            var socketLog = new SocketLogDynamic(i => { }, str => Console.WriteLine(DateTime.UtcNow.ToIsoDateTime() + ": " + str));
-
-            builder.BindMeClient(_settings.CurrentValue.IpEndpoint.GetClientIpEndPoint(), socketLog);
+            builder.BindMeClient(_settings.CurrentValue.IpEndpoint.GetClientIpEndPoint(), null, true);
 
             builder.RegisterType<MatchingEngineAdapter>()
                 .As<IMatchingEngineAdapter>()
