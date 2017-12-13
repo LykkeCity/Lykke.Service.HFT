@@ -2,6 +2,6 @@
 {
     public static class Constants
     {
-        public const string ComponentName = "Lykke.Service.HighFrequencyTrading";
+        public const string ComponentName = "HFT API (high-frequency-trading-service)";
     }
 }
