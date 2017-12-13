@@ -36,7 +36,7 @@
     <PackageReference Include="Lykke.Common.ApiLibrary" Version="1.0.20" />
     <PackageReference Include="Lykke.Http" Version="1.0.0" />
     <PackageReference Include="Lykke.Logs" Version="3.4.1" />
-    <PackageReference Include="Lykke.MatchingEngineConnector" Version="1.0.23" />
+    <PackageReference Include="Lykke.MatchingEngineConnector" Version="1.0.26" />
     <PackageReference Include="Lykke.Service.Balances.Client" Version="1.0.17" />
     <PackageReference Include="Lykke.Service.FeeCalculator.Client" Version="1.0.5" />
     <PackageReference Include="Lykke.Service.Session" Version="1.0.33" />
