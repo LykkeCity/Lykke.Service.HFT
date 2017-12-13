@@ -28,7 +28,7 @@ namespace Lykke.Service.HFT.Modules
 
         protected override void Load(ContainerBuilder builder)
         {
-            var socketLog = new SocketLogDynamic(i => { }, str => _log.WriteInfoAsync("Lykke.MatchingEngine.Connector", "IMatchingEngineClient", str).Wait());
+            var socketLog = new SocketLogDynamic(i => { }, str => _log.WriteInfoAsync("ME socket log", string.Empty, str).Wait());
 
             builder.BindMeClient(_settings.CurrentValue.IpEndpoint.GetClientIpEndPoint(), socketLog);
 
