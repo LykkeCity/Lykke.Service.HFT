@@ -28,7 +28,8 @@ namespace Lykke.Service.HFT.Modules
 
         protected override void Load(ContainerBuilder builder)
         {
-            var socketLog = new SocketLogDynamic(i => { }, str => _log.WriteInfoAsync("ME socket log", string.Empty, str).Wait());
+            var meVersion = typeof(SocketLogDynamic).Assembly.GetName().Version.ToString();
+            var socketLog = new SocketLogDynamic(i => { }, str => _log.WriteInfoAsync($"ME connector {meVersion}", "socket log", str).Wait());
 
             builder.BindMeClient(_settings.CurrentValue.IpEndpoint.GetClientIpEndPoint(), socketLog);
 
