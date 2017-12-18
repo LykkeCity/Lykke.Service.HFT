@@ -76,6 +76,7 @@ namespace Lykke.Service.HFT
                 Log = CreateLogWithSlack(services, appSettings);
 
                 ConfigureRateLimits(services, appSettings.CurrentValue.HighFrequencyTradingService.IpRateLimiting);
+                builder.Populate(services);
 
                 builder.RegisterModule(new ServiceModule(appSettings, Log));
                 builder.RegisterModule(new MatchingEngineModule(appSettings.Nested(x => x.MatchingEngineClient),
@@ -84,7 +85,6 @@ namespace Lykke.Service.HFT
                 builder.RegisterModule(new RedisModule(appSettings.CurrentValue.HighFrequencyTradingService.CacheSettings));
                 builder.RegisterModule(new ClientsModule(appSettings, Log));
                 builder.RegisterModule(new WampModule(appSettings.CurrentValue.HighFrequencyTradingService));
-                builder.Populate(services);
 
                 ApplicationContainer = builder.Build();
 
