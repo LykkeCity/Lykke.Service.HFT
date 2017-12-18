@@ -20,8 +20,6 @@ namespace Lykke.Service.HFT.Services.Consumers
 
         public ApiKeysConsumer(ILog log, AppSettings.RabbitMqSettings settings, IDistributedCache distributedCache, CacheSettings cacheSettings)
         {
-            return; // todo: enable when HFT Internal will be ready to publish such messages
-
             _log = log ?? throw new ArgumentNullException(nameof(log));
             if (settings == null)
                 throw new ArgumentNullException(nameof(settings));
@@ -55,14 +53,16 @@ namespace Lykke.Service.HFT.Services.Consumers
         private async Task Process(ApiKeyUpdatedMessage message)
         {
             var apiKey = message.ApiKey;
-            if (apiKey.ValidTill.HasValue)
+            await _log.WriteInfoAsync(nameof(ApiKeysConsumer), message.ApiKey.Id.ToString().Substring(0, 4), $"enabled: {message.ApiKey.Enabled}");
+            if (apiKey.Enabled)
             {
-                await _distributedCache.RemoveAsync(_cacheSettings.GetKeyForApiKey(apiKey.Id.ToString()));
-                await _distributedCache.RemoveAsync(_cacheSettings.GetKeyForNotificationId(apiKey.WalletId));
+                await _distributedCache.SetStringAsync(_cacheSettings.GetKeyForApiKey(apiKey.Id.ToString()),
+                    apiKey.WalletId);
             }
             else
             {
-                await _distributedCache.SetStringAsync(_cacheSettings.GetKeyForApiKey(apiKey.Id.ToString()), apiKey.WalletId);
+                await _distributedCache.RemoveAsync(_cacheSettings.GetKeyForApiKey(apiKey.Id.ToString()));
+                await _distributedCache.RemoveAsync(_cacheSettings.GetKeyForNotificationId(apiKey.WalletId));
             }
         }
 
