@@ -4,7 +4,7 @@
 // regenerated.
 // </auto-generated>
 
-namespace Lykke.Service.HFT.Client.AutorestClient.Models
+namespace Lykke.Service.HFT.AutorestClient.Models
 {
     using Newtonsoft.Json;
     using Newtonsoft.Json.Converters;

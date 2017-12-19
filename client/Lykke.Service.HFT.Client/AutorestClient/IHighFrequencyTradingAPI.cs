@@ -4,7 +4,7 @@
 // regenerated.
 // </auto-generated>
 
-namespace Lykke.Service.HFT.Client.AutorestClient
+namespace Lykke.Service.HFT.AutorestClient
 {
     using Microsoft.Rest;
     using Models;
@@ -58,6 +58,46 @@ namespace Lykke.Service.HFT.Client.AutorestClient
         /// The cancellation token.
         /// </param>
         Task<HttpOperationResponse<AssetPairModel>> GetAssetPairWithHttpMessagesAsync(string id, Dictionary<string, List<string>> customHeaders = null, CancellationToken cancellationToken = default(CancellationToken));
+
+        /// <summary>
+        /// Get trades
+        /// </summary>
+        /// <param name='take'>
+        /// How many maximum items have to be returned
+        /// </param>
+        /// <param name='skip'>
+        /// How many items skip before returning
+        /// </param>
+        /// <param name='apiKey'>
+        /// access token
+        /// </param>
+        /// <param name='assetId'>
+        /// Asset identifier
+        /// </param>
+        /// <param name='customHeaders'>
+        /// The headers that will be added to request.
+        /// </param>
+        /// <param name='cancellationToken'>
+        /// The cancellation token.
+        /// </param>
+        Task<HttpOperationResponse<object>> GetTradesWithHttpMessagesAsync(int take, int skip, string apiKey, string assetId = default(string), Dictionary<string, List<string>> customHeaders = null, CancellationToken cancellationToken = default(CancellationToken));
+
+        /// <summary>
+        /// Get trade details by id
+        /// </summary>
+        /// <param name='tradeId'>
+        /// Trade identifier
+        /// </param>
+        /// <param name='apiKey'>
+        /// access token
+        /// </param>
+        /// <param name='customHeaders'>
+        /// The headers that will be added to request.
+        /// </param>
+        /// <param name='cancellationToken'>
+        /// The cancellation token.
+        /// </param>
+        Task<HttpOperationResponse<HistoryTradeModel>> GetTradeWithHttpMessagesAsync(string tradeId, string apiKey, Dictionary<string, List<string>> customHeaders = null, CancellationToken cancellationToken = default(CancellationToken));
 
         /// <summary>
         /// Checks service is alive

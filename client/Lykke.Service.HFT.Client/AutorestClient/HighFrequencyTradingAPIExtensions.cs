@@ -4,7 +4,7 @@
 // regenerated.
 // </auto-generated>
 
-namespace Lykke.Service.HFT.Client.AutorestClient
+namespace Lykke.Service.HFT.AutorestClient
 {
     using Models;
     using System.Collections;
@@ -74,6 +74,98 @@ namespace Lykke.Service.HFT.Client.AutorestClient
             public static async Task<AssetPairModel> GetAssetPairAsync(this IHighFrequencytradingAPI operations, string id, CancellationToken cancellationToken = default(CancellationToken))
             {
                 using (var _result = await operations.GetAssetPairWithHttpMessagesAsync(id, null, cancellationToken).ConfigureAwait(false))
+                {
+                    return _result.Body;
+                }
+            }
+
+            /// <summary>
+            /// Get trades
+            /// </summary>
+            /// <param name='operations'>
+            /// The operations group for this extension method.
+            /// </param>
+            /// <param name='take'>
+            /// How many maximum items have to be returned
+            /// </param>
+            /// <param name='skip'>
+            /// How many items skip before returning
+            /// </param>
+            /// <param name='apiKey'>
+            /// access token
+            /// </param>
+            /// <param name='assetId'>
+            /// Asset identifier
+            /// </param>
+            public static object GetTrades(this IHighFrequencytradingAPI operations, int take, int skip, string apiKey, string assetId = default(string))
+            {
+                return operations.GetTradesAsync(take, skip, apiKey, assetId).GetAwaiter().GetResult();
+            }
+
+            /// <summary>
+            /// Get trades
+            /// </summary>
+            /// <param name='operations'>
+            /// The operations group for this extension method.
+            /// </param>
+            /// <param name='take'>
+            /// How many maximum items have to be returned
+            /// </param>
+            /// <param name='skip'>
+            /// How many items skip before returning
+            /// </param>
+            /// <param name='apiKey'>
+            /// access token
+            /// </param>
+            /// <param name='assetId'>
+            /// Asset identifier
+            /// </param>
+            /// <param name='cancellationToken'>
+            /// The cancellation token.
+            /// </param>
+            public static async Task<object> GetTradesAsync(this IHighFrequencytradingAPI operations, int take, int skip, string apiKey, string assetId = default(string), CancellationToken cancellationToken = default(CancellationToken))
+            {
+                using (var _result = await operations.GetTradesWithHttpMessagesAsync(take, skip, apiKey, assetId, null, cancellationToken).ConfigureAwait(false))
+                {
+                    return _result.Body;
+                }
+            }
+
+            /// <summary>
+            /// Get trade details by id
+            /// </summary>
+            /// <param name='operations'>
+            /// The operations group for this extension method.
+            /// </param>
+            /// <param name='tradeId'>
+            /// Trade identifier
+            /// </param>
+            /// <param name='apiKey'>
+            /// access token
+            /// </param>
+            public static HistoryTradeModel GetTrade(this IHighFrequencytradingAPI operations, string tradeId, string apiKey)
+            {
+                return operations.GetTradeAsync(tradeId, apiKey).GetAwaiter().GetResult();
+            }
+
+            /// <summary>
+            /// Get trade details by id
+            /// </summary>
+            /// <param name='operations'>
+            /// The operations group for this extension method.
+            /// </param>
+            /// <param name='tradeId'>
+            /// Trade identifier
+            /// </param>
+            /// <param name='apiKey'>
+            /// access token
+            /// </param>
+            /// <param name='cancellationToken'>
+            /// The cancellation token.
+            /// </param>
+            public static async Task<HistoryTradeModel> GetTradeAsync(this IHighFrequencytradingAPI operations, string tradeId, string apiKey, CancellationToken cancellationToken = default(CancellationToken))
+            {
+                using (var _result = await operations.GetTradeWithHttpMessagesAsync(tradeId, apiKey, null, cancellationToken).ConfigureAwait(false))
                 {
                     return _result.Body;
                 }
