@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Net;
+using Lykke.Service.OperationsHistory.Client;
 
 namespace Lykke.Service.HFT.Core
 {
@@ -13,6 +14,7 @@ namespace Lykke.Service.HFT.Core
         public AssetsServiceClient AssetsServiceClient { get; set; }
         public BalancesServiceClient BalancesServiceClient { get; set; }
         public FeeCalculatorServiceClient FeeCalculatorServiceClient { get; set; }
+        public OperationsHistoryServiceClientSettings OperationsHistoryServiceClient { get; set; }
 
         public class HighFrequencyTradingSettings
         {

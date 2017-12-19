@@ -8,6 +8,7 @@ using Lykke.Service.FeeCalculator.Client;
 using Lykke.SettingsReader;
 using Lykke.Service.HFT.Core;
 using Microsoft.Extensions.DependencyInjection;
+using Lykke.Service.OperationsHistory.Client;
 
 namespace Lykke.Service.HFT.Modules
 {
@@ -34,6 +35,8 @@ namespace Lykke.Service.HFT.Modules
             _services.RegisterAssetsClient(AssetServiceSettings.Create(
                 new Uri(_settings.CurrentValue.AssetsServiceClient.ServiceUrl),
                 _settings.CurrentValue.HighFrequencyTradingService.Dictionaries.CacheExpirationPeriod));
+
+            builder.RegisterOperationsHistoryClient(_settings.CurrentValue.OperationsHistoryServiceClient, _log);
 
             builder.Populate(_services);
         }

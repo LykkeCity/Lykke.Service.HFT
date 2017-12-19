@@ -1,7 +1,7 @@
 ﻿using System;
 using Autofac;
 using Common.Log;
-using Lykke.Service.HFT.Client.AutorestClient;
+using Lykke.Service.HFT.AutorestClient;
 
 namespace Lykke.Service.HFT.Client
 {

@@ -1,4 +1,5 @@
 ﻿using Lykke.Service.Assets.Client.Models;
+using Lykke.Service.OperationsRepository.Contract.Cash;
 
 namespace Lykke.Service.HFT.Models
 {
@@ -17,6 +18,21 @@ namespace Lykke.Service.HFT.Models
                 InvertedAccuracy = src.InvertedAccuracy,
                 BaseAssetId = src.BaseAssetId,
                 QuotingAssetId = src.QuotingAssetId
+            };
+        }
+
+        public static HistoryTradeModel ConvertToApiModel(this ClientTradeDto src)
+        {
+            return new HistoryTradeModel
+            {
+                AssetId = src.AssetId,
+                DateTime = src.DateTime,
+                Id = src.Id,
+                LimitOrderId = src.LimitOrderId,
+                MarketOrderId = src.MarketOrderId,
+                Price = src.Price,
+                Amount = src.Amount,
+                State = src.State.ToString()
             };
         }
     }
