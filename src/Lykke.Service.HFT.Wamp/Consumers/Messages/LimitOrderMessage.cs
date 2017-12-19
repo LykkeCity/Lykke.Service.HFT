@@ -77,6 +77,7 @@ namespace Lykke.Service.HFT.Wamp.Consumers.Messages
         /// <summary>
         /// Lead to negative spread
         /// </summary>
-        LeadToNegativeSpread
+        LeadToNegativeSpread,
+        ReservedVolumeGreaterThanBalance
     }
 }
