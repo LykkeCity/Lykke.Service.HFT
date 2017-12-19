@@ -59,7 +59,7 @@ namespace Lykke.Service.HFT.Controllers
         [HttpGet("trades/{tradeId}")]
         [SwaggerOperation("GetTrade")]
         [ProducesResponseType(typeof(HistoryTradeModel), (int) HttpStatusCode.OK)]
-        [ProducesResponseType(typeof(ErrorResponse), (int) HttpStatusCode.BadRequest)]
+        [ProducesResponseType(typeof(void), (int) HttpStatusCode.NotFound)]
         public async Task<IActionResult> GetTrade(string tradeId)
         {
             var walletId = User.GetUserId();
