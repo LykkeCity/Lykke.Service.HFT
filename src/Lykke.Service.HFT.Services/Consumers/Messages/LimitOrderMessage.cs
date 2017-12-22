@@ -1,9 +1,8 @@
 ﻿using System;
-using Lykke.Service.HFT.Core.Domain;
 
 namespace Lykke.Service.HFT.Services.Consumers.Messages
 {
-    public class LimitOrderMessage
+    class LimitOrderMessage
     {
         public LimitOrder[] Orders { get; set; }
 
@@ -38,6 +37,50 @@ namespace Lykke.Service.HFT.Services.Consumers.Messages
             public string OppositeAsset { get; set; }
             public string OppositeClientId { get; set; }
             public double OppositeVolume { get; set; }
+        }
+
+        public enum OrderStatus
+        {
+            /// <summary>
+            /// Initial status, limit order is going to be processed.
+            /// </summary>
+            Pending,
+            /// <summary>
+            /// Limit order in order book.
+            /// </summary>
+            InOrderBook,
+            /// <summary>
+            /// Partially matched.
+            /// </summary>
+            Processing,
+            /// <summary>
+            /// Fully matched.
+            /// </summary>
+            Matched,
+            /// <summary>
+            /// Not enough funds on account.
+            /// </summary>
+            NotEnoughFunds,
+            /// <summary>
+            /// No liquidity.
+            /// </summary>
+            NoLiquidity,
+            /// <summary>
+            /// Unknown asset.
+            /// </summary>
+            UnknownAsset,
+            /// <summary>
+            /// Cancelled.
+            /// </summary>
+            Cancelled,
+            /// <summary>
+            /// Lead to negative spread
+            /// </summary>
+            LeadToNegativeSpread,
+            /// <summary>
+            /// Not enough funds on account.
+            /// </summary>
+            ReservedVolumeGreaterThanBalance
         }
     }
 }

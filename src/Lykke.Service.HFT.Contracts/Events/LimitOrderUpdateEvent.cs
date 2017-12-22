@@ -66,7 +66,6 @@ namespace Lykke.Service.HFT.Contracts.Events
         /// <summary>
         /// Lead to negative spread
         /// </summary>
-        LeadToNegativeSpread,
-        ReservedVolumeGreaterThanBalance
+        LeadToNegativeSpread
     }
 }

@@ -236,7 +236,7 @@ namespace Lykke.Service.HFT.Controllers
                 return Forbid();
             }
             if (order.Status == OrderStatus.Cancelled || order.Status == OrderStatus.NoLiquidity || order.Status == OrderStatus.NotEnoughFunds ||
-                order.Status == OrderStatus.UnknownAsset || order.Status == OrderStatus.LeadToNegativeSpread || order.Status == OrderStatus.ReservedVolumeGreaterThanBalance)
+                order.Status == OrderStatus.UnknownAsset || order.Status == OrderStatus.LeadToNegativeSpread)
             {
                 return Ok();
             }
