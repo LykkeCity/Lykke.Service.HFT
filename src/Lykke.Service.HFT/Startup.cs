@@ -21,6 +21,7 @@ using Lykke.SettingsReader;
 using Lykke.SlackNotification.AzureQueue;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using WampSharp.V2;
@@ -101,6 +102,16 @@ namespace Lykke.Service.HFT
         {
             try
             {
+                var mode = ApplicationContainer.ResolveOptional<AppSettings.MaintenanceMode>();
+                if (mode != null && mode.Enabled)
+                {
+                    app.Use(async (context, next) =>
+                    {
+                        context.Response.StatusCode = 503;
+                        await context.Response.WriteAsync(mode.Reason ?? "Service on maintenance");
+                    });
+                }
+
                 if (env.IsDevelopment())
                 {
                     app.UseDeveloperExceptionPage();
