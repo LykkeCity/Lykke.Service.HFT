@@ -39,6 +39,12 @@ namespace Lykke.Service.HFT.Modules
                 .As<ILog>()
                 .SingleInstance();
 
+            if (currentSettings.HighFrequencyTradingService.MaintenanceMode != null)
+            {
+                builder.RegisterInstance(currentSettings.HighFrequencyTradingService.MaintenanceMode)
+                    .AsSelf();
+            }
+
             RegisterApiKeyService(builder);
 
             RegisterOrderBooks(builder);
