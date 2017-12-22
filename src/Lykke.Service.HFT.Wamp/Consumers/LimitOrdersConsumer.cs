@@ -14,7 +14,6 @@ using Lykke.Service.HFT.Wamp.Consumers.Messages;
 using WampSharp.V2;
 using WampSharp.V2.Core.Contracts;
 using WampSharp.V2.Realm;
-using LimitOrderState = Lykke.Service.HFT.Core.Domain.LimitOrderState;
 
 namespace Lykke.Service.HFT.Wamp.Consumers
 {
@@ -82,7 +81,9 @@ namespace Lykke.Service.HFT.Wamp.Consumers
                             Order = new Order
                             {
                                 Id = orderId,
-                                Status = (Contracts.Events.OrderStatus)order.Order.Status,
+                                Status = order.Order.Status == LimitOrderMessage.OrderStatus.ReservedVolumeGreaterThanBalance
+                                    ? Contracts.Events.OrderStatus.NotEnoughFunds
+                                    : (Contracts.Events.OrderStatus)order.Order.Status,
                                 AssetPairId = order.Order.AssetPairId,
                                 Volume = order.Order.Volume,
                                 Price = order.Order.Price,

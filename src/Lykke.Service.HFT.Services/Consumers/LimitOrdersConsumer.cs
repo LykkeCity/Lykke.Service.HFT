@@ -59,7 +59,9 @@ namespace Lykke.Service.HFT.Services.Consumers
                     if (orderState != null)
                     {
                         // these properties cannot change: Id, ClientId, AssetPairId, Price; ignoring them
-                        orderState.Status = order.Order.Status;
+                        orderState.Status = order.Order.Status == LimitOrderMessage.OrderStatus.ReservedVolumeGreaterThanBalance
+                            ? OrderStatus.NotEnoughFunds
+                            : (OrderStatus)order.Order.Status;
                         orderState.Volume = order.Order.Volume;
                         orderState.RemainingVolume = order.Order.RemainingVolume;
                         orderState.LastMatchTime = order.Order.LastMatchTime;
