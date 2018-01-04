@@ -8,7 +8,6 @@ namespace Lykke.Service.HFT.Models
         public DateTime DateTime { get; set; }
         public string LimitOrderId { get; set; }
         public string MarketOrderId { get; set; }
-        public double Price { get; set; }
         public double Amount { get; set; }
         public string AssetId { get; set; }
         public string State { get; set; }
