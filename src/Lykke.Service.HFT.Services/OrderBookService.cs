@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Threading.Tasks;
 using Lykke.Service.HFT.Core;
 using Lykke.Service.HFT.Core.Domain;
@@ -58,26 +57,6 @@ namespace Lykke.Service.HFT.Services
             var orderBook = await _distributedCache.GetStringAsync(_settings.GetKeyForOrderBook(assetPair, buy));
             return orderBook != null ? NetJSON.NetJSON.Deserialize<OrderBook>(orderBook) :
                 new OrderBook { AssetPair = assetPair, IsBuy = buy, Timestamp = DateTime.UtcNow };
-        }
-
-        public async Task<double?> GetBestPrice(string assetPair, bool buy)
-        {
-            var orderBook = await GetOrderBook(assetPair, buy);
-
-            var price = GetBestPrice(orderBook);
-            if (price.HasValue && price.Value > 0)
-                return price;
-
-            orderBook = await GetOrderBook(assetPair, !buy);
-            price = GetBestPrice(orderBook);
-            return price;
-        }
-
-        private double? GetBestPrice(OrderBook orderBook)
-        {
-            if (orderBook.Prices.Count == 0)
-                return null;
-            return orderBook.IsBuy ? orderBook.Prices.Min(x => x.Price) : orderBook.Prices.Max(x => x.Price);
         }
     }
 }

@@ -11,7 +11,6 @@ namespace Lykke.Service.HFT.Core
         public HighFrequencyTradingSettings HighFrequencyTradingService { get; set; }
         public MatchingEngineSettings MatchingEngineClient { get; set; }
         public SlackNotificationsSettings SlackNotifications { get; set; }
-        public ExchangeSettings Exchange { get; set; }
         public AssetsServiceClient AssetsServiceClient { get; set; }
         public BalancesServiceClient BalancesServiceClient { get; set; }
         public FeeCalculatorServiceClient FeeCalculatorServiceClient { get; set; }
@@ -123,12 +122,7 @@ namespace Lykke.Service.HFT.Core
 
         public string QueueName { get; set; }
     }
-
-    public class ExchangeSettings
-    {
-        public decimal MaxLimitOrderDeviationPercent { get; set; }
-    }
-
+    
     public class FeesSettings
     {
         public string TargetClientId { get; set; }
