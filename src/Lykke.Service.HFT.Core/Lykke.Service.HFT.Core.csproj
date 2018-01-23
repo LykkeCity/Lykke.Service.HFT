@@ -8,10 +8,10 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="Lykke.Common" Version="3.0.2" />
+    <PackageReference Include="Lykke.Common" Version="4.2.0" />
     <PackageReference Include="Lykke.Service.Assets.Client" Version="2.0.8.2" />
-    <PackageReference Include="Lykke.Service.OperationsHistory.Client" Version="1.0.15" />
-    <PackageReference Include="Lykke.SettingsReader" Version="1.0.43" />
+    <PackageReference Include="Lykke.Service.OperationsHistory.Client" Version="1.0.16" />
+    <PackageReference Include="Lykke.SettingsReader" Version="1.1.4" />
   </ItemGroup>
 
   <ItemGroup>
