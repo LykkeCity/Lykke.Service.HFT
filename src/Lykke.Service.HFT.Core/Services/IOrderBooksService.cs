@@ -8,6 +8,5 @@ namespace Lykke.Service.HFT.Core.Services
     {
         Task<IEnumerable<OrderBook>> GetAllAsync();
         Task<IEnumerable<OrderBook>> GetAsync(string assetPairId);
-        Task<double?> GetBestPrice(string assetPair, bool buy);
     }
 }

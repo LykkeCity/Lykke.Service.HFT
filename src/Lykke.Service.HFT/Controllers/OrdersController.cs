@@ -25,26 +25,17 @@ namespace Lykke.Service.HFT.Controllers
         private readonly IMatchingEngineAdapter _matchingEngineAdapter;
         private readonly IAssetServiceDecorator _assetServiceDecorator;
         private readonly IRepository<LimitOrderState> _orderStateRepository;
-        private readonly IOrderBooksService _orderBooksService;
-        private readonly double _deviation;
 
         public OrdersController(
             IMatchingEngineAdapter frequencyTradingService,
             IAssetServiceDecorator assetServiceDecorator,
             IRepository<LimitOrderState> orderStateRepository,
-            IOrderBooksService orderBooksService,
-            ExchangeSettings exchangeSettings,
             [NotNull] AppSettings.HighFrequencyTradingSettings appSettings)
         {
             _appSettings = appSettings ?? throw new ArgumentNullException(nameof(appSettings));
             _matchingEngineAdapter = frequencyTradingService ?? throw new ArgumentNullException(nameof(frequencyTradingService));
             _assetServiceDecorator = assetServiceDecorator ?? throw new ArgumentNullException(nameof(assetServiceDecorator));
             _orderStateRepository = orderStateRepository ?? throw new ArgumentNullException(nameof(orderStateRepository));
-            _orderBooksService = orderBooksService ?? throw new ArgumentNullException(nameof(orderBooksService));
-
-            if (exchangeSettings == null)
-                throw new ArgumentNullException(nameof(exchangeSettings));
-            _deviation = (double)exchangeSettings.MaxLimitOrderDeviationPercent / 100;
         }
 
         /// <summary>
@@ -171,17 +162,7 @@ namespace Lykke.Service.HFT.Controllers
             {
                 return BadRequest(ResponseModel.CreateInvalidFieldError("AssetPairId", $"AssetPair {order.AssetPairId} is temporarily disabled"));
             }
-
-            var bestPrice = await _orderBooksService.GetBestPrice(order.AssetPairId, order.OrderAction == OrderAction.Buy);
-            if (bestPrice.HasValue)
-            {
-                if (order.OrderAction == OrderAction.Buy && bestPrice * (1 - _deviation) > order.Price
-                    || order.OrderAction == OrderAction.Sell && bestPrice * (1 + _deviation) < order.Price)
-                {
-                    return BadRequest(ResponseModel.CreateFail(ResponseModel.ErrorCodeType.PriceGapTooHigh));
-                }
-            }
-
+            
             var asset = await _assetServiceDecorator.GetEnabledAssetAsync(assetPair.BaseAssetId);
             if (asset == null)
             {

@@ -28,8 +28,6 @@ namespace Lykke.Service.HFT.Modules
         protected override void Load(ContainerBuilder builder)
         {
             var currentSettings = _settings.CurrentValue;
-            builder.RegisterInstance(currentSettings.Exchange)
-                .SingleInstance();
             builder.RegisterInstance(currentSettings.HighFrequencyTradingService.CacheSettings)
                 .SingleInstance();
             builder.RegisterInstance(currentSettings.HighFrequencyTradingService)
