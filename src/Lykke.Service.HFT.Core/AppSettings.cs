@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Net;
 using Lykke.Service.OperationsHistory.Client;
+using Lykke.SettingsReader.Attributes;
 
 namespace Lykke.Service.HFT.Core
 {
@@ -18,6 +19,8 @@ namespace Lykke.Service.HFT.Core
 
         public class HighFrequencyTradingSettings
         {
+            [Optional]
+            public MaintenanceMode MaintenanceMode { get; set; }
             public List<string> DisabledAssets { get; set; }
             public DbSettings Db { get; set; }
             public DictionariesSettings Dictionaries { get; set; }
@@ -27,6 +30,12 @@ namespace Lykke.Service.HFT.Core
             public MongoSettings MongoSettings { get; set; }
             public RateLimitSettings.RateLimitCoreOptions IpRateLimiting { get; set; }
             public FeesSettings Fees { get; set; }
+        }
+
+        public class MaintenanceMode
+        {
+            public bool Enabled { get; set; }
+            public string Reason { get; set; }
         }
 
         public class MongoSettings
