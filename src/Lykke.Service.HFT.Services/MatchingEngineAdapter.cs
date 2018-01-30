@@ -22,9 +22,8 @@ namespace Lykke.Service.HFT.Services
         private readonly IAssetsService _assetsService;
         private readonly FeesSettings _feesSettings;
 
-        private readonly Dictionary<MeStatusCodes, ResponseModel.ErrorCodeType> _statusCodesMap = new Dictionary<MeStatusCodes, ResponseModel.ErrorCodeType>
+        private static readonly Dictionary<MeStatusCodes, ResponseModel.ErrorCodeType> StatusCodesMap = new Dictionary<MeStatusCodes, ResponseModel.ErrorCodeType>
         {
-            {MeStatusCodes.Ok, ResponseModel.ErrorCodeType.Ok},
             {MeStatusCodes.LowBalance, ResponseModel.ErrorCodeType.LowBalance},
             {MeStatusCodes.AlreadyProcessed, ResponseModel.ErrorCodeType.AlreadyProcessed},
             {MeStatusCodes.UnknownAsset, ResponseModel.ErrorCodeType.UnknownAsset},
@@ -35,14 +34,16 @@ namespace Lykke.Service.HFT.Services
             {MeStatusCodes.NotFound, ResponseModel.ErrorCodeType.NotFound},
             {MeStatusCodes.BalanceLowerThanReserved, ResponseModel.ErrorCodeType.BalanceLowerThanReserved},
             {MeStatusCodes.LeadToNegativeSpread, ResponseModel.ErrorCodeType.LeadToNegativeSpread},
-            {MeStatusCodes.Runtime, ResponseModel.ErrorCodeType.RuntimeError}
+            {MeStatusCodes.TooSmallVolume, ResponseModel.ErrorCodeType.Dust},
+            {MeStatusCodes.InvalidFee, ResponseModel.ErrorCodeType.Runtime},
+            {MeStatusCodes.Duplicate, ResponseModel.ErrorCodeType.Runtime},
+            {MeStatusCodes.Runtime, ResponseModel.ErrorCodeType.Runtime}
         };
 
-
         public MatchingEngineAdapter(IMatchingEngineClient matchingEngineClient,
-            IRepository<LimitOrderState> orderStateRepository, 
+            IRepository<LimitOrderState> orderStateRepository,
             IFeeCalculatorClient feeCalculatorClient,
-            IAssetsService assetsService, 
+            IAssetsService assetsService,
             FeesSettings feesSettings,
             [NotNull] ILog log)
         {
@@ -139,12 +140,12 @@ namespace Lykke.Service.HFT.Services
             if (status == MeStatusCodes.Ok)
                 return ResponseModel.CreateOk();
 
-            return ResponseModel.CreateFail(_statusCodesMap[status]);
+            return ResponseModel.CreateFail(StatusCodesMap[status]);
         }
 
         private ResponseModel<T> ConvertToApiModel<T>(MeStatusCodes status)
         {
-            return ResponseModel<T>.CreateFail(_statusCodesMap[status]);
+            return ResponseModel<T>.CreateFail(StatusCodesMap[status]);
         }
 
         private async Task<MarketOrderFeeModel> GetMarketOrderFee(string clientId, string assetPairId, Core.Domain.OrderAction orderAction)
