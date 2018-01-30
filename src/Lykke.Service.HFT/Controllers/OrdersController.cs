@@ -9,6 +9,7 @@ using Lykke.Service.HFT.Core;
 using Lykke.Service.HFT.Core.Domain;
 using Lykke.Service.HFT.Core.Services;
 using Lykke.Service.HFT.Helpers;
+using Lykke.Service.HFT.Models;
 using Lykke.Service.HFT.Models.Requests;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -21,15 +22,16 @@ namespace Lykke.Service.HFT.Controllers
     [Route("api/[controller]")]
     public class OrdersController : Controller
     {
+        private const int MaxPageSize = 1000;
         private readonly AppSettings.HighFrequencyTradingSettings _appSettings;
         private readonly IMatchingEngineAdapter _matchingEngineAdapter;
         private readonly IAssetServiceDecorator _assetServiceDecorator;
-        private readonly IRepository<LimitOrderState> _orderStateRepository;
+        private readonly IRepository<Core.Domain.LimitOrderState> _orderStateRepository;
 
         public OrdersController(
             IMatchingEngineAdapter frequencyTradingService,
             IAssetServiceDecorator assetServiceDecorator,
-            IRepository<LimitOrderState> orderStateRepository,
+            IRepository<Core.Domain.LimitOrderState> orderStateRepository,
             [NotNull] AppSettings.HighFrequencyTradingSettings appSettings)
         {
             _appSettings = appSettings ?? throw new ArgumentNullException(nameof(appSettings));
@@ -44,15 +46,20 @@ namespace Lykke.Service.HFT.Controllers
         /// <returns>Client orders.</returns>
         [HttpGet]
         [SwaggerOperation("GetOrders")]
-        [ProducesResponseType(typeof(IEnumerable<LimitOrderState>), (int)HttpStatusCode.OK)]
-        public async Task<IActionResult> GetOrders([FromQuery] OrderStatus? status = null)
+        [ProducesResponseType(typeof(IEnumerable<Models.LimitOrderState>), (int)HttpStatusCode.OK)]
+        [ProducesResponseType((int)HttpStatusCode.BadRequest)]
+        public async Task<IActionResult> GetOrders([FromQuery] OrderStatus? status = null, [FromQuery] uint? skip = 0, [FromQuery] uint? take = 100)
         {
+            if (take > MaxPageSize)
+                return BadRequest(ResponseModel.CreateInvalidFieldError("take", $"Page size {take} is to big"));
+
             var clientId = User.GetUserId();
             var orders = status.HasValue
-                ? _orderStateRepository.FilterBy(x => x.ClientId == clientId && x.Status == status.Value)
-                : _orderStateRepository.FilterBy(x => x.ClientId == clientId);
-            return Ok(orders.OrderByDescending(x => x.CreatedAt));
+                ? _orderStateRepository.All().Where(x => x.ClientId == clientId && x.Status == status.Value)
+                : _orderStateRepository.All().Where(x => x.ClientId == clientId);
+            return Ok(orders.OrderByDescending(x => x.CreatedAt).Skip((int)skip.Value).Take((int)take.Value).ToList().Select(x => x.ConvertToApiModel()));
         }
+
 
         /// <summary>
         /// Get the order info.
@@ -61,7 +68,7 @@ namespace Lykke.Service.HFT.Controllers
         /// <returns>Order info.</returns>
         [HttpGet("{id}")]
         [SwaggerOperation("GetOrder")]
-        [ProducesResponseType(typeof(LimitOrderState), (int)HttpStatusCode.OK)]
+        [ProducesResponseType(typeof(Models.LimitOrderState), (int)HttpStatusCode.OK)]
         [ProducesResponseType((int)HttpStatusCode.NotFound)]
         public async Task<IActionResult> GetOrder(Guid id)
         {
@@ -76,7 +83,7 @@ namespace Lykke.Service.HFT.Controllers
                 return NotFound();
             }
 
-            return Ok(order);
+            return Ok(order.ConvertToApiModel());
         }
 
         /// <summary>
@@ -162,7 +169,7 @@ namespace Lykke.Service.HFT.Controllers
             {
                 return BadRequest(ResponseModel.CreateInvalidFieldError("AssetPairId", $"AssetPair {order.AssetPairId} is temporarily disabled"));
             }
-            
+
             var asset = await _assetServiceDecorator.GetEnabledAssetAsync(assetPair.BaseAssetId);
             if (asset == null)
             {

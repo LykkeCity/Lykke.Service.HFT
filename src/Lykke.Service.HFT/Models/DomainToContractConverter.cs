@@ -35,5 +35,20 @@ namespace Lykke.Service.HFT.Models
                 State = src.State.ToString()
             };
         }
+
+        public static LimitOrderState ConvertToApiModel(this Core.Domain.LimitOrderState order)
+        {
+            return new LimitOrderState
+            {
+                Id = order.Id,
+                AssetPairId = order.AssetPairId,
+                CreatedAt = order.CreatedAt,
+                LastMatchTime = order.LastMatchTime,
+                Price = order.Price,
+                RemainingVolume = order.RemainingVolume,
+                Status = order.Status.ToString(),
+                Volume = order.Volume
+            };
+        }
     }
 }
