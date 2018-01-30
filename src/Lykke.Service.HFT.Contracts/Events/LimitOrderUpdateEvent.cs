@@ -31,27 +31,49 @@ namespace Lykke.Service.HFT.Contracts.Events
 
     public enum OrderStatus
     {
-        //Init status, limit order in order book
-        InOrderBook
-        //Partially matched
-        , Processing
-        //Fully matched
-        , Matched
-        //Not enough funds on account
-        , NotEnoughFunds
-        //Reserved volume greater than balance
-        , ReservedVolumeGreaterThanBalance
-        //No liquidity
-        , NoLiquidity
-        //Unknown asset
-        , UnknownAsset
-        //Cancelled
-        , Cancelled
-        //Lead to negative spread
-        , LeadToNegativeSpread
-        //Too small volume
-        , TooSmallVolume
-        //Unexpected status code
-        , Runtime
+        /// <summary>
+        /// Initial status, limit order in order book
+        /// </summary>
+        InOrderBook,
+        /// <summary>
+        /// Partially matched
+        /// </summary>
+        Processing,
+        /// <summary>
+        /// Fully matched
+        /// </summary>
+        Matched,
+        /// <summary>
+        /// Not enough funds on account
+        /// </summary>
+        NotEnoughFunds,
+        /// <summary>
+        /// Reserved volume greater than balance
+        /// </summary>
+        ReservedVolumeGreaterThanBalance,
+        /// <summary>
+        /// No liquidity
+        /// </summary>
+        NoLiquidity,
+        /// <summary>
+        /// Unknown asset
+        /// </summary>
+        UnknownAsset,
+        /// <summary>
+        /// Cancelled
+        /// </summary>
+        Cancelled,
+        /// <summary>
+        /// Lead to negative spread
+        /// </summary>
+        LeadToNegativeSpread,
+        /// <summary>
+        /// Too small volume
+        /// </summary>
+        TooSmallVolume,
+        /// <summary>
+        /// Unexpected status code
+        /// </summary>
+        Runtime
     }
 }

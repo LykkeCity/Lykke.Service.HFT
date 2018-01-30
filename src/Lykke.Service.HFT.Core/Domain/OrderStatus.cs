@@ -4,29 +4,53 @@
     {
         // values 4, 5, 6, 8 are used for DB compatibility reasons only; it should be ME related values
 
-        //Order request is not acknowledged.
+        /// <summary>
+        /// Order request is not acknowledged.
+        /// </summary>
         Pending = 0,
-        //Init status, limit order in order book
-        InOrderBook = 1
-        //Partially matched
-        , Processing = 2
-        //Fully matched
-        , Matched = 3
-        //Not enough funds on account
-        , NotEnoughFunds = 4
-        //No liquidity
-        , NoLiquidity = 5
-        //Unknown asset
-        , UnknownAsset = 6
-        //Cancelled
-        , Cancelled = 7
-        //Lead to negative spread
-        , LeadToNegativeSpread = 8
-        //Reserved volume greater than balance
-        , ReservedVolumeGreaterThanBalance = 414
-        //Too small volume
-        , TooSmallVolume = 418
-        //Unexpected status code
-        , Runtime = 500
+        /// <summary>
+        /// Init status, limit order in order book
+        /// </summary>
+        InOrderBook = 1,
+        /// <summary>
+        /// Partially matched
+        /// </summary>
+        Processing = 2,
+        /// <summary>
+        /// Fully matched
+        /// </summary>
+        Matched = 3,
+        /// <summary>
+        /// Not enough funds on account
+        /// </summary>
+        NotEnoughFunds = 4,
+        /// <summary>
+        /// No liquidity
+        /// </summary>
+        NoLiquidity = 5,
+        /// <summary>
+        /// Unknown asset
+        /// </summary>
+        UnknownAsset = 6,
+        /// <summary>
+        /// Cancelled
+        /// </summary>
+        Cancelled = 7,
+        /// <summary>
+        /// Lead to negative spread
+        /// </summary>
+        LeadToNegativeSpread = 8,
+        /// <summary>
+        /// Reserved volume greater than balance
+        /// </summary>
+        ReservedVolumeGreaterThanBalance = 414,
+        /// <summary>
+        /// Too small volume
+        /// </summary>
+        TooSmallVolume = 418,
+        /// <summary>
+        /// Unexpected status code
+        /// </summary>
+        Runtime = 500
     }
 }
