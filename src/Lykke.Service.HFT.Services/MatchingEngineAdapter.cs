@@ -113,7 +113,10 @@ namespace Lykke.Service.HFT.Services
             {
                 return ResponseModel<Guid>.CreateOk(requestId);
             }
-            return ConvertToApiModel<Guid>(response.Status);
+
+            var responseModel = ConvertToApiModel<Guid>(response.Status);
+            responseModel.Result = requestId;
+            return responseModel;
         }
 
         private Guid GetNextRequestId()
