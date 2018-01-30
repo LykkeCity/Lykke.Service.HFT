@@ -7,7 +7,6 @@ namespace Lykke.Service.HFT.Core.Domain
     {
         protected static readonly Dictionary<ErrorCodeType, string> StatusCodesMap = new Dictionary<ErrorCodeType, string>
         {
-            {ErrorCodeType.Ok, string.Empty},
             {ErrorCodeType.LowBalance, ErrorMessages.LowBalance},
             {ErrorCodeType.AlreadyProcessed, ErrorMessages.AlreadyProcessed},
             {ErrorCodeType.UnknownAsset, ErrorMessages.UnknownAsset},
@@ -16,17 +15,15 @@ namespace Lykke.Service.HFT.Core.Domain
             {ErrorCodeType.Dust, ErrorMessages.Dust},
             {ErrorCodeType.ReservedVolumeHigherThanBalance, ErrorMessages.ReservedVolumeHigherThanBalance},
             {ErrorCodeType.NotFound, ErrorMessages.NotFound},
-            {ErrorCodeType.RuntimeError, ErrorMessages.RuntimeError},
             {ErrorCodeType.BalanceLowerThanReserved, ErrorMessages.BalanceLowerThanReserved},
             {ErrorCodeType.LeadToNegativeSpread, ErrorMessages.LeadToNegativeSpread},
-            {ErrorCodeType.PriceGapTooHigh, ErrorMessages.PriceGapTooHigh}
+            {ErrorCodeType.Runtime, ErrorMessages.RuntimeError},
         };
         public ErrorModel Error { get; set; }
 
         public enum ErrorCodeType
         {
             InvalidInputField = 0,
-            Ok = 200,
             LowBalance = 401,
             AlreadyProcessed = 402,
             UnknownAsset = 410,
@@ -37,8 +34,7 @@ namespace Lykke.Service.HFT.Core.Domain
             NotFound = 415,
             BalanceLowerThanReserved = 416,
             LeadToNegativeSpread = 417,
-            PriceGapTooHigh = 491,
-            RuntimeError = 500
+            Runtime = 500
         }
 
         public class ErrorModel
