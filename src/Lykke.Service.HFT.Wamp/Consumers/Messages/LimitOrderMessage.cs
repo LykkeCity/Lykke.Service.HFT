@@ -42,35 +42,35 @@ namespace Lykke.Service.HFT.Wamp.Consumers.Messages
         public enum OrderStatus
         {
             /// <summary>
-            /// Initial status, limit order is going to be processed.
-            /// </summary>
-            Pending,
-            /// <summary>
-            /// Limit order in order book.
+            /// Initial status, limit order in order book
             /// </summary>
             InOrderBook,
             /// <summary>
-            /// Partially matched.
+            /// Partially matched
             /// </summary>
             Processing,
             /// <summary>
-            /// Fully matched.
+            /// Fully matched
             /// </summary>
             Matched,
             /// <summary>
-            /// Not enough funds on account.
+            /// Not enough funds on account
             /// </summary>
             NotEnoughFunds,
             /// <summary>
-            /// No liquidity.
+            /// Reserved volume greater than balance
+            /// </summary>
+            ReservedVolumeGreaterThanBalance,
+            /// <summary>
+            /// No liquidity
             /// </summary>
             NoLiquidity,
             /// <summary>
-            /// Unknown asset.
+            /// Unknown asset
             /// </summary>
             UnknownAsset,
             /// <summary>
-            /// Cancelled.
+            /// Cancelled
             /// </summary>
             Cancelled,
             /// <summary>
@@ -78,9 +78,13 @@ namespace Lykke.Service.HFT.Wamp.Consumers.Messages
             /// </summary>
             LeadToNegativeSpread,
             /// <summary>
-            /// Not enough funds on account.
+            /// Invalid fee
             /// </summary>
-            ReservedVolumeGreaterThanBalance
+            InvalidFee,
+            /// <summary>
+            /// Too small volume
+            /// </summary>
+            TooSmallVolume
         }
     }
 }

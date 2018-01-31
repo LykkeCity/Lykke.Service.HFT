@@ -77,13 +77,10 @@ namespace Lykke.Service.HFT.Wamp.Consumers
                     {
                         var notifyResponse = new LimitOrderUpdateEvent
                         {
-                            // todo: use AutoMapper
                             Order = new Order
                             {
                                 Id = orderId,
-                                Status = order.Order.Status == LimitOrderMessage.OrderStatus.ReservedVolumeGreaterThanBalance
-                                    ? Contracts.Events.OrderStatus.NotEnoughFunds
-                                    : (Contracts.Events.OrderStatus)order.Order.Status,
+                                Status = Enum.TryParse(order.Order.Status.ToString(), out Contracts.Events.OrderStatus status) ? status : Contracts.Events.OrderStatus.Runtime,
                                 AssetPairId = order.Order.AssetPairId,
                                 Volume = order.Order.Volume,
                                 Price = order.Order.Price,

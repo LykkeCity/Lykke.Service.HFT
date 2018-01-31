@@ -133,15 +133,6 @@ namespace Lykke.Service.HFT.Core.Strings {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Sorry, your order cannot be set. Price deviation is too high..
-        /// </summary>
-        internal static string PriceGapTooHigh {
-            get {
-                return ResourceManager.GetString("PriceGapTooHigh", resourceCulture);
-            }
-        }
-        
-        /// <summary>
         ///   Looks up a localized string similar to Reserved volume higher than balance.
         /// </summary>
         internal static string ReservedVolumeHigherThanBalance {
