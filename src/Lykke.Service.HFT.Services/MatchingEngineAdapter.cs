@@ -20,7 +20,7 @@ namespace Lykke.Service.HFT.Services
         private readonly IRepository<LimitOrderState> _orderStateRepository;
         private readonly IFeeCalculatorClient _feeCalculatorClient;
         private readonly IAssetsService _assetsService;
-        private readonly FeesSettings _feesSettings;
+        private readonly FeeSettings _feeSettings;
 
         private static readonly Dictionary<MeStatusCodes, ResponseModel.ErrorCodeType> StatusCodesMap = new Dictionary<MeStatusCodes, ResponseModel.ErrorCodeType>
         {
@@ -44,7 +44,7 @@ namespace Lykke.Service.HFT.Services
             IRepository<LimitOrderState> orderStateRepository,
             IFeeCalculatorClient feeCalculatorClient,
             IAssetsService assetsService,
-            FeesSettings feesSettings,
+            FeeSettings feeSettings,
             [NotNull] ILog log)
         {
             _matchingEngineClient =
@@ -53,7 +53,7 @@ namespace Lykke.Service.HFT.Services
                 orderStateRepository ?? throw new ArgumentNullException(nameof(orderStateRepository));
             _feeCalculatorClient = feeCalculatorClient ?? throw new ArgumentNullException(nameof(feeCalculatorClient));
             _assetsService = assetsService ?? throw new ArgumentNullException(nameof(assetsService));
-            _feesSettings = feesSettings ?? throw new ArgumentNullException(nameof(feesSettings));
+            _feeSettings = feeSettings ?? throw new ArgumentNullException(nameof(feeSettings));
             _log = log ?? throw new ArgumentNullException(nameof(log));
         }
 
@@ -158,7 +158,7 @@ namespace Lykke.Service.HFT.Services
             {
                 Size = (double)fee.DefaultFeeSize,
                 SourceClientId = clientId,
-                TargetClientId = _feesSettings.TargetClientId,
+                TargetClientId = _feeSettings.TargetClientId.Hft,
                 Type = (int)MarketOrderFeeType.CLIENT_FEE
             };
         }
@@ -173,7 +173,7 @@ namespace Lykke.Service.HFT.Services
                 MakerSize = (double)fee.MakerFeeSize,
                 TakerSize = (double)fee.TakerFeeSize,
                 SourceClientId = clientId,
-                TargetClientId = _feesSettings.TargetClientId,
+                TargetClientId = _feeSettings.TargetClientId.Hft,
                 Type = (int)LimitOrderFeeType.CLIENT_FEE
             };
         }

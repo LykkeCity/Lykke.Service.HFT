@@ -15,6 +15,7 @@ namespace Lykke.Service.HFT.Core
         public BalancesServiceClient BalancesServiceClient { get; set; }
         public FeeCalculatorServiceClient FeeCalculatorServiceClient { get; set; }
         public OperationsHistoryServiceClientSettings OperationsHistoryServiceClient { get; set; }
+        public FeeSettings FeeSettings { get; set; }
 
         public class HighFrequencyTradingSettings
         {
@@ -28,7 +29,6 @@ namespace Lykke.Service.HFT.Core
             public RabbitMqSettings ApiKeysFeed { get; set; }
             public MongoSettings MongoSettings { get; set; }
             public RateLimitSettings.RateLimitCoreOptions IpRateLimiting { get; set; }
-            public FeesSettings Fees { get; set; }
         }
 
         public class MaintenanceMode
@@ -123,9 +123,14 @@ namespace Lykke.Service.HFT.Core
         public string QueueName { get; set; }
     }
     
-    public class FeesSettings
+    public class FeeSettings
     {
-        public string TargetClientId { get; set; }
+        public TargetClientIdFeeSettings TargetClientId { get; set; }
+    }
+
+    public class TargetClientIdFeeSettings
+    {
+        public string Hft { get; set; }
     }
 
     public class AssetsServiceClient
