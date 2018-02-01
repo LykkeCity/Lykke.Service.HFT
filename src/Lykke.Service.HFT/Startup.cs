@@ -240,8 +240,8 @@ namespace Lykke.Service.HFT
                 }).ToList();
             });
 
-            services.AddSingleton<IClientPolicyStore, DistributedCacheClientPolicyStore>();
-            services.AddSingleton<IRateLimitCounterStore, DistributedCacheRateLimitCounterStore>();
+            services.AddSingleton<IClientPolicyStore, MemoryCacheClientPolicyStore>();
+            services.AddSingleton<IRateLimitCounterStore, MemoryCacheRateLimitCounterStore>();
         }
 
     }
