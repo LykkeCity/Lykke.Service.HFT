@@ -117,6 +117,8 @@ namespace Lykke.Service.HFT
                 }
 
                 app.UseLykkeMiddleware(Constants.ComponentName, ex => new { Message = "Technical problem" });
+
+                app.UseIpRateLimiting();
                 app.UseClientRateLimiting();
 
                 app.UseAuthentication();
@@ -227,6 +229,17 @@ namespace Lykke.Service.HFT
 
         private void ConfigureRateLimits(IServiceCollection services, RateLimitSettings.RateLimitCoreOptions rateLimitOptions)
         {
+            services.Configure<IpRateLimitOptions>(options =>
+            {
+                options.EnableEndpointRateLimiting = rateLimitOptions.EnableEndpointRateLimiting;
+                options.StackBlockedRequests = rateLimitOptions.StackBlockedRequests;
+                options.GeneralRules = rateLimitOptions.GeneralRules.Select(x => new RateLimitRule
+                {
+                    Endpoint = x.Endpoint,
+                    Limit = x.Limit,
+                    Period = x.Period
+                }).ToList();
+            });
             services.Configure<ClientRateLimitOptions>(options =>
             {
                 options.EnableEndpointRateLimiting = rateLimitOptions.EnableEndpointRateLimiting;
@@ -240,9 +253,9 @@ namespace Lykke.Service.HFT
                 }).ToList();
             });
 
+            services.AddSingleton<IIpPolicyStore, MemoryCacheIpPolicyStore>();
             services.AddSingleton<IClientPolicyStore, MemoryCacheClientPolicyStore>();
             services.AddSingleton<IRateLimitCounterStore, MemoryCacheRateLimitCounterStore>();
         }
-
     }
 }
