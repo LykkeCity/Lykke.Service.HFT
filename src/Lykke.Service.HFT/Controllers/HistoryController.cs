@@ -9,6 +9,7 @@ using Lykke.Service.OperationsRepository.Contract;
 using Lykke.Service.OperationsRepository.Contract.Cash;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Newtonsoft.Json;
 using Swashbuckle.AspNetCore.SwaggerGen;
 
 namespace Lykke.Service.HFT.Controllers
@@ -48,7 +49,7 @@ namespace Lykke.Service.HFT.Controllers
             }
 
             return Ok(response.Records.Select(x =>
-                NetJSON.NetJSON.Deserialize<ClientTradeDto>(x.CustomData).ConvertToApiModel()));
+                JsonConvert.DeserializeObject<ClientTradeDto>(x.CustomData).ConvertToApiModel()));
         }
 
         /// <summary>
@@ -71,7 +72,7 @@ namespace Lykke.Service.HFT.Controllers
                 return NotFound();
             }
 
-            return Ok(NetJSON.NetJSON.Deserialize<ClientTradeDto>(response.CustomData).ConvertToApiModel());
+            return Ok(JsonConvert.DeserializeObject<ClientTradeDto>(response.CustomData).ConvertToApiModel());
         }
     }
 }
