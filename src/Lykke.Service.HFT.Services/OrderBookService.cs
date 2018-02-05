@@ -5,6 +5,7 @@ using Lykke.Service.HFT.Core;
 using Lykke.Service.HFT.Core.Domain;
 using Lykke.Service.HFT.Core.Services;
 using Microsoft.Extensions.Caching.Distributed;
+using Newtonsoft.Json;
 
 namespace Lykke.Service.HFT.Services
 {
@@ -55,7 +56,7 @@ namespace Lykke.Service.HFT.Services
         private async Task<OrderBook> GetOrderBook(string assetPair, bool buy)
         {
             var orderBook = await _distributedCache.GetStringAsync(_settings.GetKeyForOrderBook(assetPair, buy));
-            return orderBook != null ? NetJSON.NetJSON.Deserialize<OrderBook>(orderBook) :
+            return orderBook != null ? JsonConvert.DeserializeObject<OrderBook>(orderBook) :
                 new OrderBook { AssetPair = assetPair, IsBuy = buy, Timestamp = DateTime.UtcNow };
         }
     }
