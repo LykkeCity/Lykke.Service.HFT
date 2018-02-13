@@ -1,6 +1,7 @@
 ﻿using Autofac;
 using Autofac.Core;
 using Common.Log;
+using Lykke.Service.HFT.Controllers;
 using Lykke.Service.HFT.Core;
 using Lykke.Service.HFT.Core.Domain;
 using Lykke.Service.HFT.Core.Services;
@@ -42,6 +43,9 @@ namespace Lykke.Service.HFT.Modules
                 builder.RegisterInstance(currentSettings.HighFrequencyTradingService.MaintenanceMode)
                     .AsSelf();
             }
+
+            builder.RegisterType<RequestValidator>()
+                .SingleInstance();
 
             RegisterApiKeyService(builder);
 
