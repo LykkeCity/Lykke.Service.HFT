@@ -123,7 +123,7 @@ namespace Lykke.Service.HFT.Wamp.Consumers
 
         public void Dispose()
         {
-            _subscriber.Stop();
+            _subscriber?.Stop();
         }
     }
 }
