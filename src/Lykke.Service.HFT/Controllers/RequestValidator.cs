@@ -41,6 +41,18 @@ namespace Lykke.Service.HFT.Controllers
             return true;
         }
 
+        public bool ValidatePrice(double price, out ResponseModel model)
+        {
+            if (Math.Abs(Math.Abs(price)) < double.Epsilon)
+            {
+                model = ResponseModel.CreateInvalidFieldError("Price", "Price must be greater than asset accuracy.");
+                return false;
+            }
+
+            model = null;
+            return true;
+        }
+
         public bool ValidateAsset(Assets.Client.Models.AssetPair assetPair, string assetId,
             Assets.Client.Models.Asset baseAsset, Assets.Client.Models.Asset quotingAsset, out ResponseModel model)
         {

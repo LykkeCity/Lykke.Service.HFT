@@ -1,7 +1,5 @@
 ﻿using Autofac;
-using Autofac.Core;
 using Lykke.Service.HFT.Core;
-using Lykke.Service.HFT.Core.Services.ApiKey;
 using Lykke.Service.HFT.Wamp.Auth;
 using Lykke.Service.HFT.Wamp.Consumers;
 using WampSharp.V2;

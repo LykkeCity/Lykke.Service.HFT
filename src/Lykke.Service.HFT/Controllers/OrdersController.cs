@@ -165,6 +165,12 @@ namespace Lykke.Service.HFT.Controllers
             if (asset == null)
                 throw new InvalidOperationException($"Base asset '{assetPair.BaseAssetId}' for asset pair '{assetPair.Id}' not found.");
 
+            var price = order.Price.TruncateDecimalPlaces(assetPair.Accuracy);
+            if (!_requestValidator.ValidatePrice(price, out badRequestModel))
+            {
+                return BadRequest(badRequestModel);
+            }
+
             var straight = order.OrderAction == OrderAction.Buy;
             var volume = order.Volume.TruncateDecimalPlaces(asset.Accuracy);
             var minVolume = straight ? assetPair.MinVolume : assetPair.MinInvertedVolume;
@@ -179,7 +185,7 @@ namespace Lykke.Service.HFT.Controllers
                 assetPairId: order.AssetPairId,
                 orderAction: order.OrderAction,
                 volume: volume,
-                price: order.Price.TruncateDecimalPlaces(assetPair.Accuracy));
+                price: price);
             if (response.Error != null)
             {
                 return BadRequest(response);
