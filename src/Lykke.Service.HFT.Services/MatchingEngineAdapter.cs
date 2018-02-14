@@ -156,10 +156,10 @@ namespace Lykke.Service.HFT.Services
 
             return new MarketOrderFeeModel
             {
-                Size = (double)fee.Amount,
+                Size = (double)fee.DefaultFeeSize,
                 SourceClientId = clientId,
                 TargetClientId = _feeSettings.TargetClientId.Hft,
-                Type = (int)fee.Type
+                Type = (int)MarketOrderFeeType.CLIENT_FEE
             };
         }
 
