@@ -159,7 +159,7 @@ namespace Lykke.Service.HFT.Services
                 Size = (double)fee.DefaultFeeSize,
                 SourceClientId = clientId,
                 TargetClientId = _feeSettings.TargetClientId.Hft,
-                Type = (int)MarketOrderFeeType.CLIENT_FEE
+                Type = fee.DefaultFeeSize == 0m ? (int)MarketOrderFeeType.NO_FEE : (int)MarketOrderFeeType.CLIENT_FEE
             };
         }
 
