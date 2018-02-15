@@ -116,9 +116,10 @@ namespace Lykke.Service.HFT.Controllers
             }
 
             var straight = order.Asset == baseAsset.Id || order.Asset == baseAsset.Name;
-            var volume = order.Volume.TruncateDecimalPlaces(straight ? baseAsset.Accuracy : quotingAsset.Accuracy);
+            var asset = straight ? baseAsset : quotingAsset;
+            var volume = order.Volume.TruncateDecimalPlaces(asset.Accuracy);
             var minVolume = straight ? assetPair.MinVolume : assetPair.MinInvertedVolume;
-            if (!_requestValidator.ValidateVolume(volume, minVolume, out badRequestModel))
+            if (!_requestValidator.ValidateVolume(volume, minVolume, asset.DisplayId, out badRequestModel))
             {
                 return BadRequest(badRequestModel);
             }
@@ -171,10 +172,9 @@ namespace Lykke.Service.HFT.Controllers
                 return BadRequest(badRequestModel);
             }
 
-            var straight = order.OrderAction == OrderAction.Buy;
             var volume = order.Volume.TruncateDecimalPlaces(asset.Accuracy);
-            var minVolume = straight ? assetPair.MinVolume : assetPair.MinInvertedVolume;
-            if (!_requestValidator.ValidateVolume(volume, minVolume, out badRequestModel))
+            var minVolume = assetPair.MinVolume;
+            if (!_requestValidator.ValidateVolume(volume, minVolume, asset.DisplayId, out badRequestModel))
             {
                 return BadRequest(badRequestModel);
             }

@@ -17,7 +17,9 @@ namespace Lykke.Service.HFT.Models
                 Accuracy = src.Accuracy,
                 InvertedAccuracy = src.InvertedAccuracy,
                 BaseAssetId = src.BaseAssetId,
-                QuotingAssetId = src.QuotingAssetId
+                QuotingAssetId = src.QuotingAssetId,
+                MinVolume = src.MinVolume,
+                MinInvertedVolume = src.MinInvertedVolume
             };
         }
 

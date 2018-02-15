@@ -8,5 +8,7 @@
         public int InvertedAccuracy { get; set; }
         public string BaseAssetId { get; set; }
         public string QuotingAssetId { get; set; }
+        public double MinVolume { get; set; }
+        public double MinInvertedVolume { get; set; }
     }
 }

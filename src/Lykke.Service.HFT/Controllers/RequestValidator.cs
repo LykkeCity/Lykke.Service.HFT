@@ -29,11 +29,11 @@ namespace Lykke.Service.HFT.Controllers
             return true;
         }
 
-        public bool ValidateVolume(double volume, double minVolume, out ResponseModel model)
+        public bool ValidateVolume(double volume, double minVolume, string asset, out ResponseModel model)
         {
             if (Math.Abs(volume) < double.Epsilon || Math.Abs(volume) < minVolume)
             {
-                model = ResponseModel.CreateFail(ResponseModel.ErrorCodeType.Dust, " Please try to send higher order.");
+                model = ResponseModel.CreateFail(ResponseModel.ErrorCodeType.Dust, $"The amount should be higher than minimal order size {minVolume} {asset}");
                 return false;
             }
 
