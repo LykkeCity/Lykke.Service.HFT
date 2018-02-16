@@ -68,7 +68,7 @@ namespace Lykke.Service.HFT.Services.Consumers
 
         public void Dispose()
         {
-            _subscriber.Stop();
+            _subscriber?.Stop();
         }
     }
 }

@@ -5,7 +5,6 @@ using System.Net;
 using System.Threading.Tasks;
 using Common;
 using JetBrains.Annotations;
-using Lykke.Service.HFT.Core;
 using Lykke.Service.HFT.Core.Domain;
 using Lykke.Service.HFT.Core.Services;
 using Lykke.Service.HFT.Helpers;
@@ -23,7 +22,7 @@ namespace Lykke.Service.HFT.Controllers
     public class OrdersController : Controller
     {
         private const int MaxPageSize = 1000;
-        private readonly AppSettings.HighFrequencyTradingSettings _appSettings;
+        private readonly RequestValidator _requestValidator;
         private readonly IMatchingEngineAdapter _matchingEngineAdapter;
         private readonly IAssetServiceDecorator _assetServiceDecorator;
         private readonly IRepository<Core.Domain.LimitOrderState> _orderStateRepository;
@@ -32,12 +31,12 @@ namespace Lykke.Service.HFT.Controllers
             IMatchingEngineAdapter frequencyTradingService,
             IAssetServiceDecorator assetServiceDecorator,
             IRepository<Core.Domain.LimitOrderState> orderStateRepository,
-            [NotNull] AppSettings.HighFrequencyTradingSettings appSettings)
+            [NotNull] RequestValidator requestValidator)
         {
-            _appSettings = appSettings ?? throw new ArgumentNullException(nameof(appSettings));
             _matchingEngineAdapter = frequencyTradingService ?? throw new ArgumentNullException(nameof(frequencyTradingService));
             _assetServiceDecorator = assetServiceDecorator ?? throw new ArgumentNullException(nameof(assetServiceDecorator));
             _orderStateRepository = orderStateRepository ?? throw new ArgumentNullException(nameof(orderStateRepository));
+            _requestValidator = requestValidator ?? throw new ArgumentNullException(nameof(requestValidator));
         }
 
         /// <summary>
@@ -51,7 +50,9 @@ namespace Lykke.Service.HFT.Controllers
         public async Task<IActionResult> GetOrders([FromQuery] OrderStatus? status = null, [FromQuery] uint? skip = 0, [FromQuery] uint? take = 100)
         {
             if (take > MaxPageSize)
+            {
                 return BadRequest(ResponseModel.CreateInvalidFieldError("take", $"Page size {take} is to big"));
+            }
 
             var clientId = User.GetUserId();
             var orders = status.HasValue
@@ -102,32 +103,28 @@ namespace Lykke.Service.HFT.Controllers
             }
 
             var assetPair = await _assetServiceDecorator.GetEnabledAssetPairAsync(order.AssetPairId);
-            if (assetPair == null)
+            if (!_requestValidator.ValidateAssetPair(order.AssetPairId, assetPair, out var badRequestModel))
             {
-                var model = ResponseModel<double>.CreateFail(ResponseModel.ErrorCodeType.UnknownAsset);
-                return BadRequest(model);
-            }
-            if (IsAssetPairDisabled(assetPair))
-            {
-                return BadRequest(ResponseModel.CreateInvalidFieldError("AssetPairId", $"AssetPair {order.AssetPairId} is temporarily disabled"));
+                return BadRequest(badRequestModel);
             }
 
             var baseAsset = await _assetServiceDecorator.GetEnabledAssetAsync(assetPair.BaseAssetId);
             var quotingAsset = await _assetServiceDecorator.GetEnabledAssetAsync(assetPair.QuotingAssetId);
-            if (order.Asset != baseAsset.Id && order.Asset != baseAsset.Name && order.Asset != quotingAsset.Id && order.Asset != quotingAsset.Name)
+            if (!_requestValidator.ValidateAsset(assetPair, order.Asset, baseAsset, quotingAsset, out badRequestModel))
             {
-                var model = ResponseModel.CreateInvalidFieldError("Asset", $"Asset <{order.Asset}> is not valid for asset pair <{assetPair.Id}>.");
-                return BadRequest(model);
+                return BadRequest(badRequestModel);
+            }
+
+            var straight = order.Asset == baseAsset.Id || order.Asset == baseAsset.Name;
+            var asset = straight ? baseAsset : quotingAsset;
+            var volume = order.Volume.TruncateDecimalPlaces(asset.Accuracy);
+            var minVolume = straight ? assetPair.MinVolume : assetPair.MinInvertedVolume;
+            if (!_requestValidator.ValidateVolume(volume, minVolume, asset.DisplayId, out badRequestModel))
+            {
+                return BadRequest(badRequestModel);
             }
 
             var clientId = User.GetUserId();
-            var straight = order.Asset == baseAsset.Id || order.Asset == baseAsset.Name;
-            var volume = order.Volume.TruncateDecimalPlaces(straight ? baseAsset.Accuracy : quotingAsset.Accuracy);
-            if (Math.Abs(volume) < double.Epsilon)
-            {
-                var model = ResponseModel<double>.CreateFail(ResponseModel.ErrorCodeType.Dust, "Required volume is less than asset accuracy.");
-                return BadRequest(model);
-            }
             var response = await _matchingEngineAdapter.HandleMarketOrderAsync(
                 clientId: clientId,
                 assetPairId: order.AssetPairId,
@@ -160,35 +157,35 @@ namespace Lykke.Service.HFT.Controllers
             }
 
             var assetPair = await _assetServiceDecorator.GetEnabledAssetPairAsync(order.AssetPairId);
-            if (assetPair == null)
+            if (!_requestValidator.ValidateAssetPair(order.AssetPairId, assetPair, out var badRequestModel))
             {
-                var model = ResponseModel.CreateFail(ResponseModel.ErrorCodeType.UnknownAsset);
-                return BadRequest(model);
-            }
-            if (IsAssetPairDisabled(assetPair))
-            {
-                return BadRequest(ResponseModel.CreateInvalidFieldError("AssetPairId", $"AssetPair {order.AssetPairId} is temporarily disabled"));
+                return BadRequest(badRequestModel);
             }
 
             var asset = await _assetServiceDecorator.GetEnabledAssetAsync(assetPair.BaseAssetId);
             if (asset == null)
-            {
                 throw new InvalidOperationException($"Base asset '{assetPair.BaseAssetId}' for asset pair '{assetPair.Id}' not found.");
+
+            var price = order.Price.TruncateDecimalPlaces(assetPair.Accuracy);
+            if (!_requestValidator.ValidatePrice(price, out badRequestModel))
+            {
+                return BadRequest(badRequestModel);
+            }
+
+            var volume = order.Volume.TruncateDecimalPlaces(asset.Accuracy);
+            var minVolume = assetPair.MinVolume;
+            if (!_requestValidator.ValidateVolume(volume, minVolume, asset.DisplayId, out badRequestModel))
+            {
+                return BadRequest(badRequestModel);
             }
 
             var clientId = User.GetUserId();
-            var volume = order.Volume.TruncateDecimalPlaces(asset.Accuracy);
-            if (Math.Abs(volume) < double.Epsilon)
-            {
-                var model = ResponseModel<double>.CreateFail(ResponseModel.ErrorCodeType.Dust, "Required volume is less than asset accuracy.");
-                return BadRequest(model);
-            }
             var response = await _matchingEngineAdapter.PlaceLimitOrderAsync(
                 clientId: clientId,
                 assetPairId: order.AssetPairId,
                 orderAction: order.OrderAction,
                 volume: volume,
-                price: order.Price.TruncateDecimalPlaces(assetPair.Accuracy));
+                price: price);
             if (response.Error != null)
             {
                 return BadRequest(response);
@@ -242,16 +239,6 @@ namespace Lykke.Service.HFT.Controllers
             var field = modelState.Keys.First();
             var message = modelState[field].Errors.First().ErrorMessage;
             return ResponseModel.CreateInvalidFieldError(field, message);
-        }
-
-        private bool IsAssetPairDisabled(Assets.Client.Models.AssetPair assetPair)
-        {
-            return IsAssetDisabled(assetPair.BaseAssetId) || IsAssetDisabled(assetPair.QuotingAssetId);
-        }
-
-        private bool IsAssetDisabled(string asset)
-        {
-            return _appSettings.DisabledAssets.Contains(asset);
         }
     }
 }
