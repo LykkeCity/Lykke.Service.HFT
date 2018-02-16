@@ -62,14 +62,15 @@ namespace Lykke.Service.HFT.Controllers
 
             var walletId = User.GetUserId();
 
-            var response = await _operationsHistoryClient.GetByWalletId(walletId, HistoryOperationType.Trade, assetId, (int)take, (int)skip);
+            var historyResponse = await _operationsHistoryClient.GetByWalletId(walletId, null, assetId, (int)take, (int)skip);
 
-            if (response.Error != null)
+            if (historyResponse.Error != null)
             {
-                return BadRequest(ResponseModel.CreateFail(ResponseModel.ErrorCodeType.Runtime, response.Error.Message));
+                return BadRequest(ResponseModel.CreateFail(ResponseModel.ErrorCodeType.Runtime, historyResponse.Error.Message));
             }
 
-            return Ok(response.Records.Select(x => x.ConvertToApiModel()));
+            return Ok(historyResponse.Records.Where(x => x.Type == HistoryOperationType.Trade || x.Type == HistoryOperationType.LimitTrade)
+                .Select(x => x.ConvertToApiModel()));
         }
 
         /// <summary>
@@ -91,8 +92,7 @@ namespace Lykke.Service.HFT.Controllers
             var walletId = User.GetUserId();
 
             var response = await _operationsHistoryClient.GetByOperationId(walletId, tradeId);
-
-            if (response == null || response.Type != HistoryOperationType.Trade)
+            if (response == null)
             {
                 return NotFound();
             }
