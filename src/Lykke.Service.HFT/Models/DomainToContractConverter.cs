@@ -25,17 +25,15 @@ namespace Lykke.Service.HFT.Models
 
         public static HistoryTradeModel ConvertToApiModel(this HistoryOperation src)
         {
-            if (src.Trade == null) return null;
-
             return new HistoryTradeModel
             {
-                AssetId = src.Trade.Asset,
-                DateTime = src.DateTime,
                 Id = src.Id,
-                LimitOrderId = src.Trade.LimitOrderId,
-                MarketOrderId = src.Trade.MarketOrderId,
-                Amount = src.Trade.Volume,
-                State = src.Trade.State.ToString()
+                DateTime = src.DateTime,
+                State = src.State,
+                Amount = src.Amount,
+                Asset = src.Asset,
+                AssetPair = src.AssetPair,
+                Price = src.Price
             };
         }
 

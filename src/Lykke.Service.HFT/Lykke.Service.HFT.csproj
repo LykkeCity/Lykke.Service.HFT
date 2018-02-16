@@ -33,7 +33,7 @@
     <PackageReference Include="Lykke.MatchingEngineConnector" Version="2.0.9" />
     <PackageReference Include="Lykke.Service.Balances.Client" Version="1.0.21" />
     <PackageReference Include="Lykke.Service.FeeCalculator.Client" Version="1.4.0" />
-    <PackageReference Include="Lykke.Service.OperationsHistory.Client" Version="1.0.16" />
+    <PackageReference Include="Lykke.Service.OperationsHistory.Client" Version="1.0.18" />
     <PackageReference Include="Lykke.Service.OperationsRepository.Contract" Version="1.0.12" />
     <PackageReference Include="Lykke.Service.Session" Version="1.0.33" />
     <PackageReference Include="Lykke.SettingsReader" Version="2.1.0" />

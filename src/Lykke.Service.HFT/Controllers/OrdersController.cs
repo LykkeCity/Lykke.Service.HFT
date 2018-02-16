@@ -22,6 +22,7 @@ namespace Lykke.Service.HFT.Controllers
     public class OrdersController : Controller
     {
         private const int MaxPageSize = 1000;
+        private const int MaxDeepSize = MaxPageSize * 1000;
         private readonly RequestValidator _requestValidator;
         private readonly IMatchingEngineAdapter _matchingEngineAdapter;
         private readonly IAssetServiceDecorator _assetServiceDecorator;
@@ -52,6 +53,11 @@ namespace Lykke.Service.HFT.Controllers
             if (take > MaxPageSize)
             {
                 return BadRequest(ResponseModel.CreateInvalidFieldError("take", $"Page size {take} is to big"));
+            }
+
+            if (skip > MaxDeepSize)
+            {
+                return BadRequest(ResponseModel.CreateInvalidFieldError("skip", $"Skip size {take} is to big"));
             }
 
             var clientId = User.GetUserId();
