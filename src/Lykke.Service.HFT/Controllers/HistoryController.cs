@@ -1,9 +1,7 @@
 ﻿using System.Collections.Generic;
-using System.ComponentModel.DataAnnotations;
 using System.Linq;
 using System.Net;
 using System.Threading.Tasks;
-using JetBrains.Annotations;
 using Lykke.Service.Assets.Client;
 using Lykke.Service.HFT.Core.Domain;
 using Lykke.Service.HFT.Helpers;
@@ -71,7 +69,7 @@ namespace Lykke.Service.HFT.Controllers
                 return BadRequest(ResponseModel.CreateFail(ResponseModel.ErrorCodeType.Runtime, response.Error.Message));
             }
 
-            return Ok(response.Records.Where(x => x.Type == HistoryOperationType.Trade).Select(x => x.ConvertToApiModel()));
+            return Ok(response.Records.Select(x => x.ConvertToApiModel()));
         }
 
         /// <summary>
@@ -83,7 +81,7 @@ namespace Lykke.Service.HFT.Controllers
         [SwaggerOperation("GetTrade")]
         [ProducesResponseType(typeof(HistoryTradeModel), (int)HttpStatusCode.OK)]
         [ProducesResponseType(typeof(void), (int)HttpStatusCode.NotFound)]
-        public async Task<IActionResult> GetTrade([NotNull] string tradeId)
+        public async Task<IActionResult> GetTrade(string tradeId)
         {
             if (tradeId == null)
             {
