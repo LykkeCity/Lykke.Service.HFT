@@ -19,7 +19,7 @@ namespace Lykke.Service.HFT.Controllers
     public class HistoryController : Controller
     {
         private const int MaxPageSize = 1000;
-        private const int MaxDeepSize = MaxPageSize * 1000;
+        private const int MaxSkipSize = MaxPageSize * 1000;
         private readonly IOperationsHistoryClient _operationsHistoryClient;
         private readonly IAssetsServiceWithCache _assetsServiceClient;
 
@@ -50,7 +50,7 @@ namespace Lykke.Service.HFT.Controllers
                 return BadRequest(ResponseModel.CreateInvalidFieldError("take", $"Page size {take} is to big"));
             }
 
-            if (skip > MaxDeepSize)
+            if (skip > MaxSkipSize)
             {
                 return BadRequest(ResponseModel.CreateInvalidFieldError("skip", $"Skip size {take} is to big"));
             }
@@ -62,14 +62,14 @@ namespace Lykke.Service.HFT.Controllers
 
             var walletId = User.GetUserId();
 
-            var historyResponse = await _operationsHistoryClient.GetByWalletId(walletId, null, assetId, (int)take, (int)skip);
+            var response = await _operationsHistoryClient.GetByWalletId(walletId, null, assetId, (int)take, (int)skip);
 
-            if (historyResponse.Error != null)
+            if (response.Error != null)
             {
-                return BadRequest(ResponseModel.CreateFail(ResponseModel.ErrorCodeType.Runtime, historyResponse.Error.Message));
+                return BadRequest(ResponseModel.CreateFail(ResponseModel.ErrorCodeType.Runtime, response.Error.Message));
             }
 
-            return Ok(historyResponse.Records.Where(x => x.Type == HistoryOperationType.Trade || x.Type == HistoryOperationType.LimitTrade)
+            return Ok(response.Records.Where(x => x.Type == HistoryOperationType.Trade || x.Type == HistoryOperationType.LimitTrade)
                 .Select(x => x.ConvertToApiModel()));
         }
 
