@@ -2,14 +2,14 @@
 using System.Linq;
 using System.Net;
 using System.Threading.Tasks;
+using Lykke.Service.Assets.Client;
+using Lykke.Service.HFT.Core.Domain;
 using Lykke.Service.HFT.Helpers;
 using Lykke.Service.HFT.Models;
+using Lykke.Service.OperationsHistory.AutorestClient.Models;
 using Lykke.Service.OperationsHistory.Client;
-using Lykke.Service.OperationsRepository.Contract;
-using Lykke.Service.OperationsRepository.Contract.Cash;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using Newtonsoft.Json;
 using Swashbuckle.AspNetCore.SwaggerGen;
 
 namespace Lykke.Service.HFT.Controllers
@@ -18,11 +18,17 @@ namespace Lykke.Service.HFT.Controllers
     [Route("api/[controller]")]
     public class HistoryController : Controller
     {
+        private const int MaxPageSize = 1000;
+        private const int MaxSkipSize = MaxPageSize * 1000;
         private readonly IOperationsHistoryClient _operationsHistoryClient;
+        private readonly IAssetsServiceWithCache _assetsServiceClient;
 
-        public HistoryController(IOperationsHistoryClient operationsHistoryClient)
+        public HistoryController(
+            IOperationsHistoryClient operationsHistoryClient,
+            IAssetsServiceWithCache assetsServiceClient)
         {
             _operationsHistoryClient = operationsHistoryClient;
+            _assetsServiceClient = assetsServiceClient;
         }
 
         /// <summary>
@@ -34,22 +40,37 @@ namespace Lykke.Service.HFT.Controllers
         /// <returns></returns>
         [HttpGet("trades")]
         [SwaggerOperation("GetTrades")]
-        [ProducesResponseType(typeof(IEnumerable<HistoryTradeModel>), (int) HttpStatusCode.OK)]
-        [ProducesResponseType(typeof(ErrorResponse), (int) HttpStatusCode.BadRequest)]
-        public async Task<IActionResult> GetTrades([FromQuery] string assetId, [FromQuery] int take, [FromQuery] int skip)
+        [ProducesResponseType(typeof(IEnumerable<HistoryTradeModel>), (int)HttpStatusCode.OK)]
+        [ProducesResponseType(typeof(ResponseModel), (int)HttpStatusCode.BadRequest)]
+        [ProducesResponseType(typeof(void), (int)HttpStatusCode.NotFound)]
+        public async Task<IActionResult> GetTrades([FromQuery] string assetId, [FromQuery] uint? skip = 0, [FromQuery] uint? take = 100)
         {
+            if (take > MaxPageSize)
+            {
+                return BadRequest(ResponseModel.CreateInvalidFieldError("take", $"Page size {take} is to big"));
+            }
+
+            if (skip > MaxSkipSize)
+            {
+                return BadRequest(ResponseModel.CreateInvalidFieldError("skip", $"Skip size {take} is to big"));
+            }
+
+            if (assetId != null && await _assetsServiceClient.TryGetAssetAsync(assetId) == null)
+            {
+                return NotFound();
+            }
+
             var walletId = User.GetUserId();
 
-            var response = await _operationsHistoryClient.GetByWalletId(walletId, nameof(OperationType.ClientTrade),
-                assetId, take, skip);
+            var response = await _operationsHistoryClient.GetByWalletId(walletId, null, assetId, (int)take, (int)skip);
 
             if (response.Error != null)
             {
-                return BadRequest(ErrorResponse.Create(response.Error.Message));
+                return BadRequest(ResponseModel.CreateFail(ResponseModel.ErrorCodeType.Runtime, response.Error.Message));
             }
 
-            return Ok(response.Records.Select(x =>
-                JsonConvert.DeserializeObject<ClientTradeDto>(x.CustomData).ConvertToApiModel()));
+            return Ok(response.Records.Where(x => x.Type == HistoryOperationType.Trade || x.Type == HistoryOperationType.LimitTrade)
+                .Select(x => x.ConvertToApiModel()));
         }
 
         /// <summary>
@@ -59,20 +80,24 @@ namespace Lykke.Service.HFT.Controllers
         /// <returns></returns>
         [HttpGet("trades/{tradeId}")]
         [SwaggerOperation("GetTrade")]
-        [ProducesResponseType(typeof(HistoryTradeModel), (int) HttpStatusCode.OK)]
-        [ProducesResponseType(typeof(void), (int) HttpStatusCode.NotFound)]
+        [ProducesResponseType(typeof(HistoryTradeModel), (int)HttpStatusCode.OK)]
+        [ProducesResponseType(typeof(void), (int)HttpStatusCode.NotFound)]
         public async Task<IActionResult> GetTrade(string tradeId)
         {
-            var walletId = User.GetUserId();
-
-            var response = await _operationsHistoryClient.GetByOperationId(walletId, tradeId);
-
-            if (response == null || response.OpType != nameof(OperationType.ClientTrade))
+            if (tradeId == null)
             {
                 return NotFound();
             }
 
-            return Ok(JsonConvert.DeserializeObject<ClientTradeDto>(response.CustomData).ConvertToApiModel());
+            var walletId = User.GetUserId();
+
+            var response = await _operationsHistoryClient.GetByOperationId(walletId, tradeId);
+            if (response == null)
+            {
+                return NotFound();
+            }
+
+            return Ok(response.ConvertToApiModel());
         }
     }
 }

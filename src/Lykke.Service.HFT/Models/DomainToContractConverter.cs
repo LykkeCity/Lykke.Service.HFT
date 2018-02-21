@@ -1,5 +1,5 @@
 ﻿using Lykke.Service.Assets.Client.Models;
-using Lykke.Service.OperationsRepository.Contract.Cash;
+using Lykke.Service.OperationsHistory.AutorestClient.Models;
 
 namespace Lykke.Service.HFT.Models
 {
@@ -23,18 +23,17 @@ namespace Lykke.Service.HFT.Models
             };
         }
 
-        public static HistoryTradeModel ConvertToApiModel(this ClientTradeDto src)
+        public static HistoryTradeModel ConvertToApiModel(this HistoryOperation src)
         {
             return new HistoryTradeModel
             {
-                AssetId = src.AssetId,
-                DateTime = src.DateTime,
                 Id = src.Id,
-                LimitOrderId = src.LimitOrderId,
-                MarketOrderId = src.MarketOrderId,
-                Price = src.Price,
+                DateTime = src.DateTime,
+                State = src.State,
                 Amount = src.Amount,
-                State = src.State.ToString()
+                Asset = src.Asset,
+                AssetPair = src.AssetPair,
+                Price = src.Price
             };
         }
 

@@ -6,11 +6,10 @@ namespace Lykke.Service.HFT.Models
     {
         public string Id { get; set; }
         public DateTime DateTime { get; set; }
-        public string LimitOrderId { get; set; }
-        public string MarketOrderId { get; set; }
-        public double Price { get; set; }
+        public OperationsHistory.AutorestClient.Models.HistoryOperationState State { get; set; }
         public double Amount { get; set; }
-        public string AssetId { get; set; }
-        public string State { get; set; }
+        public string Asset { get; set; }
+        public string AssetPair { get; set; }
+        public double? Price { get; set; }
     }
 }
