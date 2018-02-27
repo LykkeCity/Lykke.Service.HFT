@@ -20,8 +20,6 @@ namespace Lykke.Service.HFT.Services.Consumers
 
         public ApiKeysConsumer(ILog log, AppSettings.RabbitMqSettings settings, IDistributedCache distributedCache, CacheSettings cacheSettings)
         {
-            return; // todo: enable when HFT Internal will be ready to publish such messages
-
             _log = log ?? throw new ArgumentNullException(nameof(log));
             if (settings == null)
                 throw new ArgumentNullException(nameof(settings));
