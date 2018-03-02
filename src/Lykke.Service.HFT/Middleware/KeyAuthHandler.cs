@@ -3,7 +3,7 @@ using System.Linq;
 using System.Security.Claims;
 using System.Text.Encodings.Web;
 using System.Threading.Tasks;
-using Lykke.Service.HFT.Core.Services.ApiKey;
+using Lykke.Service.HFT.Core.Services;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
@@ -12,13 +12,13 @@ namespace Lykke.Service.HFT.Middleware
 {
     public class KeyAuthHandler : AuthenticationHandler<KeyAuthOptions>
     {
-        private readonly IClientResolver _clientResolver;
+        private readonly IHftClientService _hftClientService;
 
         public KeyAuthHandler(IOptionsMonitor<KeyAuthOptions> options, ILoggerFactory logger, UrlEncoder encoder, ISystemClock clock,
-            IClientResolver clientResolver)
+            IHftClientService hftClientService)
             : base(options, logger, encoder, clock)
         {
-            _clientResolver = clientResolver;
+            _hftClientService = hftClientService;
         }
         protected override async Task<AuthenticateResult> HandleAuthenticateAsync()
         {
@@ -28,7 +28,7 @@ namespace Lykke.Service.HFT.Middleware
             }
 
             var apiKey = headerValue.First();
-            var walletId = await _clientResolver.GetWalletIdAsync(apiKey);
+            var walletId = await _hftClientService.GetWalletIdAsync(apiKey);
             if (walletId == null)
             {
                 await Task.Delay(TimeSpan.FromSeconds(10)); // todo: ban requests from IPs with 401 response.

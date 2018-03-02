@@ -8,7 +8,6 @@ using AzureStorage.Tables;
 using Common.Log;
 using Lykke.Common.ApiLibrary.Middleware;
 using Lykke.Common.ApiLibrary.Swagger;
-using Lykke.Cqrs;
 using Lykke.Logs;
 using Lykke.Service.HFT.Core;
 using Lykke.Service.HFT.Core.Services;

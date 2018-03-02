@@ -1,8 +1,8 @@
 ﻿using System.Threading.Tasks;
 
-namespace Lykke.Service.HFT.Core.Services.ApiKey
+namespace Lykke.Service.HFT.Core.Services
 {
-    public interface IClientResolver
+    public interface IHftClientService
     {
         Task<string> GetWalletIdAsync(string apiKey);
         Task<bool> IsHftWalletAsync(string walletId);

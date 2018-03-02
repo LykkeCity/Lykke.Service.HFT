@@ -1,6 +1,6 @@
-﻿namespace Lykke.Service.HFT.Core.Services.ApiKey
+﻿namespace Lykke.Service.HFT.Core.Services
 {
-    public interface ISessionCache
+    public interface ISessionRepository
     {
         long[] GetSessionIds(string clientId);
         void AddSessionId(string token, long sessionId);

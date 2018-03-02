@@ -9,7 +9,7 @@ using Lykke.RabbitMqBroker.Subscriber;
 using Lykke.Service.HFT.Contracts.Events;
 using Lykke.Service.HFT.Core;
 using Lykke.Service.HFT.Core.Domain;
-using Lykke.Service.HFT.Core.Services.ApiKey;
+using Lykke.Service.HFT.Core.Services;
 using Lykke.Service.HFT.Wamp.Consumers.Messages;
 using WampSharp.V2;
 using WampSharp.V2.Core.Contracts;
@@ -19,7 +19,7 @@ namespace Lykke.Service.HFT.Wamp.Consumers
 {
     public class LimitOrdersConsumer : IDisposable
     {
-        private readonly ISessionCache _sessionCache;
+        private readonly ISessionRepository _sessionRepository;
         private readonly ILog _log;
         private readonly IRepository<LimitOrderState> _orderStateRepository;
         private readonly RabbitMqSubscriber<LimitOrderMessage> _subscriber;
@@ -32,9 +32,9 @@ namespace Lykke.Service.HFT.Wamp.Consumers
             AppSettings.RabbitMqSettings settings,
             IRepository<LimitOrderState> orderStateRepository,
             IWampHostedRealm realm,
-            [NotNull] ISessionCache sessionCache)
+            [NotNull] ISessionRepository sessionRepository)
         {
-            _sessionCache = sessionCache ?? throw new ArgumentNullException(nameof(sessionCache));
+            _sessionRepository = sessionRepository ?? throw new ArgumentNullException(nameof(sessionRepository));
 
             _log = log ?? throw new ArgumentNullException(nameof(log));
             if (settings == null)
@@ -72,7 +72,7 @@ namespace Lykke.Service.HFT.Wamp.Consumers
             {
                 if (Guid.TryParse(order.Order.ExternalId, out Guid orderId))
                 {
-                    var sessionIds = _sessionCache.GetSessionIds(order.Order.ClientId);
+                    var sessionIds = _sessionRepository.GetSessionIds(order.Order.ClientId);
                     if (sessionIds.Length == 0)
                         return;
 

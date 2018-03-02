@@ -1,47 +1,21 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Threading.Tasks;
-using Lykke.Service.HFT.Core;
-using Lykke.Service.HFT.Core.Services.ApiKey;
-using Microsoft.Extensions.Caching.Distributed;
+using Lykke.Service.HFT.Core.Services;
 using Microsoft.Extensions.Caching.Memory;
 
 namespace Lykke.Service.HFT.Services
 {
-    public class ApiKeyService : IApiKeyValidator, IClientResolver, ISessionCache
+    public class CachedSessionRepository : ISessionRepository
     {
-        private readonly IDistributedCache _distributedCache;
-        private readonly CacheSettings _settings;
-
         private readonly IMemoryCache _cache;
+        private readonly IHftClientService _hftClientService;
         private readonly MemoryCacheEntryOptions _sessionCacheOptions = new MemoryCacheEntryOptions().SetSlidingExpiration(TimeSpan.FromDays(14));
 
-        public ApiKeyService(IDistributedCache distributedCache, CacheSettings settings, IMemoryCache cache)
+        public CachedSessionRepository(IMemoryCache cache, IHftClientService hftClientService)
         {
-            _settings = settings ?? throw new ArgumentNullException(nameof(settings));
             _cache = cache;
-            _distributedCache = distributedCache ?? throw new ArgumentNullException(nameof(distributedCache));
-        }
-
-        public async Task<bool> ValidateAsync(string apiKey)
-        {
-            var walletId = await GetWalletIdAsync(apiKey);
-            return walletId != null;
-        }
-
-        public async Task<string> GetWalletIdAsync(string apiKey)
-        {
-            var clientId = await _distributedCache.GetStringAsync(_settings.GetKeyForApiKey(apiKey));
-            // todo: request to HFT Internal Service if null
-            return clientId;
-        }
-
-        public async Task<bool> IsHftWalletAsync(string walletId)
-        {
-            var wallet = await _distributedCache.GetAsync(_settings.GetKeyForWalletId(walletId));
-            // todo: request to HFT Internal Service if null
-            return wallet != null && wallet[0] == 1;
+            _hftClientService = hftClientService;
         }
 
         private static readonly long[] ZeroSessionsValue = new long[0];
@@ -57,7 +31,7 @@ namespace Lykke.Service.HFT.Services
 
         public void AddSessionId(string token, long sessionId)
         {
-            var walletId = GetWalletIdAsync(token).GetAwaiter().GetResult();
+            var walletId = _hftClientService.GetWalletIdAsync(token).GetAwaiter().GetResult();
             _cache.Set(sessionId, walletId, _sessionCacheOptions);
 
             if (_cache.TryGetValue(walletId, out long[] sessionIds))

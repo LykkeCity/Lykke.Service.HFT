@@ -15,19 +15,19 @@ namespace Lykke.Service.HFT.Services
     {
         private readonly ILog _log;
         private readonly IEnumerable<IWampHostedRealm> _realms;
-        private readonly ISessionCache _sessionCache;
+        private readonly ISessionRepository _sessionRepository;
         private readonly IApiKeyCacheInitializer _apiKeyCacheInitializer;
 
         public StartupManager(
             ILog log,
             IEnumerable<IWampHostedRealm> realms,
-            ISessionCache sessionCache,
+            ISessionRepository sessionRepository,
             IApiKeyCacheInitializer apiKeyCacheInitializer,
             [NotNull] ICqrsEngine cqrs)
         {
             _log = log;
             _realms = realms;
-            _sessionCache = sessionCache;
+            _sessionRepository = sessionRepository;
             _apiKeyCacheInitializer = apiKeyCacheInitializer;
 
             if (cqrs == null) throw new ArgumentNullException(nameof(cqrs)); // is needed for bootstrap
@@ -39,7 +39,7 @@ namespace Lykke.Service.HFT.Services
 
             foreach (var realm in _realms)
             {
-                realm.SessionClosed += (sender, args) => { _sessionCache.TryRemoveSessionId(args.SessionId); };
+                realm.SessionClosed += (sender, args) => { _sessionRepository.TryRemoveSessionId(args.SessionId); };
             }
 
             await _apiKeyCacheInitializer.InitApiKeyCache();

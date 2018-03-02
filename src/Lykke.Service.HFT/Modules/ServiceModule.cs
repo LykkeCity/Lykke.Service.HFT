@@ -92,14 +92,20 @@ namespace Lykke.Service.HFT.Modules
                 .As<IStartupManager>()
                 .SingleInstance();
 
-            builder.RegisterType<ApiKeyService>()
+            builder.RegisterType<HftClientService>()
                 .WithParameter(
                     new ResolvedParameter(
                         (pi, ctx) => pi.ParameterType == typeof(IDistributedCache),
                         (pi, ctx) => ctx.ResolveKeyed<IDistributedCache>("apiKeys")))
+                .As<IHftClientService>()
+                .SingleInstance();
+
+            builder.RegisterType<CachedSessionRepository>()
+                .As<ISessionRepository>()
+                .SingleInstance();
+
+            builder.RegisterType<ApiKeyValidator>()
                 .As<IApiKeyValidator>()
-                .As<ISessionCache>()
-                .As<IClientResolver>()
                 .SingleInstance();
 
             builder.RegisterType<ApiKeyCacheInitializer>()
