@@ -4,6 +4,7 @@ namespace Lykke.Service.HFT.Core.Services.ApiKey
 {
     public interface IClientResolver
     {
-        Task<string> GetClientAsync(string apiKey);
+        Task<string> GetWalletIdAsync(string apiKey);
+        Task<bool> IsHftWalletAsync(string walletId);
     }
 }

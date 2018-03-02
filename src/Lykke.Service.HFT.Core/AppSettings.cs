@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Net;
+using Lykke.Common.Chaos;
 using Lykke.Service.OperationsHistory.Client;
 using Lykke.SettingsReader.Attributes;
 
@@ -26,9 +27,13 @@ namespace Lykke.Service.HFT.Core
             public DictionariesSettings Dictionaries { get; set; }
             public CacheSettings CacheSettings { get; set; }
             public RabbitMqSettings LimitOrdersFeed { get; set; }
-            public RabbitMqSettings ApiKeysFeed { get; set; }
             public MongoSettings MongoSettings { get; set; }
             public RateLimitSettings.RateLimitCoreOptions IpRateLimiting { get; set; }
+            public string QueuePostfix { get; set; }
+            public TimeSpan RetryDelay { get; set; }
+            public string SagasRabbitMqConnStr { get; set; }
+            [Optional]
+            public ChaosSettings ChaosKitty { get; set; }
         }
 
         public class MaintenanceMode
@@ -99,7 +104,7 @@ namespace Lykke.Service.HFT.Core
             return string.Format(settings.ApiKeyCacheKeyPattern, apiKey);
         }
 
-        public static string GetKeyForNotificationId(this CacheSettings settings, string wallet)
+        public static string GetKeyForWalletId(this CacheSettings settings, string wallet)
         {
             return string.Format(settings.WalletCacheKeyPattern, wallet);
         }

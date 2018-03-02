@@ -26,15 +26,22 @@ namespace Lykke.Service.HFT.Services
 
         public async Task<bool> ValidateAsync(string apiKey)
         {
-            var clientId = await GetClientAsync(apiKey);
-            return clientId != null;
+            var walletId = await GetWalletIdAsync(apiKey);
+            return walletId != null;
         }
 
-        public async Task<string> GetClientAsync(string apiKey)
+        public async Task<string> GetWalletIdAsync(string apiKey)
         {
             var clientId = await _distributedCache.GetStringAsync(_settings.GetKeyForApiKey(apiKey));
-            // todo: request to HFT Internal Service
+            // todo: request to HFT Internal Service if null
             return clientId;
+        }
+
+        public async Task<bool> IsHftWalletAsync(string walletId)
+        {
+            var wallet = await _distributedCache.GetAsync(_settings.GetKeyForWalletId(walletId));
+            // todo: request to HFT Internal Service if null
+            return wallet != null && wallet[0] == 1;
         }
 
         private static readonly long[] ZeroSessionsValue = new long[0];
@@ -50,18 +57,18 @@ namespace Lykke.Service.HFT.Services
 
         public void AddSessionId(string token, long sessionId)
         {
-            var clientId = GetClientAsync(token).GetAwaiter().GetResult();
-            _cache.Set(sessionId, clientId, _sessionCacheOptions);
+            var walletId = GetWalletIdAsync(token).GetAwaiter().GetResult();
+            _cache.Set(sessionId, walletId, _sessionCacheOptions);
 
-            if (_cache.TryGetValue(clientId, out long[] sessionIds))
+            if (_cache.TryGetValue(walletId, out long[] sessionIds))
             {
                 // working with HashSet is not effective, but more readable than working with Array; type 'long[]' is stored for performance needs
                 var sessions = new HashSet<long>(sessionIds) { sessionId };
-                _cache.Set(clientId, sessions.ToArray(), _sessionCacheOptions);
+                _cache.Set(walletId, sessions.ToArray(), _sessionCacheOptions);
             }
             else
             {
-                _cache.Set(clientId, new[] { sessionId }, _sessionCacheOptions);
+                _cache.Set(walletId, new[] { sessionId }, _sessionCacheOptions);
             }
         }
 

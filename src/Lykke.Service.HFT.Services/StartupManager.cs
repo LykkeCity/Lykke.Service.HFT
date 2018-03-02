@@ -1,7 +1,9 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Threading.Tasks;
 using Common.Log;
 using JetBrains.Annotations;
+using Lykke.Cqrs;
 using Lykke.Service.HFT.Core.Services;
 using Lykke.Service.HFT.Core.Services.ApiKey;
 using WampSharp.V2.Realm;
@@ -20,12 +22,15 @@ namespace Lykke.Service.HFT.Services
             ILog log,
             IEnumerable<IWampHostedRealm> realms,
             ISessionCache sessionCache,
-            IApiKeyCacheInitializer apiKeyCacheInitializer)
+            IApiKeyCacheInitializer apiKeyCacheInitializer,
+            [NotNull] ICqrsEngine cqrs)
         {
             _log = log;
             _realms = realms;
             _sessionCache = sessionCache;
             _apiKeyCacheInitializer = apiKeyCacheInitializer;
+
+            if (cqrs == null) throw new ArgumentNullException(nameof(cqrs)); // is needed for bootstrap
         }
 
         public async Task StartAsync()

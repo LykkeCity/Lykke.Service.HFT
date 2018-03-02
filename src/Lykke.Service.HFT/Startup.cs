@@ -8,10 +8,10 @@ using AzureStorage.Tables;
 using Common.Log;
 using Lykke.Common.ApiLibrary.Middleware;
 using Lykke.Common.ApiLibrary.Swagger;
+using Lykke.Cqrs;
 using Lykke.Logs;
 using Lykke.Service.HFT.Core;
 using Lykke.Service.HFT.Core.Services;
-using Lykke.Service.HFT.Core.Services.ApiKey;
 using Lykke.Service.HFT.Infrastructure;
 using Lykke.Service.HFT.Middleware;
 using Lykke.Service.HFT.Modules;
@@ -86,6 +86,7 @@ namespace Lykke.Service.HFT
                 builder.RegisterModule(new RedisModule(appSettings.CurrentValue.HighFrequencyTradingService.CacheSettings));
                 builder.RegisterModule(new ClientsModule(appSettings, Log));
                 builder.RegisterModule(new WampModule(appSettings.CurrentValue.HighFrequencyTradingService));
+                builder.RegisterModule(new CqrsModule(appSettings.Nested(x => x.HighFrequencyTradingService), Log));
 
                 ApplicationContainer = builder.Build();
 

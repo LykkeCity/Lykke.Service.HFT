@@ -98,6 +98,7 @@ namespace Lykke.Service.HFT.Modules
                         (pi, ctx) => pi.ParameterType == typeof(IDistributedCache),
                         (pi, ctx) => ctx.ResolveKeyed<IDistributedCache>("apiKeys")))
                 .As<IApiKeyValidator>()
+                .As<ISessionCache>()
                 .As<IClientResolver>()
                 .SingleInstance();
 
@@ -137,13 +138,6 @@ namespace Lykke.Service.HFT.Modules
         {
             builder.RegisterType<LimitOrdersConsumer>()
                 .WithParameter(TypedParameter.From(settings.LimitOrdersFeed))
-                .SingleInstance().AutoActivate();
-            builder.RegisterType<ApiKeysConsumer>()
-                .WithParameter(TypedParameter.From(settings.ApiKeysFeed))
-                .WithParameter(
-                    new ResolvedParameter(
-                        (pi, ctx) => pi.ParameterType == typeof(IDistributedCache),
-                        (pi, ctx) => ctx.ResolveKeyed<IDistributedCache>("apiKeys")))
                 .SingleInstance().AutoActivate();
         }
 

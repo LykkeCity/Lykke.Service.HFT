@@ -1,4 +1,5 @@
-﻿using System.Linq;
+﻿using System;
+using System.Linq;
 using System.Security.Claims;
 using System.Text.Encodings.Web;
 using System.Threading.Tasks;
@@ -11,14 +12,12 @@ namespace Lykke.Service.HFT.Middleware
 {
     public class KeyAuthHandler : AuthenticationHandler<KeyAuthOptions>
     {
-        private readonly IApiKeyValidator _apiKeyValidator;
         private readonly IClientResolver _clientResolver;
 
         public KeyAuthHandler(IOptionsMonitor<KeyAuthOptions> options, ILoggerFactory logger, UrlEncoder encoder, ISystemClock clock,
-            IApiKeyValidator apiKeyValidator, IClientResolver clientResolver)
+            IClientResolver clientResolver)
             : base(options, logger, encoder, clock)
         {
-            _apiKeyValidator = apiKeyValidator;
             _clientResolver = clientResolver;
         }
         protected override async Task<AuthenticateResult> HandleAuthenticateAsync()
@@ -29,15 +28,16 @@ namespace Lykke.Service.HFT.Middleware
             }
 
             var apiKey = headerValue.First();
-            if (!(await _apiKeyValidator.ValidateAsync(apiKey)))
+            var walletId = await _clientResolver.GetWalletIdAsync(apiKey);
+            if (walletId == null)
             {
+                await Task.Delay(TimeSpan.FromSeconds(10)); // todo: ban requests from IPs with 401 response.
                 return AuthenticateResult.Fail("Invalid API key.");
             }
 
             var authenticationScheme = "apikey";
             var identity = new ClaimsIdentity(authenticationScheme);
-            var client = await _clientResolver.GetClientAsync(apiKey);
-            identity.AddClaim(new Claim(ClaimTypes.NameIdentifier, client));
+            identity.AddClaim(new Claim(ClaimTypes.NameIdentifier, walletId));
             var ticket = new AuthenticationTicket(new ClaimsPrincipal(identity), null, authenticationScheme);
             return await Task.FromResult(AuthenticateResult.Success(ticket));
         }

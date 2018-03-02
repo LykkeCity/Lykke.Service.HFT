@@ -3,7 +3,6 @@ using System.Threading;
 using Common;
 using WampSharp.V2;
 using WampSharp.V2.Client;
-using Lykke.Service.HFT.Contracts.Events;
 
 namespace Lykke.Service.HFT.Wamp.Client
 {
