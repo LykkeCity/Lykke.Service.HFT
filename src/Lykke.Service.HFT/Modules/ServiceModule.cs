@@ -88,6 +88,10 @@ namespace Lykke.Service.HFT.Modules
                 .As<IHealthService>()
                 .SingleInstance();
 
+            builder.RegisterType<StartupManager>()
+                .As<IStartupManager>()
+                .SingleInstance();
+
             builder.RegisterType<ApiKeyService>()
                 .WithParameter(
                     new ResolvedParameter(

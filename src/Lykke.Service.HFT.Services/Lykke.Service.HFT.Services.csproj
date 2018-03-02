@@ -14,6 +14,7 @@
     <PackageReference Include="Lykke.RabbitMqBroker" Version="6.1.0" />
     <PackageReference Include="Lykke.Service.Assets.Client" Version="3.3.1" />
     <PackageReference Include="Lykke.Service.FeeCalculator.Client" Version="1.4.0" />
+    <PackageReference Include="Lykke.WampSharp" Version="1.0.2" />
     <PackageReference Include="Newtonsoft.Json" Version="10.0.3" />
     <PackageReference Include="StackExchange.Redis" Version="1.2.6" />
   </ItemGroup>

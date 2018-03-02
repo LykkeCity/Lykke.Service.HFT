@@ -31,8 +31,7 @@ namespace Lykke.Service.HFT.Wamp.Client
                 _topicUri = args[3];
 
             var factory = new DefaultWampChannelFactory();
-            //var authenticator = new TicketAuthenticator(apiKey);
-            var authenticator = new BasicAuthenticator(apiKey);
+            var authenticator = new TicketAuthenticator(apiKey);
             var channel = factory.CreateJsonChannel(_serverAddress, _realm, authenticator);
             channel.RealmProxy.Monitor.ConnectionBroken += Monitor_ConnectionBroken;
             channel.RealmProxy.Monitor.ConnectionError += Monitor_ConnectionError;
@@ -77,7 +76,7 @@ namespace Lykke.Service.HFT.Wamp.Client
 
         private static IDisposable Subscribe(IWampRealmProxy proxy)
         {
-            var subject = proxy.Services.GetSubject<LimitOrderUpdateEvent>(_topicUri);
+            var subject = proxy.Services.GetSubject(_topicUri);
             var subscription = subject
                 .Subscribe(info =>
                 {
