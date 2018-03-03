@@ -10,7 +10,7 @@ using Lykke.Common.ApiLibrary.Middleware;
 using Lykke.Common.ApiLibrary.Swagger;
 using Lykke.Logs;
 using Lykke.Service.HFT.Core;
-using Lykke.Service.HFT.Core.Services.ApiKey;
+using Lykke.Service.HFT.Core.Services;
 using Lykke.Service.HFT.Infrastructure;
 using Lykke.Service.HFT.Middleware;
 using Lykke.Service.HFT.Modules;
@@ -85,6 +85,7 @@ namespace Lykke.Service.HFT
                 builder.RegisterModule(new RedisModule(appSettings.CurrentValue.HighFrequencyTradingService.CacheSettings));
                 builder.RegisterModule(new ClientsModule(appSettings, Log));
                 builder.RegisterModule(new WampModule(appSettings.CurrentValue.HighFrequencyTradingService));
+                builder.RegisterModule(new CqrsModule(appSettings.Nested(x => x.HighFrequencyTradingService), Log));
 
                 ApplicationContainer = builder.Build();
 
@@ -148,9 +149,7 @@ namespace Lykke.Service.HFT
         {
             try
             {
-                // NOTE: Service not yet receive and process requests here
-
-                await ApplicationContainer.Resolve<IApiKeyCacheInitializer>().InitApiKeyCache();
+                await ApplicationContainer.Resolve<IStartupManager>().StartAsync();
 
                 await Log.WriteMonitorAsync("", $"Env: {Program.EnvInfo}", "Started");
             }

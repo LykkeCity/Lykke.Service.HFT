@@ -1,8 +1,8 @@
-﻿namespace Lykke.Service.HFT.Wamp.Auth
+﻿namespace Lykke.Service.HFT.Wamp.Security
 {
     public static class AuthMethods
     {
-        public const string Basic = "basic";
+        public const string Anonymous = "None";
         public const string Ticket = "ticket";
     }
 }

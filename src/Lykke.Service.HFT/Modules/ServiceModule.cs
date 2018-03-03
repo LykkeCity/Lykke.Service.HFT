@@ -88,13 +88,24 @@ namespace Lykke.Service.HFT.Modules
                 .As<IHealthService>()
                 .SingleInstance();
 
-            builder.RegisterType<ApiKeyService>()
+            builder.RegisterType<StartupManager>()
+                .As<IStartupManager>()
+                .SingleInstance();
+
+            builder.RegisterType<HftClientService>()
                 .WithParameter(
                     new ResolvedParameter(
                         (pi, ctx) => pi.ParameterType == typeof(IDistributedCache),
                         (pi, ctx) => ctx.ResolveKeyed<IDistributedCache>("apiKeys")))
+                .As<IHftClientService>()
+                .SingleInstance();
+
+            builder.RegisterType<CachedSessionRepository>()
+                .As<ISessionRepository>()
+                .SingleInstance();
+
+            builder.RegisterType<ApiKeyValidator>()
                 .As<IApiKeyValidator>()
-                .As<IClientResolver>()
                 .SingleInstance();
 
             builder.RegisterType<ApiKeyCacheInitializer>()
@@ -133,13 +144,6 @@ namespace Lykke.Service.HFT.Modules
         {
             builder.RegisterType<LimitOrdersConsumer>()
                 .WithParameter(TypedParameter.From(settings.LimitOrdersFeed))
-                .SingleInstance().AutoActivate();
-            builder.RegisterType<ApiKeysConsumer>()
-                .WithParameter(TypedParameter.From(settings.ApiKeysFeed))
-                .WithParameter(
-                    new ResolvedParameter(
-                        (pi, ctx) => pi.ParameterType == typeof(IDistributedCache),
-                        (pi, ctx) => ctx.ResolveKeyed<IDistributedCache>("apiKeys")))
                 .SingleInstance().AutoActivate();
         }
 

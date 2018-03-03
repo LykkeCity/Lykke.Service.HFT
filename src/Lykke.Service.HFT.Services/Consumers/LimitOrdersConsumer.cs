@@ -2,10 +2,12 @@
 using System.Collections.Async;
 using System.Threading.Tasks;
 using Common.Log;
+using JetBrains.Annotations;
 using Lykke.RabbitMqBroker;
 using Lykke.RabbitMqBroker.Subscriber;
 using Lykke.Service.HFT.Core;
 using Lykke.Service.HFT.Core.Domain;
+using Lykke.Service.HFT.Core.Services;
 using Lykke.Service.HFT.Services.Consumers.Messages;
 
 namespace Lykke.Service.HFT.Services.Consumers
@@ -15,15 +17,21 @@ namespace Lykke.Service.HFT.Services.Consumers
         private readonly ILog _log;
         private readonly IRepository<LimitOrderState> _orderStateRepository;
         private readonly RabbitMqSubscriber<LimitOrderMessage> _subscriber;
+        private readonly IHftClientService _hftClientService;
         private const string QueueName = "highfrequencytrading-api";
         private const bool QueueDurable = false;
 
-        public LimitOrdersConsumer(ILog log, AppSettings.RabbitMqSettings settings, IRepository<LimitOrderState> orderStateRepository)
+        public LimitOrdersConsumer(
+            ILog log, 
+            AppSettings.RabbitMqSettings settings,
+            IRepository<LimitOrderState> orderStateRepository,
+            [NotNull] IHftClientService hftClientService)
         {
             _log = log ?? throw new ArgumentNullException(nameof(log));
             if (settings == null)
                 throw new ArgumentNullException(nameof(settings));
             _orderStateRepository = orderStateRepository ?? throw new ArgumentNullException(nameof(orderStateRepository));
+            _hftClientService = hftClientService ?? throw new ArgumentNullException(nameof(hftClientService));
 
             try
             {
@@ -52,7 +60,7 @@ namespace Lykke.Service.HFT.Services.Consumers
         {
             await ordersUpdateMessage.Orders.ParallelForEachAsync(async order =>
             {
-                if (Guid.TryParse(order.Order.ExternalId, out Guid orderId))
+                if (Guid.TryParse(order.Order.ExternalId, out Guid orderId) && await _hftClientService.IsHftWalletAsync(order.Order.ClientId))
                 {
                     var orderState = await _orderStateRepository.Get(orderId);
                     // we are processing orders made by this service only
