@@ -28,11 +28,21 @@ namespace Lykke.Service.HFT.Modules
 
         protected override void Load(ContainerBuilder builder)
         {
-            builder
-                .RegisterType<ChaosKitty>()
-                .WithParameter(TypedParameter.From(_settings.ChaosKitty.StateOfChaos))
-                .As<IChaosKitty>()
-                .SingleInstance();
+            if (_settings.ChaosKitty != null)
+            {
+                builder
+                    .RegisterType<ChaosKitty>()
+                    .WithParameter(TypedParameter.From(_settings.ChaosKitty.StateOfChaos))
+                    .As<IChaosKitty>()
+                    .SingleInstance();
+            }
+            else
+            {
+                builder
+                    .RegisterType<SilentChaosKitty>()
+                    .As<IChaosKitty>()
+                    .SingleInstance();
+            }
 
             Messaging.Serialization.MessagePackSerializerFactory.Defaults.FormatterResolver = MessagePack.Resolvers.ContractlessStandardResolver.Instance;
 
