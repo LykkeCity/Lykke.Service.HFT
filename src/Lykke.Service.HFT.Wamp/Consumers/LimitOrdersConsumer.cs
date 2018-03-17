@@ -80,6 +80,12 @@ namespace Lykke.Service.HFT.Wamp.Consumers
                     // we are processing orders made by this service only
                     if (orderState != null)
                     {
+                        if (IsFinalStatus(orderState.Status))
+                        {
+                            _log.WriteWarning(nameof(ProcessLimitOrder), order, "Got update for order in final state. Ignoring.");
+                            return;
+                        }
+
                         var notifyResponse = new LimitOrderUpdateEvent
                         {
                             Order = new Order
@@ -102,7 +108,7 @@ namespace Lykke.Service.HFT.Wamp.Consumers
                                 OppositeVolume = x.OppositeVolume
                             }).ToArray()
                         };
-                        
+
                         _subject.OnNext(new WampEvent
                         {
                             Options = new PublishOptions
@@ -114,6 +120,11 @@ namespace Lykke.Service.HFT.Wamp.Consumers
                     }
                 }
             }).ConfigureAwait(false);
+        }
+
+        private bool IsFinalStatus(Core.Domain.OrderStatus status)
+        {
+            return status != Core.Domain.OrderStatus.Pending && status != Core.Domain.OrderStatus.InOrderBook && status != Core.Domain.OrderStatus.Processing;
         }
 
         public void Dispose()
