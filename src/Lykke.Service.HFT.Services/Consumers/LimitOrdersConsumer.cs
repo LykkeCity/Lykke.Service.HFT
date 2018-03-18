@@ -22,7 +22,7 @@ namespace Lykke.Service.HFT.Services.Consumers
         private const bool QueueDurable = false;
 
         public LimitOrdersConsumer(
-            ILog log, 
+            ILog log,
             AppSettings.RabbitMqSettings settings,
             IRepository<LimitOrderState> orderStateRepository,
             [NotNull] IHftClientService hftClientService)
@@ -66,6 +66,12 @@ namespace Lykke.Service.HFT.Services.Consumers
                     // we are processing orders made by this service only
                     if (orderState != null)
                     {
+                        if (IsFinalStatus(orderState.Status))
+                        {
+                            _log.WriteWarning(nameof(ProcessLimitOrder), order, "Got update for order in final state. Ignoring.");
+                            return;
+                        }
+
                         // these properties cannot change: Id, ClientId, AssetPairId, Price; ignoring them
                         orderState.Status = Enum.TryParse(order.Order.Status.ToString(), out OrderStatus status) ? status : OrderStatus.Runtime;
                         orderState.Volume = order.Order.Volume;
@@ -77,6 +83,11 @@ namespace Lykke.Service.HFT.Services.Consumers
                     }
                 }
             }).ConfigureAwait(false);
+        }
+
+        private bool IsFinalStatus(OrderStatus status)
+        {
+            return status != OrderStatus.Pending && status != OrderStatus.InOrderBook && status != OrderStatus.Processing;
         }
 
         public void Dispose()
