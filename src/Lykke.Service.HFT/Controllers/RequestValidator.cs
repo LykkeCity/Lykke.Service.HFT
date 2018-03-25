@@ -1,4 +1,5 @@
 ﻿using System;
+using Lykke.Service.Assets.Client.Models;
 using Lykke.Service.HFT.Core;
 using Lykke.Service.HFT.Core.Domain;
 
@@ -12,7 +13,7 @@ namespace Lykke.Service.HFT.Controllers
             _appSettings = appSettings;
         }
 
-        public bool ValidateAssetPair(string assetPairId, Assets.Client.Models.AssetPair assetPair, out ResponseModel model)
+        public bool ValidateAssetPair(string assetPairId, AssetPair assetPair, out ResponseModel model)
         {
             if (assetPair == null)
             {
@@ -53,9 +54,13 @@ namespace Lykke.Service.HFT.Controllers
             return true;
         }
 
-        public bool ValidateAsset(Assets.Client.Models.AssetPair assetPair, string assetId,
-            Assets.Client.Models.Asset baseAsset, Assets.Client.Models.Asset quotingAsset, out ResponseModel model)
+        public bool ValidateAsset(string assetId, AssetPair assetPair, Asset baseAsset, Asset quotingAsset, out ResponseModel model)
         {
+            if (!ValidateAsset(baseAsset, out model) || !ValidateAsset(quotingAsset, out model))
+            {
+                return false;
+            }
+
             if (assetId != baseAsset.Id && assetId != baseAsset.Name && assetId != quotingAsset.Id && assetId != quotingAsset.Name)
             {
                 model = ResponseModel.CreateInvalidFieldError("Asset", $"Asset <{assetId}> is not valid for asset pair <{assetPair.Id}>.");
@@ -66,9 +71,31 @@ namespace Lykke.Service.HFT.Controllers
             return true;
         }
 
-        private bool IsAssetPairDisabled(Assets.Client.Models.AssetPair assetPair)
+        public bool ValidateAsset(Asset asset, out ResponseModel model)
         {
-            return IsAssetDisabled(assetPair.BaseAssetId) || IsAssetDisabled(assetPair.QuotingAssetId);
+            if (asset == null)
+            {
+                model = ResponseModel.CreateFail(ResponseModel.ErrorCodeType.UnknownAsset);
+                return false;
+            }
+            if (IsAssetDisabled(asset))
+            {
+                model = ResponseModel.CreateInvalidFieldError("Asset", $"Asset <{asset.Id}> is temporarily disabled.");
+                return false;
+            }
+
+            model = null;
+            return true;
+        }
+
+        private bool IsAssetPairDisabled(AssetPair assetPair)
+        {
+            return assetPair.IsDisabled || IsAssetDisabled(assetPair.BaseAssetId) || IsAssetDisabled(assetPair.QuotingAssetId);
+        }
+
+        private bool IsAssetDisabled(Asset asset)
+        {
+            return asset.IsDisabled || IsAssetDisabled(asset.Id);
         }
 
         private bool IsAssetDisabled(string asset)
