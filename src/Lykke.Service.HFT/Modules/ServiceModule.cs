@@ -1,4 +1,5 @@
-﻿using Autofac;
+﻿using System;
+using Autofac;
 using Autofac.Core;
 using Common.Log;
 using Lykke.Service.HFT.Controllers;
@@ -7,6 +8,7 @@ using Lykke.Service.HFT.Core.Domain;
 using Lykke.Service.HFT.Core.Services;
 using Lykke.Service.HFT.Core.Services.ApiKey;
 using Lykke.Service.HFT.MongoRepositories;
+using Lykke.Service.HFT.PeriodicalHandlers;
 using Lykke.Service.HFT.Services;
 using Lykke.Service.HFT.Services.Consumers;
 using Lykke.SettingsReader;
@@ -57,6 +59,8 @@ namespace Lykke.Service.HFT.Modules
 
             BindRedis(builder, currentSettings.HighFrequencyTradingService.CacheSettings);
             BindRabbitMq(builder, currentSettings.HighFrequencyTradingService);
+
+            RegisterPeriodicalHandlers(builder);
         }
 
         private void BindRedis(ContainerBuilder builder, CacheSettings settings)
@@ -151,6 +155,15 @@ namespace Lykke.Service.HFT.Modules
         {
             builder.RegisterType<MongoRepository<LimitOrderState>>()
                 .As<IRepository<LimitOrderState>>()
+                .SingleInstance();
+        }
+
+        private void RegisterPeriodicalHandlers(ContainerBuilder builder)
+        {
+            builder.RegisterType<GhostOrdersRemover>()
+                .WithParameter(TypedParameter.From(TimeSpan.FromHours(4)))
+                .As<IStartable>()
+                .AutoActivate()
                 .SingleInstance();
         }
     }

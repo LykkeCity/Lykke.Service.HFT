@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 using Lykke.Service.HFT.Core;
 using Lykke.Service.HFT.Core.Domain;
@@ -23,6 +24,26 @@ namespace Lykke.Service.HFT.Services
             _distributedCache = distributedCache;
             _assetServiceDecorator = assetServiceDecorator ?? throw new ArgumentNullException(nameof(assetServiceDecorator));
             _settings = settings;
+        }
+
+        public async Task<ICollection<Guid>> GetOrderIdsAsync(IEnumerable<string> assetPairs)
+        {
+            var orderBooks = new List<string>();
+            foreach (var pair in assetPairs)
+            {
+                var orderBook = await _distributedCache.GetStringAsync(_settings.GetKeyForOrderBook(pair, true));
+                if (orderBook != null)
+                    orderBooks.AddRange(JsonConvert.DeserializeObject<OrderBookInternal>(orderBook).Prices.Select(x => x.Id));
+
+                orderBook = await _distributedCache.GetStringAsync(_settings.GetKeyForOrderBook(pair, false));
+                if (orderBook != null)
+                    orderBooks.AddRange(JsonConvert.DeserializeObject<OrderBookInternal>(orderBook).Prices.Select(x => x.Id));
+            }
+
+            return orderBooks
+                .Where(x => Guid.TryParse(x, out Guid _))
+                .Select(Guid.Parse)
+                .ToHashSet();
         }
 
         public async Task<IEnumerable<OrderBook>> GetAllAsync()
