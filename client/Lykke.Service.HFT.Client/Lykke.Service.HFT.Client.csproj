@@ -1,4 +1,5 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
+
   <PropertyGroup>
     <TargetFramework>netstandard2.0</TargetFramework>
     <Version>1.0.1</Version>
@@ -13,12 +14,15 @@
     <RepositoryType>git</RepositoryType>
     <PackageTags>Lykke</PackageTags>
   </PropertyGroup>
+
   <ItemGroup>
-    <PackageReference Include="Autofac.Extensions.DependencyInjection" Version="4.2.1" />
-    <PackageReference Include="Lykke.Common" Version="6.0.0" />
-    <PackageReference Include="Microsoft.Rest.ClientRuntime" Version="2.3.10" />
+    <PackageReference Include="Autofac.Extensions.DependencyInjection" Version="4.2.2" />
+    <PackageReference Include="Lykke.Common" Version="6.1.0" />
+    <PackageReference Include="Microsoft.Rest.ClientRuntime" Version="2.3.11" />
   </ItemGroup>
+
   <ItemGroup>
     <Folder Include="AutorestClient\" />
   </ItemGroup>
+
 </Project>

@@ -33,7 +33,12 @@ namespace Lykke.Service.HFT.Models
                 Amount = src.Amount,
                 Asset = src.Asset,
                 AssetPair = src.AssetPair,
-                Price = src.Price
+                Price = src.Price,
+                Fee = new Fee
+                {
+                    Amount = src.FeeSize,
+                    Type = src.FeeType
+                }
             };
         }
 
