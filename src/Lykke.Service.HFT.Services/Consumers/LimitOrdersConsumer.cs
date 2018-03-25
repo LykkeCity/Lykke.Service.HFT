@@ -42,7 +42,11 @@ namespace Lykke.Service.HFT.Services.Consumers
                     ExchangeName = settings.ExchangeName,
                     IsDurable = QueueDurable
                 };
-                _subscriber = new RabbitMqSubscriber<LimitOrderMessage>(subscriptionSettings, new DefaultErrorHandlingStrategy(_log, subscriptionSettings))
+                _subscriber = new RabbitMqSubscriber<LimitOrderMessage>(subscriptionSettings, new ResilientErrorHandlingStrategy(_log, subscriptionSettings,
+                        retryTimeout: TimeSpan.FromSeconds(20),
+                        retryNum: 3,
+                        next: new DefaultErrorHandlingStrategy(_log, subscriptionSettings)))
+
                     .SetMessageDeserializer(new JsonMessageDeserializer<LimitOrderMessage>())
                     .SetMessageReadStrategy(new MessageReadWithTemporaryQueueStrategy())
                     .Subscribe(ProcessLimitOrder)
