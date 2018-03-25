@@ -11,5 +11,12 @@ namespace Lykke.Service.HFT.Models
         public string Asset { get; set; }
         public string AssetPair { get; set; }
         public double? Price { get; set; }
+        public Fee Fee { get; set; }
+    }
+
+    public class Fee
+    {
+        public double Amount { get; set; }
+        public OperationsHistory.AutorestClient.Models.FeeType Type { get; set; }
     }
 }
