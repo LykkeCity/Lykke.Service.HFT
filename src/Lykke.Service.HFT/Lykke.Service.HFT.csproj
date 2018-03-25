@@ -36,7 +36,7 @@
     <PackageReference Include="Lykke.Messaging.RabbitMq" Version="2.0.0" />
     <PackageReference Include="Lykke.Service.Balances.Client" Version="1.0.21" />
     <PackageReference Include="Lykke.Service.FeeCalculator.Client" Version="1.8.4" />
-    <PackageReference Include="Lykke.Service.OperationsHistory.Client" Version="2.0.7" />
+    <PackageReference Include="Lykke.Service.OperationsHistory.Client" Version="2.1.0" />
     <PackageReference Include="Lykke.Service.OperationsRepository.Contract" Version="1.0.13" />
     <PackageReference Include="Lykke.Service.Session" Version="1.0.33" />
     <PackageReference Include="Lykke.SettingsReader" Version="2.2.0" />
