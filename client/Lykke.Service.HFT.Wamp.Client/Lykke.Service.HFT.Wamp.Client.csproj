@@ -9,7 +9,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="Lykke.Common" Version="6.0.0" />
+    <PackageReference Include="Lykke.Common" Version="6.1.0" />
     <PackageReference Include="Lykke.WampSharp.Default.Client" Version="1.0.2" />
   </ItemGroup>
 
