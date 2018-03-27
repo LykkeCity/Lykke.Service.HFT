@@ -35,10 +35,5 @@ namespace Lykke.Service.HFT.Services
 
             return asset == null || asset.IsDisabled ? null : asset;
         }
-
-        public async Task<IEnumerable<Asset>> GetAllEnabledAssetsAsync()
-        {
-            return (await _apiService.GetAllAssetsAsync()).Where(a => !a.IsDisabled);
-        }
     }
 }

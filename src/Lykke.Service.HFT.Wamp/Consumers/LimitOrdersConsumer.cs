@@ -102,7 +102,7 @@ namespace Lykke.Service.HFT.Wamp.Consumers
                                 OppositeVolume = x.OppositeVolume
                             }).ToArray()
                         };
-                        
+
                         _subject.OnNext(new WampEvent
                         {
                             Options = new PublishOptions
