@@ -35,6 +35,7 @@ namespace Lykke.Service.HFT.Controllers
         /// Get trades
         /// </summary>
         /// <param name="assetId">Asset identifier</param>
+        /// <param name="assetPairId">Asset-pair identifier</param>
         /// <param name="take">How many maximum items have to be returned</param>
         /// <param name="skip">How many items skip before returning</param>
         /// <returns></returns>
@@ -43,7 +44,7 @@ namespace Lykke.Service.HFT.Controllers
         [ProducesResponseType(typeof(IEnumerable<HistoryTradeModel>), (int)HttpStatusCode.OK)]
         [ProducesResponseType(typeof(ResponseModel), (int)HttpStatusCode.BadRequest)]
         [ProducesResponseType(typeof(void), (int)HttpStatusCode.NotFound)]
-        public async Task<IActionResult> GetTrades([FromQuery] string assetId, [FromQuery] uint? skip = 0, [FromQuery] uint? take = 100)
+        public async Task<IActionResult> GetTrades([FromQuery] string assetId, [FromQuery] string assetPairId = null, [FromQuery] uint? skip = 0, [FromQuery] uint? take = 100)
         {
             if (take > MaxPageSize)
             {
@@ -62,7 +63,13 @@ namespace Lykke.Service.HFT.Controllers
 
             var walletId = User.GetUserId();
 
-            var response = await _operationsHistoryClient.GetByWalletId(walletId, null, assetId, (int)take, (int)skip);
+            var response = await _operationsHistoryClient.GetByWalletId(
+                walletId: walletId,
+                operationType: null,
+                assetId: assetId,
+                assetPairId: assetPairId,
+                take: (int)take,
+                skip: (int)skip);
 
             if (response.Error != null)
             {
