@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using Common;
 using JetBrains.Annotations;
 using Lykke.Service.HFT.Core.Domain;
+using Lykke.Service.HFT.Core.Repositories;
 using Lykke.Service.HFT.Core.Services;
 using Lykke.Service.HFT.Helpers;
 using Lykke.Service.HFT.Models;
@@ -26,17 +27,21 @@ namespace Lykke.Service.HFT.Controllers
         private readonly RequestValidator _requestValidator;
         private readonly IMatchingEngineAdapter _matchingEngineAdapter;
         private readonly IAssetServiceDecorator _assetServiceDecorator;
-        private readonly IRepository<Core.Domain.LimitOrderState> _orderStateRepository;
+        private readonly IRepository<Core.Domain.LimitOrderState> _orderStateCache;
+        private readonly ILimitOrderStateRepository _orderStateArchive;
+
 
         public OrdersController(
             IMatchingEngineAdapter frequencyTradingService,
             IAssetServiceDecorator assetServiceDecorator,
-            IRepository<Core.Domain.LimitOrderState> orderStateRepository,
+            IRepository<Core.Domain.LimitOrderState> orderStateCache,
+            [NotNull] ILimitOrderStateRepository orderStateArchive,
             [NotNull] RequestValidator requestValidator)
         {
             _matchingEngineAdapter = frequencyTradingService ?? throw new ArgumentNullException(nameof(frequencyTradingService));
             _assetServiceDecorator = assetServiceDecorator ?? throw new ArgumentNullException(nameof(assetServiceDecorator));
-            _orderStateRepository = orderStateRepository ?? throw new ArgumentNullException(nameof(orderStateRepository));
+            _orderStateCache = orderStateCache ?? throw new ArgumentNullException(nameof(orderStateCache));
+            _orderStateArchive = orderStateArchive ?? throw new ArgumentNullException(nameof(orderStateArchive));
             _requestValidator = requestValidator ?? throw new ArgumentNullException(nameof(requestValidator));
         }
 
@@ -62,7 +67,7 @@ namespace Lykke.Service.HFT.Controllers
 
             var clientId = User.GetUserId();
 
-            var orders = _orderStateRepository.All().Where(x => x.ClientId == clientId);
+            var orders = _orderStateCache.All().Where(x => x.ClientId == clientId);
             switch (status)
             {
                 case OrderStatus.All:
@@ -113,10 +118,15 @@ namespace Lykke.Service.HFT.Controllers
                 return NotFound();
             }
 
-            var order = await _orderStateRepository.Get(id);
+            var order = await _orderStateCache.Get(id) as ILimitOrderState;
             if (order == null)
             {
-                return NotFound();
+                var clientId = User.GetUserId();
+                order = await _orderStateArchive.GetAsync(clientId, id);
+                if (order == null)
+                {
+                    return NotFound();
+                }
             }
 
             return Ok(order.ConvertToApiModel());
@@ -246,7 +256,7 @@ namespace Lykke.Service.HFT.Controllers
                 return NotFound();
             }
 
-            var order = await _orderStateRepository.Get(id);
+            var order = await _orderStateCache.Get(id);
             if (order == null)
             {
                 return NotFound();
