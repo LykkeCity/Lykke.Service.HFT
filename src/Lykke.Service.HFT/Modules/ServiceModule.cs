@@ -161,7 +161,6 @@ namespace Lykke.Service.HFT.Modules
         {
             var mongoUrl = new MongoUrl(_settings.CurrentValue.HighFrequencyTradingService.Db.OrderStateConnString);
             var database = new MongoClient(mongoUrl).GetDatabase(mongoUrl.DatabaseName);
-            builder.RegisterInstance(database);
 
             builder.RegisterInstance(new MongoRepository<LimitOrderState>(database))
                 .As<IRepository<LimitOrderState>>()

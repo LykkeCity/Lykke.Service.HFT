@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Async;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Threading.Tasks;
@@ -17,13 +18,13 @@ namespace Lykke.Service.HFT.MongoRepositories
     {
         protected readonly IMongoDatabase Database;
         private readonly int _batchSize;
+        private readonly string _collectionName = typeof(T).Name;
 
-        public MongoRepository(IMongoDatabase database, int batchSize = 50)
+        public MongoRepository(IMongoDatabase database, int batchSize = 10)
         {
             Database = database ?? throw new ArgumentNullException(nameof(database));
             _batchSize = batchSize;
 
-            MongoDefaults.GuidRepresentation = GuidRepresentation.Standard;
             if (!BsonClassMap.IsClassMapRegistered(typeof(T)))
             {
                 BsonClassMap.RegisterClassMap<T>(cm =>
@@ -38,7 +39,7 @@ namespace Lykke.Service.HFT.MongoRepositories
 
         protected IMongoCollection<T> GetCollection()
         {
-            return Database.GetCollection<T>(typeof(T).Name);
+            return Database.GetCollection<T>(_collectionName);
         }
 
         public async Task<T> Get(Guid id)
@@ -87,10 +88,17 @@ namespace Lykke.Service.HFT.MongoRepositories
         {
             var ids = entities.Select(x => x.Id).ToList();
             var chunks = ids.ChunkBy(_batchSize);
+            var sw = new Stopwatch();
             foreach (var chunk in chunks)
             {
+                sw.Restart();
                 await GetCollection().DeleteManyAsync(x => chunk.Contains(x.Id));
+                if (sw.ElapsedMilliseconds < 1000)
+                {
+                    await Task.Delay(1000 - (int)sw.ElapsedMilliseconds);
+                }
             }
+            sw.Stop();
         }
 
         public IQueryable<T> All()
