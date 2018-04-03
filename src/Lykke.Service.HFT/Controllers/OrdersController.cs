@@ -14,6 +14,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.ModelBinding;
 using Swashbuckle.AspNetCore.SwaggerGen;
+using OrderStatus = Lykke.Service.HFT.Models.Requests.OrderStatus;
 
 namespace Lykke.Service.HFT.Controllers
 {
@@ -21,8 +22,7 @@ namespace Lykke.Service.HFT.Controllers
     [Route("api/[controller]")]
     public class OrdersController : Controller
     {
-        private const int MaxPageSize = 1000;
-        private const int MaxSkipSize = MaxPageSize * 1000;
+        private const int MaxPageSize = 500;
         private readonly RequestValidator _requestValidator;
         private readonly IMatchingEngineAdapter _matchingEngineAdapter;
         private readonly IAssetServiceDecorator _assetServiceDecorator;
@@ -48,23 +48,52 @@ namespace Lykke.Service.HFT.Controllers
         [SwaggerOperation("GetOrders")]
         [ProducesResponseType(typeof(IEnumerable<Models.LimitOrderState>), (int)HttpStatusCode.OK)]
         [ProducesResponseType((int)HttpStatusCode.BadRequest)]
-        public async Task<IActionResult> GetOrders([FromQuery] OrderStatus? status = null, [FromQuery] uint? skip = 0, [FromQuery] uint? take = 100)
+        public async Task<IActionResult> GetOrders([FromQuery] OrderStatus? status = null, [FromQuery] uint? take = 100)
         {
             if (take > MaxPageSize)
             {
                 return BadRequest(ResponseModel.CreateInvalidFieldError("take", $"Page size {take} is to big"));
             }
 
-            if (skip > MaxSkipSize)
+            if (!status.HasValue)
             {
-                return BadRequest(ResponseModel.CreateInvalidFieldError("skip", $"Skip size {take} is to big"));
+                status = OrderStatus.All;
             }
 
             var clientId = User.GetUserId();
-            var orders = status.HasValue
-                ? _orderStateRepository.All().Where(x => x.ClientId == clientId && x.Status == status.Value)
-                : _orderStateRepository.All().Where(x => x.ClientId == clientId);
-            return Ok(orders.OrderByDescending(x => x.CreatedAt).Skip((int)skip.Value).Take((int)take.Value).ToList().Select(x => x.ConvertToApiModel()));
+
+            var orders = _orderStateRepository.All().Where(x => x.ClientId == clientId);
+            switch (status)
+            {
+                case OrderStatus.All:
+                    break;
+                case OrderStatus.InOrderBook:
+                    orders = orders.Where(x => x.Status == Core.Domain.OrderStatus.InOrderBook);
+                    break;
+                case OrderStatus.Processing:
+                    orders = orders.Where(x => x.Status == Core.Domain.OrderStatus.Processing);
+                    break;
+                case OrderStatus.Matched:
+                    orders = orders.Where(x => x.Status == Core.Domain.OrderStatus.Matched);
+                    break;
+                case OrderStatus.Cancelled:
+                    orders = orders.Where(x => x.Status == Core.Domain.OrderStatus.Cancelled);
+                    break;
+                case OrderStatus.Rejected:
+                    orders = orders.Where(order =>
+                        order.Status == Core.Domain.OrderStatus.NotEnoughFunds
+                        || order.Status == Core.Domain.OrderStatus.NoLiquidity
+                        || order.Status == Core.Domain.OrderStatus.UnknownAsset
+                        || order.Status == Core.Domain.OrderStatus.LeadToNegativeSpread
+                        || order.Status == Core.Domain.OrderStatus.ReservedVolumeGreaterThanBalance
+                        || order.Status == Core.Domain.OrderStatus.TooSmallVolume
+                        || order.Status == Core.Domain.OrderStatus.Runtime);
+                    break;
+                default:
+                    throw new ArgumentOutOfRangeException(nameof(status), status, null);
+            }
+
+            return Ok(orders.OrderByDescending(x => x.CreatedAt).Take((int)take.Value).ToList().Select(x => x.ConvertToApiModel()));
         }
 
 
@@ -226,8 +255,19 @@ namespace Lykke.Service.HFT.Controllers
             {
                 return Forbid();
             }
-            if (order.Status == OrderStatus.Cancelled || order.Status == OrderStatus.NoLiquidity || order.Status == OrderStatus.NotEnoughFunds ||
-                order.Status == OrderStatus.UnknownAsset || order.Status == OrderStatus.LeadToNegativeSpread)
+
+            if (order.Status == Core.Domain.OrderStatus.Cancelled)
+            {
+                return Ok();
+            }
+            // if rejected, do nothing
+            if (order.Status == Core.Domain.OrderStatus.NotEnoughFunds
+                || order.Status == Core.Domain.OrderStatus.NoLiquidity
+                || order.Status == Core.Domain.OrderStatus.UnknownAsset
+                || order.Status == Core.Domain.OrderStatus.LeadToNegativeSpread
+                || order.Status == Core.Domain.OrderStatus.ReservedVolumeGreaterThanBalance
+                || order.Status == Core.Domain.OrderStatus.TooSmallVolume
+                || order.Status == Core.Domain.OrderStatus.Runtime)
             {
                 return Ok();
             }
