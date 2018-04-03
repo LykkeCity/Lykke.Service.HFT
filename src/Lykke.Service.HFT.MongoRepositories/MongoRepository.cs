@@ -23,6 +23,7 @@ namespace Lykke.Service.HFT.MongoRepositories
             Database = database ?? throw new ArgumentNullException(nameof(database));
             _batchSize = batchSize;
 
+            MongoDefaults.GuidRepresentation = GuidRepresentation.Standard;
             if (!BsonClassMap.IsClassMapRegistered(typeof(T)))
             {
                 BsonClassMap.RegisterClassMap<T>(cm =>
