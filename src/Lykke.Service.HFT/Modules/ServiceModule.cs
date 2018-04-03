@@ -1,10 +1,14 @@
 ﻿using System;
 using Autofac;
 using Autofac.Core;
+using AzureStorage;
+using AzureStorage.Tables;
 using Common.Log;
+using Lykke.Service.HFT.AzureRepositories;
 using Lykke.Service.HFT.Controllers;
 using Lykke.Service.HFT.Core;
 using Lykke.Service.HFT.Core.Domain;
+using Lykke.Service.HFT.Core.Repositories;
 using Lykke.Service.HFT.Core.Services;
 using Lykke.Service.HFT.Core.Services.ApiKey;
 using Lykke.Service.HFT.MongoRepositories;
@@ -14,6 +18,8 @@ using Lykke.Service.HFT.Services.Consumers;
 using Lykke.SettingsReader;
 using Microsoft.Extensions.Caching.Distributed;
 using Microsoft.Extensions.Caching.Redis;
+using Microsoft.WindowsAzure.Storage.Table;
+using MongoDB.Driver;
 
 namespace Lykke.Service.HFT.Modules
 {
@@ -153,15 +159,38 @@ namespace Lykke.Service.HFT.Modules
 
         private void RegisterOrderStates(ContainerBuilder builder)
         {
-            builder.RegisterType<MongoRepository<LimitOrderState>>()
+            var mongoUrl = new MongoUrl(_settings.CurrentValue.HighFrequencyTradingService.Db.OrderStateConnString);
+            var database = new MongoClient(mongoUrl).GetDatabase(mongoUrl.DatabaseName);
+            builder.RegisterInstance(database);
+
+            builder.RegisterInstance(new MongoRepository<LimitOrderState>(database))
                 .As<IRepository<LimitOrderState>>()
                 .SingleInstance();
+
+            var ordersArchiveTable = CreateTable<LimitOrderStateEntity>(
+                _settings.ConnectionString(x => x.HighFrequencyTradingService.Db.OrdersArchiveConnString), "HftOrderStateArchive");
+            builder.RegisterInstance(new LimitOrderStateRepository(ordersArchiveTable))
+                .As<ILimitOrderStateRepository>()
+                .SingleInstance();
+        }
+
+        private INoSQLTableStorage<T> CreateTable<T>(IReloadingManager<string> connectionString, string name)
+            where T : TableEntity, new()
+        {
+            return AzureTableStorage<T>.Create(connectionString, name, _log);
         }
 
         private void RegisterPeriodicalHandlers(ContainerBuilder builder)
         {
             builder.RegisterType<GhostOrdersRemover>()
                 .WithParameter(TypedParameter.From(TimeSpan.FromHours(4)))
+                .As<IStartable>()
+                .AutoActivate()
+                .SingleInstance();
+
+            builder.RegisterType<OrderStateArchiver>()
+                .WithParameter("checkInterval", TimeSpan.FromHours(8))
+                .WithParameter("activeOrdersWindow", TimeSpan.FromDays(30))
                 .As<IStartable>()
                 .AutoActivate()
                 .SingleInstance();

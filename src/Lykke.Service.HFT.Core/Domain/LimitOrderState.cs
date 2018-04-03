@@ -2,7 +2,7 @@
 
 namespace Lykke.Service.HFT.Core.Domain
 {
-    public class LimitOrderState : IHasId
+    public class LimitOrderState : IHasId, ILimitOrderState
     {
         public Guid Id { get; set; }
         public string ClientId { get; set; }
