@@ -4,7 +4,6 @@ using System.Linq;
 using System.Net;
 using System.Threading.Tasks;
 using Common;
-using JetBrains.Annotations;
 using Lykke.Service.HFT.Core.Domain;
 using Lykke.Service.HFT.Core.Repositories;
 using Lykke.Service.HFT.Core.Services;
@@ -35,8 +34,8 @@ namespace Lykke.Service.HFT.Controllers
             IMatchingEngineAdapter frequencyTradingService,
             IAssetServiceDecorator assetServiceDecorator,
             IRepository<Core.Domain.LimitOrderState> orderStateCache,
-            [NotNull] ILimitOrderStateRepository orderStateArchive,
-            [NotNull] RequestValidator requestValidator)
+            ILimitOrderStateRepository orderStateArchive,
+            RequestValidator requestValidator)
         {
             _matchingEngineAdapter = frequencyTradingService ?? throw new ArgumentNullException(nameof(frequencyTradingService));
             _assetServiceDecorator = assetServiceDecorator ?? throw new ArgumentNullException(nameof(assetServiceDecorator));
@@ -48,6 +47,8 @@ namespace Lykke.Service.HFT.Controllers
         /// <summary>
         /// Get all client orders.
         /// </summary>
+        /// <param name="status">Order status</param>
+        /// <param name="take">Default 100; max 500.</param>
         /// <returns>Client orders.</returns>
         [HttpGet]
         [SwaggerOperation("GetOrders")]
@@ -71,6 +72,9 @@ namespace Lykke.Service.HFT.Controllers
             switch (status)
             {
                 case OrderStatus.All:
+                    break;
+                case OrderStatus.Open:
+                    orders = orders.Where(x => x.Status == Core.Domain.OrderStatus.InOrderBook || x.Status == Core.Domain.OrderStatus.Processing);
                     break;
                 case OrderStatus.InOrderBook:
                     orders = orders.Where(x => x.Status == Core.Domain.OrderStatus.InOrderBook);
@@ -256,12 +260,18 @@ namespace Lykke.Service.HFT.Controllers
                 return NotFound();
             }
 
-            var order = await _orderStateCache.Get(id);
+            var clientId = User.GetUserId();
+
+            var order = await _orderStateCache.Get(id) as ILimitOrderState;
             if (order == null)
             {
-                return NotFound();
+                order = await _orderStateArchive.GetAsync(clientId, id);
+                if (order == null)
+                {
+                    return NotFound();
+                }
             }
-            if (order.ClientId != User.GetUserId())
+            if (order.ClientId != clientId)
             {
                 return Forbid();
             }

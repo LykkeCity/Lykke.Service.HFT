@@ -15,6 +15,11 @@ namespace Lykke.Service.HFT.AzureRepositories
         public DateTime Registered { get; set; }
         public double RemainingVolume { get; set; }
         public OrderStatus Status { get; set; }
+        public string StatusString
+        {
+            get => Status.ToString();
+            set => Status = Enum.Parse<OrderStatus>(value);
+        }
         public double Volume { get; set; }
     }
 }

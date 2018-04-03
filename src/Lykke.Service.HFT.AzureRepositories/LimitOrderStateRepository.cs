@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Async;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
@@ -23,17 +24,21 @@ namespace Lykke.Service.HFT.AzureRepositories
             return await _orderStateTable.GetDataAsync(clientId, orderId.ToString());
         }
 
-        public Task AddAsync(IEnumerable<ILimitOrderState> orders)
+        public async Task AddAsync(IEnumerable<ILimitOrderState> orders)
         {
-            return _orderStateTable.InsertOrReplaceBatchAsync(orders.Select(Create));
+            var chunks = orders.GroupBy(GetPartitionKey);
+            await chunks.ParallelForEachAsync(async chunk =>
+            {
+                await _orderStateTable.InsertOrReplaceBatchAsync(chunk.Select(Create));
+            });
         }
 
         private LimitOrderStateEntity Create(ILimitOrderState order)
         {
             return new LimitOrderStateEntity
             {
-                PartitionKey = order.ClientId,
-                RowKey = order.Id.ToString(),
+                PartitionKey = GetPartitionKey(order),
+                RowKey = GetRowKey(order),
                 Status = order.Status,
                 Price = order.Price,
                 AssetPairId = order.AssetPairId,
@@ -45,5 +50,11 @@ namespace Lykke.Service.HFT.AzureRepositories
                 Registered = order.Registered
             };
         }
+
+        private static string GetPartitionKey(ILimitOrderState order)
+            => order.ClientId;
+
+        private static string GetRowKey(ILimitOrderState order)
+            => order.Id.ToString();
     }
 }

@@ -7,7 +7,11 @@
         /// </summary>
         All,
         /// <summary>
-        /// Init status, limit order in order book
+        /// Open orders: InOrderBook, Processing
+        /// </summary>
+        Open,
+        /// <summary>
+        /// Limit order in order book
         /// </summary>
         InOrderBook,
         /// <summary>

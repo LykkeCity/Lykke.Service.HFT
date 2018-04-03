@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Threading.Tasks;
+using Lykke.Service.HFT.Core;
 using Lykke.Service.HFT.Core.Domain;
 using MongoDB.Bson;
 using MongoDB.Bson.Serialization;
@@ -15,12 +16,13 @@ namespace Lykke.Service.HFT.MongoRepositories
     public class MongoRepository<T> : IRepository<T> where T : class, IHasId
     {
         protected readonly IMongoDatabase Database;
+        private readonly int _batchSize;
 
-        public MongoRepository(IMongoDatabase database)
+        public MongoRepository(IMongoDatabase database, int batchSize = 50)
         {
             Database = database ?? throw new ArgumentNullException(nameof(database));
+            _batchSize = batchSize;
 
-            MongoDefaults.GuidRepresentation = GuidRepresentation.Standard;
             if (!BsonClassMap.IsClassMapRegistered(typeof(T)))
             {
                 BsonClassMap.RegisterClassMap<T>(cm =>
@@ -80,17 +82,14 @@ namespace Lykke.Service.HFT.MongoRepositories
             await GetCollection().DeleteOneAsync(new BsonDocument("_id", entity.Id)).ConfigureAwait(false);
         }
 
-        public Task DeleteAsync(Expression<Func<T, bool>> filter)
+        public async Task DeleteAsync(IEnumerable<T> entities)
         {
-            return GetCollection().DeleteManyAsync(filter);
-        }
-
-        public async Task Delete(IEnumerable<T> entities)
-        {
-            await entities.ParallelForEachAsync(async item =>
+            var ids = entities.Select(x => x.Id).ToList();
+            var chunks = ids.ChunkBy(_batchSize);
+            foreach (var chunk in chunks)
             {
-                await Delete(item).ConfigureAwait(false);
-            }).ConfigureAwait(false);
+                await GetCollection().DeleteManyAsync(x => chunk.Contains(x.Id));
+            }
         }
 
         public IQueryable<T> All()
@@ -106,6 +105,12 @@ namespace Lykke.Service.HFT.MongoRepositories
         public IQueryable<T> FilterBy(Expression<Func<T, bool>> expression)
         {
             return GetCollection().Find(expression).ToList().AsQueryable();
+        }
+
+        public async Task<IEnumerable<T>> FilterAsync(Expression<Func<T, bool>> expression, int? limit)
+        {
+            var result = await GetCollection().FindAsync(expression, new FindOptions<T> { Limit = limit, BatchSize = limit });
+            return result.ToEnumerable();
         }
     }
 }
