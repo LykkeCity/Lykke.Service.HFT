@@ -168,7 +168,7 @@ namespace Lykke.Service.HFT.Modules
                 .SingleInstance();
 
             var limitOrderStateTable = CreateTable<LimitOrderStateEntity>(
-                _settings.ConnectionString(x => x.HighFrequencyTradingService.Db.OrdersArchiveConnString), "OrderStateArchive");
+                _settings.ConnectionString(x => x.HighFrequencyTradingService.Db.OrdersArchiveConnString), "HftOrderStateArchive");
             builder.RegisterInstance(new LimitOrderStateRepository(limitOrderStateTable))
                 .As<ILimitOrderStateRepository>()
                 .SingleInstance();
@@ -183,6 +183,12 @@ namespace Lykke.Service.HFT.Modules
         private void RegisterPeriodicalHandlers(ContainerBuilder builder)
         {
             builder.RegisterType<GhostOrdersRemover>()
+                .WithParameter(TypedParameter.From(TimeSpan.FromHours(4)))
+                .As<IStartable>()
+                .AutoActivate()
+                .SingleInstance();
+
+            builder.RegisterType<OrderStateArchiver>()
                 .WithParameter(TypedParameter.From(TimeSpan.FromHours(4)))
                 .As<IStartable>()
                 .AutoActivate()

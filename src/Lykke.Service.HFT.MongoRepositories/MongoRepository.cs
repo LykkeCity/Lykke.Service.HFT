@@ -80,6 +80,11 @@ namespace Lykke.Service.HFT.MongoRepositories
             await GetCollection().DeleteOneAsync(new BsonDocument("_id", entity.Id)).ConfigureAwait(false);
         }
 
+        public Task DeleteAsync(Expression<Func<T, bool>> filter)
+        {
+            return GetCollection().DeleteManyAsync(filter);
+        }
+
         public async Task Delete(IEnumerable<T> entities)
         {
             await entities.ParallelForEachAsync(async item =>
