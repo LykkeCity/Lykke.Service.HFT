@@ -19,14 +19,14 @@ namespace Lykke.Service.HFT.MongoRepositories
     {
         protected readonly IMongoDatabase Database;
         private readonly ILog _log;
-        private int _batchSize;
+        private int _rpsLimit;
         private readonly string _collectionName = typeof(T).Name;
 
-        public MongoRepository(IMongoDatabase database, ILog log, int batchSize = 100)
+        public MongoRepository(IMongoDatabase database, ILog log, int rpsLimit = 100)
         {
             Database = database ?? throw new ArgumentNullException(nameof(database));
             _log = log.CreateComponentScope(nameof(MongoRepository<T>));
-            _batchSize = batchSize;
+            _rpsLimit = rpsLimit;
 
             if (!BsonClassMap.IsClassMapRegistered(typeof(T)))
             {
@@ -89,8 +89,9 @@ namespace Lykke.Service.HFT.MongoRepositories
 
         public async Task DeleteAsync(IEnumerable<T> entities)
         {
+            // this implementation takes care of CosmosDB rate limiting, starting from 100 delete operations per second
             var ids = entities.Select(x => x.Id).ToList();
-            var chunks = ids.ChunkBy(_batchSize);
+            var chunks = ids.ChunkBy(_rpsLimit);
             var sw = new Stopwatch();
             foreach (var chunk in chunks)
             {
@@ -99,13 +100,12 @@ namespace Lykke.Service.HFT.MongoRepositories
                 {
                     await GetCollection().DeleteManyAsync(x => chunk.Contains(x.Id));
                 }
-                catch (Exception exception)
+                catch (MongoCommandException exception)
                 {
                     if (exception.Message.Contains("Request rate is large"))
                     {
-                        _batchSize = (int)(_batchSize * 0.8);
-                        _log.WriteInfo(nameof(DeleteAsync), "Request rate is large", $"Decreasing batchSize: {_batchSize}");
-                        return;
+                        _rpsLimit = (int)(_rpsLimit * 0.8);
+                        _log.WriteWarning(nameof(DeleteAsync), "Request rate is large", $"Decreasing rps: {_rpsLimit}", exception);
                     }
                     throw;
                 }
@@ -132,9 +132,9 @@ namespace Lykke.Service.HFT.MongoRepositories
             return GetCollection().Find(expression).ToList().AsQueryable();
         }
 
-        public async Task<IEnumerable<T>> FilterAsync(Expression<Func<T, bool>> expression, int? limit)
+        public async Task<IEnumerable<T>> FilterAsync(Expression<Func<T, bool>> expression, int? take = null)
         {
-            var result = await GetCollection().FindAsync(expression, new FindOptions<T> { Limit = limit, BatchSize = limit });
+            var result = await GetCollection().FindAsync(expression, new FindOptions<T> { Limit = take, BatchSize = take });
             return result.ToEnumerable();
         }
     }

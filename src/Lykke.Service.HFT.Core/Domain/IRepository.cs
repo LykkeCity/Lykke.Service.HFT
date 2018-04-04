@@ -28,6 +28,6 @@ namespace Lykke.Service.HFT.Core.Domain
 
         IQueryable<TEntity> FilterBy(Expression<Func<TEntity, bool>> expression);
 
-        Task<IEnumerable<TEntity>> FilterAsync(Expression<Func<TEntity, bool>> expression, int? limit);
+        Task<IEnumerable<TEntity>> FilterAsync(Expression<Func<TEntity, bool>> expression, int? take = null);
     }
 }
