@@ -18,7 +18,7 @@ namespace Lykke.Service.HFT.Core.Domain
 
         Task Delete(TEntity entity);
 
-        Task Delete(IEnumerable<TEntity> entities);
+        Task DeleteAsync(IEnumerable<TEntity> entities);
 
         IQueryable<TEntity> All();
 
@@ -27,5 +27,7 @@ namespace Lykke.Service.HFT.Core.Domain
         Task<TEntity> Get(Guid id);
 
         IQueryable<TEntity> FilterBy(Expression<Func<TEntity, bool>> expression);
+
+        Task<IEnumerable<TEntity>> FilterAsync(Expression<Func<TEntity, bool>> expression, int? take = null);
     }
 }

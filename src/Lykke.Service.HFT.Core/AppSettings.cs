@@ -77,6 +77,8 @@ namespace Lykke.Service.HFT.Core
         public class DbSettings
         {
             public string LogsConnString { get; set; }
+            public string OrderStateConnString { get; set; }
+            public string OrdersArchiveConnString { get; set; }
         }
 
         public class DictionariesSettings

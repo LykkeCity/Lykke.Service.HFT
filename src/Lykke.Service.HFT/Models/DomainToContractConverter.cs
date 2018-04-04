@@ -1,4 +1,5 @@
 ﻿using Lykke.Service.Assets.Client.Models;
+using Lykke.Service.HFT.Core.Domain;
 using Lykke.Service.OperationsHistory.AutorestClient.Models;
 
 namespace Lykke.Service.HFT.Models
@@ -42,7 +43,7 @@ namespace Lykke.Service.HFT.Models
             };
         }
 
-        public static LimitOrderState ConvertToApiModel(this Core.Domain.LimitOrderState order)
+        public static LimitOrderState ConvertToApiModel(this ILimitOrderState order)
         {
             return new LimitOrderState
             {
