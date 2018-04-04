@@ -10,6 +10,8 @@ using Lykke.Service.FeeCalculator.Client;
 using Lykke.Service.HFT.Core;
 using Lykke.Service.HFT.Core.Domain;
 using Lykke.Service.HFT.Core.Services;
+using FeeType = Lykke.Service.FeeCalculator.AutorestClient.Models.FeeType;
+using OrderAction = Lykke.Service.HFT.Core.Domain.OrderAction;
 
 namespace Lykke.Service.HFT.Services
 {
@@ -65,7 +67,7 @@ namespace Lykke.Service.HFT.Services
             return ConvertToApiModel(response.Status);
         }
 
-        public async Task<ResponseModel<double>> HandleMarketOrderAsync(string clientId, string assetPairId, Core.Domain.OrderAction orderAction, double volume,
+        public async Task<ResponseModel<double>> HandleMarketOrderAsync(string clientId, string assetPairId, OrderAction orderAction, double volume,
             bool straight, double? reservedLimitVolume = null)
         {
             var order = new MarketOrderModel
@@ -77,7 +79,7 @@ namespace Lykke.Service.HFT.Services
                 Straight = straight,
                 Volume = Math.Abs(volume),
                 OrderAction = orderAction.ToMeOrderAction(),
-                Fee = await GetMarketOrderFee(clientId, assetPairId, orderAction)
+                Fees = new[] { await GetMarketOrderFee(clientId, assetPairId, orderAction) }
             };
 
             var response = await _matchingEngineClient.HandleMarketOrderAsync(order);
@@ -89,7 +91,7 @@ namespace Lykke.Service.HFT.Services
             return ConvertToApiModel<double>(response.Status);
         }
 
-        public async Task<ResponseModel<Guid>> PlaceLimitOrderAsync(string clientId, string assetPairId, Core.Domain.OrderAction orderAction, double volume,
+        public async Task<ResponseModel<Guid>> PlaceLimitOrderAsync(string clientId, string assetPairId, OrderAction orderAction, double volume,
             double price, bool cancelPreviousOrders = false)
         {
             var requestId = GetNextRequestId();
@@ -105,7 +107,7 @@ namespace Lykke.Service.HFT.Services
                 CancelPreviousOrders = cancelPreviousOrders,
                 Volume = Math.Abs(volume),
                 OrderAction = orderAction.ToMeOrderAction(),
-                Fee = await GetLimitOrderFee(clientId, assetPairId, orderAction)
+                Fees = new[] { await GetLimitOrderFee(clientId, assetPairId, orderAction) }
             };
 
             var response = await _matchingEngineClient.PlaceLimitOrderAsync(order);
@@ -148,22 +150,29 @@ namespace Lykke.Service.HFT.Services
             return ResponseModel<T>.CreateFail(StatusCodesMap[status]);
         }
 
-        private async Task<MarketOrderFeeModel> GetMarketOrderFee(string clientId, string assetPairId, Core.Domain.OrderAction orderAction)
+        private async Task<MarketOrderFeeModel> GetMarketOrderFee(string clientId, string assetPairId, OrderAction orderAction)
         {
             var assetPair = await _assetsService.AssetPairGetAsync(assetPairId);
-            var fee = await _feeCalculatorClient.GetMarketOrderFees(clientId, assetPairId, assetPair?.BaseAssetId,
-                orderAction.ToFeeOrderAction());
+            var fee = await _feeCalculatorClient.GetMarketOrderAssetFee(clientId, assetPairId, assetPair?.BaseAssetId, orderAction.ToFeeOrderAction());
 
             return new MarketOrderFeeModel
             {
-                Size = (double)fee.DefaultFeeSize,
+                Size = (double)fee.Amount,
+                SizeType = fee.Type == FeeType.Absolute
+                    ? (int)FeeSizeType.ABSOLUTE
+                    : (int)FeeSizeType.PERCENTAGE,
                 SourceClientId = clientId,
-                TargetClientId = _feeSettings.TargetClientId.Hft,
-                Type = fee.DefaultFeeSize == 0m ? (int)MarketOrderFeeType.NO_FEE : (int)MarketOrderFeeType.CLIENT_FEE
+                TargetClientId = fee.TargetWalletId ?? _feeSettings.TargetClientId.Hft,
+                Type = fee.Amount == 0m
+                    ? (int)MarketOrderFeeType.NO_FEE
+                    : (int)MarketOrderFeeType.CLIENT_FEE,
+                AssetId = string.IsNullOrEmpty(fee.TargetAssetId)
+                    ? Array.Empty<string>()
+                    : new[] { fee.TargetAssetId }
             };
         }
 
-        private async Task<LimitOrderFeeModel> GetLimitOrderFee(string clientId, string assetPairId, Core.Domain.OrderAction orderAction)
+        private async Task<LimitOrderFeeModel> GetLimitOrderFee(string clientId, string assetPairId, OrderAction orderAction)
         {
             var assetPair = await _assetsService.AssetPairGetAsync(assetPairId);
             var fee = await _feeCalculatorClient.GetLimitOrderFees(clientId, assetPairId, assetPair?.BaseAssetId, orderAction.ToFeeOrderAction());
@@ -174,13 +183,15 @@ namespace Lykke.Service.HFT.Services
                 TakerSize = (double)fee.TakerFeeSize,
                 SourceClientId = clientId,
                 TargetClientId = _feeSettings.TargetClientId.Hft,
-                Type = fee.MakerFeeSize == 0m && fee.TakerFeeSize == 0m ? (int)LimitOrderFeeType.NO_FEE : (int)LimitOrderFeeType.CLIENT_FEE,
+                Type = fee.MakerFeeSize == 0m && fee.TakerFeeSize == 0m
+                    ? (int)LimitOrderFeeType.NO_FEE
+                    : (int)LimitOrderFeeType.CLIENT_FEE,
                 MakerFeeModificator = (double)fee.MakerFeeModificator,
-                MakerSizeType = fee.MakerFeeType == FeeCalculator.AutorestClient.Models.FeeType.Absolute
-                    ? (int)FeeSizeType.ABSOLUTE 
+                MakerSizeType = fee.MakerFeeType == FeeType.Absolute
+                    ? (int)FeeSizeType.ABSOLUTE
                     : (int)FeeSizeType.PERCENTAGE,
-                TakerSizeType = fee.TakerFeeType == FeeCalculator.AutorestClient.Models.FeeType.Absolute
-                    ? (int)FeeSizeType.ABSOLUTE 
+                TakerSizeType = fee.TakerFeeType == FeeType.Absolute
+                    ? (int)FeeSizeType.ABSOLUTE
                     : (int)FeeSizeType.PERCENTAGE
             };
         }
