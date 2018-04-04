@@ -12,6 +12,8 @@ namespace Lykke.Service.HFT.PeriodicalHandlers
 {
     public class OrderStateArchiver : TimerPeriod
     {
+        private const int DefaultChunkSize = 5000;
+        private const int MinimalChunkSize = 100;
         private readonly ILog _log;
         private readonly TimeSpan _activeOrdersWindow;
         private readonly IRepository<LimitOrderState> _orderStateCache;
@@ -38,10 +40,16 @@ namespace Lykke.Service.HFT.PeriodicalHandlers
                 x.Status != OrderStatus.InOrderBook && x.Status != OrderStatus.Processing && x.Status != OrderStatus.Pending
                 && (x.LastMatchTime == null && x.CreatedAt < minimalDate || x.LastMatchTime < minimalDate);
 
-            var chunkSize = 5000;
+            var chunkSize = DefaultChunkSize;
             var sw = new Stopwatch();
             while (true)
             {
+                if (chunkSize < MinimalChunkSize)
+                {
+                    _log.WriteWarning("OrderStateArchiver", null, $"Too small chunk size {chunkSize} ");
+                    break;
+                }
+
                 sw.Restart();
                 _log.WriteInfo("OrderStateArchiver", null, $"0. Getting {chunkSize} orders.");
                 try

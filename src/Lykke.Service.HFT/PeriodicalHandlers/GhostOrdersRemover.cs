@@ -11,6 +11,7 @@ namespace Lykke.Service.HFT.PeriodicalHandlers
 {
     public class GhostOrdersRemover : TimerPeriod
     {
+        private const int DefaultChunkSize = 5000;
         private readonly IOrderBooksService _orderBooksService;
         private readonly ILog _log;
         private readonly IRepository<LimitOrderState> _orderStateRepository;
@@ -29,12 +30,11 @@ namespace Lykke.Service.HFT.PeriodicalHandlers
 
         public override async Task Execute()
         {
-            var chunkSize = 5000;
             var minimalDate = DateTime.UtcNow.AddHours(-1);
             Expression<Func<LimitOrderState, bool>> filter = x =>
                 x.Status == OrderStatus.InOrderBook || x.Status == OrderStatus.Processing || x.Status == OrderStatus.Pending
                 && (x.LastMatchTime == null && x.CreatedAt < minimalDate || x.LastMatchTime < minimalDate);
-            var ordersInOrderBookState = (await _orderStateRepository.FilterAsync(filter, chunkSize)).ToList();
+            var ordersInOrderBookState = (await _orderStateRepository.FilterAsync(filter, DefaultChunkSize)).ToList();
 
             var assetPairs = ordersInOrderBookState.Select(x => x.AssetPairId).Distinct();
             var orderBook = await _orderBooksService.GetOrderIdsAsync(assetPairs);
