@@ -68,7 +68,7 @@ namespace Lykke.Service.HFT.Controllers
 
             var clientId = User.GetUserId();
 
-            var orders = _orderStateCache.All().Where(x => x.ClientId == clientId);
+            var orders = _orderStateCache.All().Where(x => x.ClientId == clientId); // todo: fix default limit of 101 element
             switch (status)
             {
                 case OrderStatus.All:

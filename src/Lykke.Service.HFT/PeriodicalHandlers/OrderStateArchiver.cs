@@ -39,7 +39,6 @@ namespace Lykke.Service.HFT.PeriodicalHandlers
                 && (x.LastMatchTime == null && x.CreatedAt < minimalDate || x.LastMatchTime < minimalDate);
 
             var chunkSize = 5000;
-            var delay = TimeSpan.FromSeconds(1);
             var sw = new Stopwatch();
             while (true)
             {
@@ -68,7 +67,7 @@ namespace Lykke.Service.HFT.PeriodicalHandlers
                 {
                     _log.WriteWarning("OrderStateArchiver", null, "", exception);
                     chunkSize = (int)(chunkSize * 0.8);
-                    await Task.Delay(delay);
+                    await Task.Delay(TimeSpan.FromSeconds(1));
                 }
             }
         }

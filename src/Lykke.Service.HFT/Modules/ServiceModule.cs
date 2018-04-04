@@ -161,7 +161,6 @@ namespace Lykke.Service.HFT.Modules
         {
             var mongoUrl = new MongoUrl(_settings.CurrentValue.HighFrequencyTradingService.Db.OrderStateConnString);
             var database = new MongoClient(mongoUrl).GetDatabase(mongoUrl.DatabaseName);
-
             builder.RegisterInstance(new MongoRepository<LimitOrderState>(database, _log))
                 .As<IRepository<LimitOrderState>>()
                 .SingleInstance();
@@ -188,7 +187,7 @@ namespace Lykke.Service.HFT.Modules
                 .SingleInstance();
 
             builder.RegisterType<OrderStateArchiver>()
-                .WithParameter("checkInterval", TimeSpan.FromHours(8))
+                .WithParameter("checkInterval", TimeSpan.FromHours(12))
                 .WithParameter("activeOrdersWindow", TimeSpan.FromDays(30))
                 .As<IStartable>()
                 .AutoActivate()
