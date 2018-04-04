@@ -57,12 +57,12 @@ namespace Lykke.Service.HFT.PeriodicalHandlers
                     _log.WriteInfo("OrderStateArchiver", null, $"1. Got {notActiveOrders.Count} orders in {sw.Elapsed.TotalSeconds} sec.");
                     sw.Restart();
 
-                    await _orderStateArchive.AddAsync(notActiveOrders);
-                    _log.WriteInfo("OrderStateArchiver", null, $"2. Migrated to azure in {sw.Elapsed.TotalSeconds} sec.");
+                    await _orderStateArchive.AddAsync(notActiveOrders.Where(x => x.CreatedAt > DateTime.UtcNow.AddYears(-1)));
+                    _log.WriteInfo("OrderStateArchiver", null, $"2. Migrated to azure in {sw.Elapsed.TotalMinutes} min.");
                     sw.Restart();
 
                     await _orderStateCache.DeleteAsync(notActiveOrders);
-                    _log.WriteInfo("OrderStateArchiver", null, $"4. Deleted from mongo in {sw.Elapsed.TotalSeconds} sec.");
+                    _log.WriteInfo("OrderStateArchiver", null, $"4. Deleted from mongo in {sw.Elapsed.TotalMinutes} min.");
                 }
                 catch (Exception exception)
                 {

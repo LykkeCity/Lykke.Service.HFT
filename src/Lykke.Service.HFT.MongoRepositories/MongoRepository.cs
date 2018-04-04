@@ -1,9 +1,11 @@
 ﻿using System;
 using System.Collections.Async;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Threading.Tasks;
+using Common.Log;
 using Lykke.Service.HFT.Core;
 using Lykke.Service.HFT.Core.Domain;
 using MongoDB.Bson;
@@ -16,14 +18,16 @@ namespace Lykke.Service.HFT.MongoRepositories
     public class MongoRepository<T> : IRepository<T> where T : class, IHasId
     {
         protected readonly IMongoDatabase Database;
-        private readonly int _batchSize;
+        private readonly ILog _log;
+        private int _batchSize;
+        private readonly string _collectionName = typeof(T).Name;
 
-        public MongoRepository(IMongoDatabase database, int batchSize = 50)
+        public MongoRepository(IMongoDatabase database, ILog log, int batchSize = 100)
         {
             Database = database ?? throw new ArgumentNullException(nameof(database));
+            _log = log.CreateComponentScope(nameof(MongoRepository<T>));
             _batchSize = batchSize;
 
-            MongoDefaults.GuidRepresentation = GuidRepresentation.Standard;
             if (!BsonClassMap.IsClassMapRegistered(typeof(T)))
             {
                 BsonClassMap.RegisterClassMap<T>(cm =>
@@ -38,7 +42,7 @@ namespace Lykke.Service.HFT.MongoRepositories
 
         protected IMongoCollection<T> GetCollection()
         {
-            return Database.GetCollection<T>(typeof(T).Name);
+            return Database.GetCollection<T>(_collectionName);
         }
 
         public async Task<T> Get(Guid id)
@@ -87,10 +91,30 @@ namespace Lykke.Service.HFT.MongoRepositories
         {
             var ids = entities.Select(x => x.Id).ToList();
             var chunks = ids.ChunkBy(_batchSize);
+            var sw = new Stopwatch();
             foreach (var chunk in chunks)
             {
-                await GetCollection().DeleteManyAsync(x => chunk.Contains(x.Id));
+                sw.Restart();
+                try
+                {
+                    await GetCollection().DeleteManyAsync(x => chunk.Contains(x.Id));
+                }
+                catch (Exception exception)
+                {
+                    if (exception.Message.Contains("Request rate is large"))
+                    {
+                        _batchSize = (int)(_batchSize * 0.8);
+                        _log.WriteInfo(nameof(DeleteAsync), "Request rate is large", $"Decreasing batchSize: {_batchSize}");
+                        return;
+                    }
+                    throw;
+                }
+                if (sw.ElapsedMilliseconds < 1000)
+                {
+                    await Task.Delay(1000 - (int)sw.ElapsedMilliseconds);
+                }
             }
+            sw.Stop();
         }
 
         public IQueryable<T> All()
