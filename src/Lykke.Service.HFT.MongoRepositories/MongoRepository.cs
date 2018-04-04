@@ -5,6 +5,7 @@ using System.Diagnostics;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Threading.Tasks;
+using Common.Log;
 using Lykke.Service.HFT.Core;
 using Lykke.Service.HFT.Core.Domain;
 using MongoDB.Bson;
@@ -17,12 +18,14 @@ namespace Lykke.Service.HFT.MongoRepositories
     public class MongoRepository<T> : IRepository<T> where T : class, IHasId
     {
         protected readonly IMongoDatabase Database;
-        private readonly int _batchSize;
+        private readonly ILog _log;
+        private int _batchSize;
         private readonly string _collectionName = typeof(T).Name;
 
-        public MongoRepository(IMongoDatabase database, int batchSize = 10)
+        public MongoRepository(IMongoDatabase database, ILog log, int batchSize = 100)
         {
             Database = database ?? throw new ArgumentNullException(nameof(database));
+            _log = log.CreateComponentScope(nameof(MongoRepository<T>));
             _batchSize = batchSize;
 
             if (!BsonClassMap.IsClassMapRegistered(typeof(T)))
@@ -92,7 +95,20 @@ namespace Lykke.Service.HFT.MongoRepositories
             foreach (var chunk in chunks)
             {
                 sw.Restart();
-                await GetCollection().DeleteManyAsync(x => chunk.Contains(x.Id));
+                try
+                {
+                    await GetCollection().DeleteManyAsync(x => chunk.Contains(x.Id));
+                }
+                catch (Exception exception)
+                {
+                    if (exception.Message.Contains("Request rate is large"))
+                    {
+                        _batchSize = (int)(_batchSize * 0.8);
+                        _log.WriteInfo(nameof(DeleteAsync), "Request rate is large", $"Decreasing batchSize: {_batchSize}");
+                        return;
+                    }
+                    throw;
+                }
                 if (sw.ElapsedMilliseconds < 1000)
                 {
                     await Task.Delay(1000 - (int)sw.ElapsedMilliseconds);
