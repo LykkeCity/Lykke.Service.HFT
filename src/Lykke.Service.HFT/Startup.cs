@@ -9,6 +9,7 @@ using Common.Log;
 using Lykke.Common.ApiLibrary.Middleware;
 using Lykke.Common.ApiLibrary.Swagger;
 using Lykke.Logs;
+using Lykke.Logs.Slack;
 using Lykke.Service.HFT.Core;
 using Lykke.Service.HFT.Core.Services;
 using Lykke.Service.HFT.Infrastructure;
@@ -221,6 +222,10 @@ namespace Lykke.Service.HFT
                 azureStorageLogger.Start();
 
                 aggregateLogger.AddLog(azureStorageLogger);
+
+                //var logToSlack = LykkeLogToSlack.Create(slackService, "hft-api", LogLevel.Error | LogLevel.FatalError | LogLevel.Warning);
+                var logToSlack = LykkeLogToSlack.Create(slackService, "hft-api", LogLevel.All);
+                aggregateLogger.AddLog(logToSlack);
             }
 
             return aggregateLogger;
