@@ -1,7 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Threading.Tasks;
-using Common.Log;
+﻿using Common.Log;
 using JetBrains.Annotations;
 using Lykke.MatchingEngine.Connector.Abstractions.Models;
 using Lykke.MatchingEngine.Connector.Abstractions.Services;
@@ -10,6 +7,9 @@ using Lykke.Service.FeeCalculator.Client;
 using Lykke.Service.HFT.Core;
 using Lykke.Service.HFT.Core.Domain;
 using Lykke.Service.HFT.Core.Services;
+using System;
+using System.Collections.Generic;
+using System.Threading.Tasks;
 using FeeType = Lykke.Service.FeeCalculator.AutorestClient.Models.FeeType;
 using OrderAction = Lykke.Service.HFT.Core.Domain.OrderAction;
 
@@ -92,11 +92,20 @@ namespace Lykke.Service.HFT.Services
         }
 
         public async Task<ResponseModel<Guid>> PlaceLimitOrderAsync(string clientId, string assetPairId, OrderAction orderAction, double volume,
-            double price, bool cancelPreviousOrders = false)
+            double price, DateTime? cancelAfter = default(DateTime?), bool cancelPreviousOrders = false)
         {
             var requestId = GetNextRequestId();
 
-            await _orderStateRepository.Add(new LimitOrderState { Id = requestId, ClientId = clientId, AssetPairId = assetPairId, Volume = volume, Price = price });
+            // TODO Incorporate cancel-after date into matchingengine
+
+            await _orderStateRepository.Add(new LimitOrderState
+            {
+                Id = requestId,
+                ClientId = clientId,
+                AssetPairId = assetPairId,
+                Volume = volume,
+                Price = price
+            });
 
             var order = new LimitOrderModel
             {

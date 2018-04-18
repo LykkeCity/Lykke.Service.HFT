@@ -8,6 +8,6 @@ namespace Lykke.Service.HFT.Core.Services
     {
         Task<ResponseModel> CancelLimitOrderAsync(Guid limitOrderId);
         Task<ResponseModel<double>> HandleMarketOrderAsync(string clientId, string assetPairId, OrderAction orderAction, double volume, bool straight, double? reservedLimitVolume = default(double?));
-        Task<ResponseModel<Guid>> PlaceLimitOrderAsync(string clientId, string assetPairId, OrderAction orderAction, double volume, double price, bool cancelPreviousOrders = false);
+        Task<ResponseModel<Guid>> PlaceLimitOrderAsync(string clientId, string assetPairId, OrderAction orderAction, double volume, double price, DateTime? cancelAfter = default(DateTime?), bool cancelPreviousOrders = false);
     }
 }
