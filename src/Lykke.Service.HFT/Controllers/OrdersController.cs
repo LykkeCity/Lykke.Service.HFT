@@ -50,7 +50,7 @@ namespace Lykke.Service.HFT.Controllers
         }
 
         /// <summary>
-        /// Get all client orders.
+        /// Get the last client orders.
         /// </summary>
         /// <param name="status">Order status</param>
         /// <param name="take">Default 100; max 500.</param>
