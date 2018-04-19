@@ -30,7 +30,10 @@ namespace Lykke.Service.HFT.Modules
         {
             builder.RegisterBalancesClient(_settings.CurrentValue.BalancesServiceClient.ServiceUrl, _log);
 
-            builder.RegisterFeeCalculatorClient(_settings.CurrentValue.FeeCalculatorServiceClient.ServiceUrl, _log);
+            builder.RegisterFeeCalculatorClientWithCache(
+                _settings.CurrentValue.FeeCalculatorServiceClient.ServiceUrl,
+                _settings.CurrentValue.HighFrequencyTradingService.Dictionaries.CacheExpirationPeriod, 
+                _log);
 
             _services.RegisterAssetsClient(AssetServiceSettings.Create(
                 new Uri(_settings.CurrentValue.AssetsServiceClient.ServiceUrl),
