@@ -10,7 +10,7 @@ namespace Lykke.Service.HFT.Tests.Service.Middleware
         public void DateTimeInFuture_IsValid()
         {
             var sot = new DateTimeInFutureAttribute();
-            Assert.True(sot.IsValid(DateTime.Now.AddSeconds(1)));
+            Assert.True(sot.IsValid(DateTime.UtcNow.AddSeconds(1)));
         }
 
         [Fact]
@@ -24,7 +24,7 @@ namespace Lykke.Service.HFT.Tests.Service.Middleware
         public void DateTimePast_NotValid()
         {
             var sot = new DateTimeInFutureAttribute();
-            Assert.False(sot.IsValid(DateTime.Now.AddSeconds(-1)));
+            Assert.False(sot.IsValid(DateTime.UtcNow.AddSeconds(-1)));
         }
     }
 }

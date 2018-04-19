@@ -68,7 +68,7 @@ namespace Lykke.Service.HFT.Controllers
 
             var clientId = User.GetUserId();
 
-            var orders = await _orderStateCache.FilterAsync(x => x.ClientId == clientId); // todo: fix default limit of 101 element
+            var orders = _orderStateCache.All().Where(x => x.ClientId == clientId); // todo: fix default limit of 101 element
             switch (status)
             {
                 case OrderStatus.All:
@@ -102,7 +102,9 @@ namespace Lykke.Service.HFT.Controllers
                     throw new ArgumentOutOfRangeException(nameof(status), status, null);
             }
 
-            return Ok(orders.OrderByDescending(x => x.CreatedAt).Take((int)take.Value).Select(x => x.ConvertToApiModel()).ToList());
+            orders = orders.OrderByDescending(x => x.CreatedAt).Take((int)take.Value);
+
+            return Ok(orders.Select(x => x.ConvertToApiModel()).ToList());
         }
 
 

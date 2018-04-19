@@ -9,13 +9,13 @@ namespace Lykke.Service.HFT.Tests
         [Fact]
         public void CancelAfterInFuture_IsValid()
         {
-            Assert.True(CancelAfterValidationRule.IsValid(DateTime.Now.AddSeconds(1)));
+            Assert.True(CancelAfterValidationRule.IsValid(DateTime.UtcNow.AddSeconds(1)));
         }
 
         [Fact]
         public void CancelAfterPast_NotValid()
         {
-            Assert.False(CancelAfterValidationRule.IsValid(DateTime.Now.AddSeconds(-1)));
+            Assert.False(CancelAfterValidationRule.IsValid(DateTime.UtcNow.AddSeconds(-1)));
         }
     }
 }

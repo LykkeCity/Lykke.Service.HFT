@@ -15,6 +15,6 @@ namespace Lykke.Service.HFT.Middleware
         }
 
         public override bool IsValid(object value)
-            => !(value is double price) || PriceValidationRule.IsValid(price);
+            => !(value is double dValue) || PriceValidationRule.IsValid(dValue);
     }
 }
