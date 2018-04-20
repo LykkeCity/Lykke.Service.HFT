@@ -51,7 +51,7 @@ namespace Lykke.Service.HFT.PeriodicalHandlers
                 }
 
                 sw.Restart();
-                _log.WriteInfo("OrderStateArchiver", null, $"0. Getting {chunkSize} orders.");
+                _log.WriteInfo("OrderStateArchiver", null, $"1. Getting orders (max {chunkSize}).");
                 try
                 {
                     var notActiveOrders = (await _orderStateCache.FilterAsync(filter, chunkSize)).ToList();
@@ -61,11 +61,11 @@ namespace Lykke.Service.HFT.PeriodicalHandlers
                         break;
                     }
 
-                    _log.WriteInfo("OrderStateArchiver", null, $"1. Got {notActiveOrders.Count} orders in {sw.Elapsed.TotalSeconds} sec.");
+                    _log.WriteInfo("OrderStateArchiver", null, $"2. Got {notActiveOrders.Count} orders in {sw.Elapsed.TotalSeconds} sec.");
                     sw.Restart();
 
                     await _orderStateArchive.AddAsync(notActiveOrders.Where(x => x.CreatedAt > DateTime.UtcNow.AddYears(-1)));
-                    _log.WriteInfo("OrderStateArchiver", null, $"2. Migrated to azure in {sw.Elapsed.TotalMinutes} min.");
+                    _log.WriteInfo("OrderStateArchiver", null, $"3. Migrated to azure in {sw.Elapsed.TotalMinutes} min.");
                     sw.Restart();
 
                     await _orderStateCache.DeleteAsync(notActiveOrders);
