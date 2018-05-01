@@ -10,6 +10,7 @@ using Lykke.Common.ApiLibrary.Middleware;
 using Lykke.Common.ApiLibrary.Swagger;
 using Lykke.Logs;
 using Lykke.Logs.Slack;
+using Lykke.MonitoringServiceApiCaller;
 using Lykke.Service.HFT.Core;
 using Lykke.Service.HFT.Core.Services;
 using Lykke.Service.HFT.Infrastructure;
@@ -33,6 +34,7 @@ namespace Lykke.Service.HFT
 {
     public class Startup
     {
+        private string _monitoringServiceUrl;
         private const string ApiVersion = "v1";
         private const string ApiTitle = "High-frequency trading API";
 
@@ -75,6 +77,7 @@ namespace Lykke.Service.HFT
 
                 var builder = new ContainerBuilder();
                 var appSettings = Configuration.LoadSettings<AppSettings>();
+                _monitoringServiceUrl = appSettings.CurrentValue.MonitoringServiceClient.MonitoringServiceUrl;
                 Log = CreateLogWithSlack(services, appSettings);
 
                 ConfigureRateLimits(services, appSettings.CurrentValue.HighFrequencyTradingService.IpRateLimiting);
@@ -151,6 +154,7 @@ namespace Lykke.Service.HFT
             try
             {
                 await ApplicationContainer.Resolve<IStartupManager>().StartAsync();
+                await AutoRegistrationInMonitoring.RegisterAsync(Configuration, _monitoringServiceUrl, Log);
 
                 await Log.WriteMonitorAsync("", $"Env: {Program.EnvInfo}", "Started");
             }
