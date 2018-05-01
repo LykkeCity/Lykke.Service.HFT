@@ -9,6 +9,7 @@ namespace Lykke.Service.HFT.Core
 {
     public class AppSettings
     {
+        public MonitoringServiceClientSettings MonitoringServiceClient { get; set; }
         public HighFrequencyTradingSettings HighFrequencyTradingService { get; set; }
         public MatchingEngineSettings MatchingEngineClient { get; set; }
         public SlackNotificationsSettings SlackNotifications { get; set; }
@@ -129,7 +130,7 @@ namespace Lykke.Service.HFT.Core
 
         public string QueueName { get; set; }
     }
-    
+
     public class FeeSettings
     {
         public TargetClientIdFeeSettings TargetClientId { get; set; }

@@ -1,11 +1,13 @@
-﻿namespace Lykke.Service.HFT.Models
+﻿using System;
+
+namespace Lykke.Service.HFT.Models
 {
     public class ClientBalanceResponseModel
     {
         public string AssetId { get; set; }
-        public double Balance { get; set; }
-        public double Reserved { get; set; }
-        
+        public Decimal Balance { get; set; }
+        public Decimal Reserved { get; set; }
+
         public static ClientBalanceResponseModel Create(Balances.AutorestClient.Models.ClientBalanceResponseModel src)
         {
             return new ClientBalanceResponseModel
