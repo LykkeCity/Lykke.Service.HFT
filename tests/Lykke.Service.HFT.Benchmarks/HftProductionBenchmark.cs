@@ -15,9 +15,8 @@ namespace Lykke.Service.HFT.Benchmarks
     [SimpleJob(launchCount: 1, warmupCount: 1, targetCount: 5, invocationCount: 5, id: "QuickJob")]
     public class HftProductionBenchmark
     {
-        //private const string HftApiUrl = @"https://hft-api.lykke.com/";
         private const string HftApiUrl = @"http://localhost:5000";
-        private const string DevApiKey = @"9b93e3ec-f9b0-42ba-b68c-cecb0d1e6dd4";
+        private const string DevApiKey = @"<YOUR_TEST_API_KEY>";
         private IHighFrequencytradingAPI _client;
         private string[] _pairs;
         private Random _randomPairIndex;
@@ -85,7 +84,7 @@ namespace Lykke.Service.HFT.Benchmarks
 
             var result = _client.PlaceLimitOrder(DevApiKey, order);
 
-            switch(result)
+            switch (result)
             {
                 case ResponseModel error:
                     Console.WriteLine(error.Error?.Message);
@@ -96,7 +95,7 @@ namespace Lykke.Service.HFT.Benchmarks
                 default:
                     Console.WriteLine(result);
                     break;
-            }            
+            }
         }
     }
 }
