@@ -1,12 +1,12 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-using Lykke.Service.HFT.Core;
+﻿using Lykke.Service.HFT.Core;
 using Lykke.Service.HFT.Core.Domain;
 using Lykke.Service.HFT.Core.Services;
 using Microsoft.Extensions.Caching.Distributed;
 using Newtonsoft.Json;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
 
 namespace Lykke.Service.HFT.Services
 {
@@ -45,23 +45,12 @@ namespace Lykke.Service.HFT.Services
                 .Select(Guid.Parse)
                 .ToHashSet();
         }
-
         public async Task<IEnumerable<OrderBook>> GetAllAsync()
         {
             var assetPairs = await _assetServiceDecorator.GetAllEnabledAssetPairsAsync();
-            var orderBooks = new List<OrderBook>();
-            foreach (var pair in assetPairs)
-            {
-                var buyBook = await GetOrderBook(pair.Id, true);
-                if (buyBook != null)
-                    orderBooks.Add(buyBook);
+            var results = await Task.WhenAll(assetPairs.Select(pair => GetAsync(pair.Id)));
 
-                var sellBook = await GetOrderBook(pair.Id, false);
-                if (sellBook != null)
-                    orderBooks.Add(sellBook);
-            }
-
-            return orderBooks;
+            return results.SelectMany(x => x).Where(x => x != null).ToList();
         }
 
         public async Task<IEnumerable<OrderBook>> GetAsync(string assetPairId)
