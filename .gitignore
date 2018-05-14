@@ -59,3 +59,10 @@ node_modules
 **/launchSettings.json
 **/appsettings.*.json
 
+#NodeJs \ Typescript
+**/dist/
+**/typings/
+*lock.json
+*.tgz
+*Bundle*.js
+*Bundle*.map
