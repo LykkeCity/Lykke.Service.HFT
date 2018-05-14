@@ -1,0 +1,36 @@
+{
+  "name": "lykke-hft-client",
+  "author": "Lykke",
+  "description": "Lykke HFT API Library with typescript type definitions and works in node.js and browser javascript.",
+  "version": "1.0.1",
+  "dependencies": {
+    "ms-rest-js": "^0.4.0"
+  },
+  "keywords": [
+    "Lykke",
+    "HFT",
+    "API"
+  ],
+  "license": "MIT",
+  "main": "./dist/lib/highFrequencytradingAPI.js",
+  "types": "./typings/lib/highFrequencytradingAPI.d.ts",
+  "devDependencies": {
+    "ts-loader": "^2.3.7",
+    "tslint": "^5.7.0",
+    "typescript": "^2.5.2",
+    "webpack": "^3.6.0",
+    "uglify-es": "^3.1.0"
+  },
+  "homepage": "https://www.lykke.com/",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/LykkeCity/Lykke.Service.HFT"
+  },
+  "bugs": {
+    "url": "https://github.com/LykkeCity/Lykke.Service.HFT/issues"
+  },
+  "scripts": {
+    "tsc": "tsc -p tsconfig.json",
+    "build": "npm -s run-script tsc && webpack && node node_modules/uglify-es/bin/uglifyjs --source-map -c -m -o highFrequencytradingAPIBundle.min.js highFrequencytradingAPIBundle.js"
+  }
+}
