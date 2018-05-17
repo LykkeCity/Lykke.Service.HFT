@@ -1,9 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Net;
-using System.Threading.Tasks;
-using Common;
+﻿using Common;
 using Lykke.Service.HFT.Core.Domain;
 using Lykke.Service.HFT.Core.Repositories;
 using Lykke.Service.HFT.Core.Services;
@@ -14,6 +9,11 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.ModelBinding;
 using Swashbuckle.AspNetCore.SwaggerGen;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Net;
+using System.Threading.Tasks;
 using OrderStatus = Lykke.Service.HFT.Models.Requests.OrderStatus;
 
 namespace Lykke.Service.HFT.Controllers
@@ -102,7 +102,9 @@ namespace Lykke.Service.HFT.Controllers
                     throw new ArgumentOutOfRangeException(nameof(status), status, null);
             }
 
-            return Ok(orders.OrderByDescending(x => x.CreatedAt).Take((int)take.Value).ToList().Select(x => x.ConvertToApiModel()));
+            orders = orders.OrderByDescending(x => x.CreatedAt).Take((int)take.Value);
+
+            return Ok(orders.Select(x => x.ConvertToApiModel()).ToList());
         }
 
 
@@ -224,6 +226,12 @@ namespace Lykke.Service.HFT.Controllers
             var volume = order.Volume.TruncateDecimalPlaces(asset.Accuracy);
             var minVolume = assetPair.MinVolume;
             if (!_requestValidator.ValidateVolume(volume, minVolume, asset.DisplayId, out badRequestModel))
+            {
+                return BadRequest(badRequestModel);
+            }
+
+            var cancelAfter = order.CancelAfter;
+            if (cancelAfter.HasValue && !_requestValidator.ValidateCancelAfterDate(cancelAfter.Value, out badRequestModel))
             {
                 return BadRequest(badRequestModel);
             }

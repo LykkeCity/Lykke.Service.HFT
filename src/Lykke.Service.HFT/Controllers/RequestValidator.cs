@@ -1,6 +1,7 @@
-﻿using System;
-using Lykke.Service.HFT.Core;
+﻿using Lykke.Service.HFT.Core;
 using Lykke.Service.HFT.Core.Domain;
+using Lykke.Service.HFT.Core.Validation;
+using System;
 
 namespace Lykke.Service.HFT.Controllers
 {
@@ -43,9 +44,21 @@ namespace Lykke.Service.HFT.Controllers
 
         public bool ValidatePrice(double price, out ResponseModel model)
         {
-            if (Math.Abs(price) < double.Epsilon)
+            if (!PriceValidationRule.IsValid(Math.Abs(price)))
             {
                 model = ResponseModel.CreateInvalidFieldError("Price", "Price must be greater than asset accuracy.");
+                return false;
+            }
+
+            model = null;
+            return true;
+        }
+
+        public bool ValidateCancelAfterDate(DateTime date, out ResponseModel model)
+        {
+            if (!CancelAfterValidationRule.IsValid(date))
+            {
+                model = ResponseModel.CreateInvalidFieldError("CancelAfter", "CancelAfter must lie in the future.");
                 return false;
             }
 
