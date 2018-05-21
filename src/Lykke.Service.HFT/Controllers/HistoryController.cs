@@ -1,9 +1,5 @@
-﻿using System.Collections.Generic;
-using System.Linq;
-using System.Net;
-using System.Threading.Tasks;
-using Lykke.Service.Assets.Client;
-using Lykke.Service.HFT.Core.Domain;
+﻿using Lykke.Service.HFT.Core.Domain;
+using Lykke.Service.HFT.Core.Services;
 using Lykke.Service.HFT.Helpers;
 using Lykke.Service.HFT.Models;
 using Lykke.Service.OperationsHistory.AutorestClient.Models;
@@ -11,6 +7,10 @@ using Lykke.Service.OperationsHistory.Client;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Swashbuckle.AspNetCore.SwaggerGen;
+using System.Collections.Generic;
+using System.Linq;
+using System.Net;
+using System.Threading.Tasks;
 
 namespace Lykke.Service.HFT.Controllers
 {
@@ -21,14 +21,14 @@ namespace Lykke.Service.HFT.Controllers
         private const int MaxPageSize = 1000;
         private const int MaxSkipSize = MaxPageSize * 1000;
         private readonly IOperationsHistoryClient _operationsHistoryClient;
-        private readonly IAssetsServiceWithCache _assetsServiceClient;
+        private readonly IAssetServiceDecorator _assetServiceDecorator;
 
         public HistoryController(
             IOperationsHistoryClient operationsHistoryClient,
-            IAssetsServiceWithCache assetsServiceClient)
+            IAssetServiceDecorator assetServiceDecorator)
         {
             _operationsHistoryClient = operationsHistoryClient;
-            _assetsServiceClient = assetsServiceClient;
+            _assetServiceDecorator = assetServiceDecorator;
         }
 
         /// <summary>
@@ -56,7 +56,7 @@ namespace Lykke.Service.HFT.Controllers
                 return BadRequest(ResponseModel.CreateInvalidFieldError("skip", $"Skip size {take} is to big"));
             }
 
-            if (assetId != null && await _assetsServiceClient.TryGetAssetAsync(assetId) == null)
+            if (assetId != null && await _assetServiceDecorator.GetAssetAsync(assetId) == null)
             {
                 return NotFound();
             }

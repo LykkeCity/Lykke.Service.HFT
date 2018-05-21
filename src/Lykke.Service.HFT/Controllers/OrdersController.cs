@@ -1,12 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Diagnostics;
-using System.Linq;
-using System.Net;
-using System.Threading.Tasks;
-using Common;
-using JetBrains.Annotations;
-using Lykke.Service.Assets.Client;
+﻿using Common;
 using Lykke.Service.HFT.Core.Domain;
 using Lykke.Service.HFT.Core.Repositories;
 using Lykke.Service.HFT.Core.Services;
@@ -17,6 +9,12 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.ModelBinding;
 using Swashbuckle.AspNetCore.SwaggerGen;
+using System;
+using System.Collections.Generic;
+using System.Diagnostics;
+using System.Linq;
+using System.Net;
+using System.Threading.Tasks;
 using OrderStatus = Lykke.Service.HFT.Models.Requests.OrderStatus;
 
 namespace Lykke.Service.HFT.Controllers
@@ -31,7 +29,6 @@ namespace Lykke.Service.HFT.Controllers
         private readonly IAssetServiceDecorator _assetServiceDecorator;
         private readonly IRepository<Core.Domain.LimitOrderState> _orderStateCache;
         private readonly ILimitOrderStateRepository _orderStateArchive;
-        private readonly IAssetsServiceWithCache _assetsService;
 
 
         public OrdersController(
@@ -39,15 +36,13 @@ namespace Lykke.Service.HFT.Controllers
             IAssetServiceDecorator assetServiceDecorator,
             IRepository<Core.Domain.LimitOrderState> orderStateCache,
             ILimitOrderStateRepository orderStateArchive,
-            RequestValidator requestValidator,
-            [NotNull] IAssetsServiceWithCache assetsService)
+            RequestValidator requestValidator)
         {
             _matchingEngineAdapter = frequencyTradingService ?? throw new ArgumentNullException(nameof(frequencyTradingService));
             _assetServiceDecorator = assetServiceDecorator ?? throw new ArgumentNullException(nameof(assetServiceDecorator));
             _orderStateCache = orderStateCache ?? throw new ArgumentNullException(nameof(orderStateCache));
             _orderStateArchive = orderStateArchive ?? throw new ArgumentNullException(nameof(orderStateArchive));
             _requestValidator = requestValidator ?? throw new ArgumentNullException(nameof(requestValidator));
-            _assetsService = assetsService ?? throw new ArgumentNullException(nameof(assetsService));
         }
 
         /// <summary>
@@ -157,7 +152,7 @@ namespace Lykke.Service.HFT.Controllers
                 return BadRequest(ToResponseModel(ModelState));
             }
 
-            var assetPair = await _assetsService.TryGetAssetPairAsync(order.AssetPairId);
+            var assetPair = await _assetServiceDecorator.GetAssetPairAsync(order.AssetPairId);
             if (!_requestValidator.ValidateAssetPair(order.AssetPairId, assetPair, out var badRequestModel))
             {
                 return BadRequest(badRequestModel);
@@ -182,7 +177,7 @@ namespace Lykke.Service.HFT.Controllers
             var clientId = User.GetUserId();
             var response = await _matchingEngineAdapter.HandleMarketOrderAsync(
                 clientId: clientId,
-                assetPairId: order.AssetPairId,
+                assetPair: assetPair,
                 orderAction: order.OrderAction,
                 volume: volume,
                 straight: straight,
@@ -214,13 +209,13 @@ namespace Lykke.Service.HFT.Controllers
                 return BadRequest(ToResponseModel(ModelState));
             }
 
-            var assetPair = await _assetsService.TryGetAssetPairAsync(order.AssetPairId);
+            var assetPair = await _assetServiceDecorator.GetAssetPairAsync(order.AssetPairId);
             if (!_requestValidator.ValidateAssetPair(order.AssetPairId, assetPair, out var badRequestModel))
             {
                 return BadRequest(badRequestModel);
             }
 
-            var asset = await _assetsService.TryGetAssetAsync(assetPair.BaseAssetId);
+            var asset = await _assetServiceDecorator.GetEnabledAssetAsync(assetPair.BaseAssetId);
             if (!_requestValidator.ValidateAsset(asset, out badRequestModel))
             {
                 return BadRequest(badRequestModel);
@@ -243,7 +238,7 @@ namespace Lykke.Service.HFT.Controllers
             var clientId = User.GetUserId();
             var response = await _matchingEngineAdapter.PlaceLimitOrderAsync(
                 clientId: clientId,
-                assetPairId: order.AssetPairId,
+                assetPair: assetPair,
                 orderAction: order.OrderAction,
                 volume: volume,
                 price: price);
