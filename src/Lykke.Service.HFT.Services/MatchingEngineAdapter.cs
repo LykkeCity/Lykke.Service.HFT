@@ -11,6 +11,7 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Threading.Tasks;
+using Lykke.Service.Assets.Client.Models;
 using FeeType = Lykke.Service.FeeCalculator.AutorestClient.Models.FeeType;
 using OrderAction = Lykke.Service.HFT.Core.Domain.OrderAction;
 
@@ -22,7 +23,6 @@ namespace Lykke.Service.HFT.Services
         private readonly IMatchingEngineClient _matchingEngineClient;
         private readonly IRepository<LimitOrderState> _orderStateRepository;
         private readonly IFeeCalculatorClient _feeCalculatorClient;
-        private readonly IAssetsServiceWithCache _assetsService;
         private readonly FeeSettings _feeSettings;
 
         private static readonly Dictionary<MeStatusCodes, ResponseModel.ErrorCodeType> StatusCodesMap = new Dictionary<MeStatusCodes, ResponseModel.ErrorCodeType>
@@ -46,7 +46,6 @@ namespace Lykke.Service.HFT.Services
         public MatchingEngineAdapter(IMatchingEngineClient matchingEngineClient,
             IRepository<LimitOrderState> orderStateRepository,
             IFeeCalculatorClient feeCalculatorClient,
-            IAssetsServiceWithCache assetsService,
             FeeSettings feeSettings,
             [NotNull] ILog log)
         {
@@ -55,7 +54,6 @@ namespace Lykke.Service.HFT.Services
             _orderStateRepository =
                 orderStateRepository ?? throw new ArgumentNullException(nameof(orderStateRepository));
             _feeCalculatorClient = feeCalculatorClient ?? throw new ArgumentNullException(nameof(feeCalculatorClient));
-            _assetsService = assetsService ?? throw new ArgumentNullException(nameof(assetsService));
             _feeSettings = feeSettings ?? throw new ArgumentNullException(nameof(feeSettings));
             _log = log ?? throw new ArgumentNullException(nameof(log));
         }
@@ -68,19 +66,19 @@ namespace Lykke.Service.HFT.Services
             return ConvertToApiModel(response.Status);
         }
 
-        public async Task<ResponseModel<double>> HandleMarketOrderAsync(string clientId, string assetPairId, OrderAction orderAction, double volume,
+        public async Task<ResponseModel<double>> HandleMarketOrderAsync(string clientId, AssetPair assetPair, OrderAction orderAction, double volume,
             bool straight, double? reservedLimitVolume = null)
         {
             var order = new MarketOrderModel
             {
                 Id = GetNextRequestId().ToString(),
-                AssetPairId = assetPairId,
+                AssetPairId = assetPair.Id,
                 ClientId = clientId,
                 ReservedLimitVolume = reservedLimitVolume,
                 Straight = straight,
                 Volume = Math.Abs(volume),
                 OrderAction = orderAction.ToMeOrderAction(),
-                Fees = new[] { await GetMarketOrderFee(clientId, assetPairId, orderAction) }
+                Fees = new[] { await GetMarketOrderFee(clientId, assetPair, orderAction) }
             };
 
             var response = await _matchingEngineClient.HandleMarketOrderAsync(order);
@@ -92,27 +90,27 @@ namespace Lykke.Service.HFT.Services
             return ConvertToApiModel<double>(response.Status);
         }
 
-        public async Task<ResponseModel<Guid>> PlaceLimitOrderAsync(string clientId, string assetPairId, OrderAction orderAction, double volume,
+        public async Task<ResponseModel<Guid>> PlaceLimitOrderAsync(string clientId, AssetPair assetPair, OrderAction orderAction, double volume,
             double price, bool cancelPreviousOrders = false)
         {
             var _stopwatch = new Stopwatch();
             _stopwatch.Restart();
             var requestId = GetNextRequestId();
 
-            await _orderStateRepository.Add(new LimitOrderState { Id = requestId, ClientId = clientId, AssetPairId = assetPairId, Volume = volume, Price = price });
+            await _orderStateRepository.Add(new LimitOrderState { Id = requestId, ClientId = clientId, AssetPairId = assetPair.Id, Volume = volume, Price = price });
             Lykke.Service.HFT.Core.Constants.MongoTime += _stopwatch.Elapsed;
             _stopwatch.Restart();
 
             var order = new LimitOrderModel
             {
                 Id = requestId.ToString(),
-                AssetPairId = assetPairId,
+                AssetPairId = assetPair.Id,
                 ClientId = clientId,
                 Price = price,
                 CancelPreviousOrders = cancelPreviousOrders,
                 Volume = Math.Abs(volume),
                 OrderAction = orderAction.ToMeOrderAction(),
-                Fees = new[] { await GetLimitOrderFee(clientId, assetPairId, orderAction) }
+                Fees = new[] { await GetLimitOrderFee(clientId, assetPair, orderAction) }
             };
 
             Lykke.Service.HFT.Core.Constants.FeeTime += _stopwatch.Elapsed;
@@ -160,10 +158,9 @@ namespace Lykke.Service.HFT.Services
             return ResponseModel<T>.CreateFail(StatusCodesMap[status]);
         }
 
-        private async Task<MarketOrderFeeModel> GetMarketOrderFee(string clientId, string assetPairId, OrderAction orderAction)
+        private async Task<MarketOrderFeeModel> GetMarketOrderFee(string clientId, AssetPair assetPair, OrderAction orderAction)
         {
-            var assetPair = await _assetsService.TryGetAssetPairAsync(assetPairId);
-            var fee = await _feeCalculatorClient.GetMarketOrderAssetFee(clientId, assetPairId, assetPair?.BaseAssetId, orderAction.ToFeeOrderAction());
+            var fee = await _feeCalculatorClient.GetMarketOrderAssetFee(clientId, assetPair.Id, assetPair?.BaseAssetId, orderAction.ToFeeOrderAction());
 
             return new MarketOrderFeeModel
             {
@@ -182,10 +179,9 @@ namespace Lykke.Service.HFT.Services
             };
         }
 
-        private async Task<LimitOrderFeeModel> GetLimitOrderFee(string clientId, string assetPairId, OrderAction orderAction)
+        private async Task<LimitOrderFeeModel> GetLimitOrderFee(string clientId, AssetPair assetPair, OrderAction orderAction)
         {
-            var assetPair = await _assetsService.TryGetAssetPairAsync(assetPairId);
-            var fee = await _feeCalculatorClient.GetLimitOrderFees(clientId, assetPairId, assetPair?.BaseAssetId, orderAction.ToFeeOrderAction());
+            var fee = await _feeCalculatorClient.GetLimitOrderFees(clientId, assetPair.Id, assetPair?.BaseAssetId, orderAction.ToFeeOrderAction());
 
             return new LimitOrderFeeModel
             {
