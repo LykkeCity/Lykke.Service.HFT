@@ -8,6 +8,7 @@ namespace Lykke.Service.HFT.Core
 
         public static ulong OrderCounter;
         public static TimeSpan TotalProcessingTime = TimeSpan.Zero;
+        public static TimeSpan AssetPairTime = TimeSpan.Zero;
         public static TimeSpan ValidationTime = TimeSpan.Zero;
         public static TimeSpan MongoTime = TimeSpan.Zero;
         public static TimeSpan FeeTime = TimeSpan.Zero;
