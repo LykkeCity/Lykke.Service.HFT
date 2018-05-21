@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Net;
 using System.Threading.Tasks;
@@ -200,6 +201,9 @@ namespace Lykke.Service.HFT.Controllers
         [ProducesResponseType(typeof(ResponseModel), (int)HttpStatusCode.BadRequest)]
         public async Task<IActionResult> PlaceLimitOrder([FromBody] LimitOrderRequest order)
         {
+            Lykke.Service.HFT.Core.Constants.OrderCounter++;
+            var _stopwatch = new Stopwatch();
+            _stopwatch.Restart();
             if (!ModelState.IsValid)
             {
                 return BadRequest(ToResponseModel(ModelState));
@@ -228,6 +232,7 @@ namespace Lykke.Service.HFT.Controllers
                 return BadRequest(badRequestModel);
             }
 
+            Lykke.Service.HFT.Core.Constants.ValidationTime += _stopwatch.Elapsed;
             var clientId = User.GetUserId();
             var response = await _matchingEngineAdapter.PlaceLimitOrderAsync(
                 clientId: clientId,
@@ -240,6 +245,8 @@ namespace Lykke.Service.HFT.Controllers
                 return BadRequest(response);
             }
 
+            Lykke.Service.HFT.Core.Constants.TotalProcessingTime += _stopwatch.Elapsed;
+            _stopwatch.Restart();
             return Ok(response.Result);
         }
 
