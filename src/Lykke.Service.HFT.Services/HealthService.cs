@@ -15,10 +15,15 @@ namespace Lykke.Service.HFT.Services
 
         public IEnumerable<HealthIssue> GetHealthIssues()
         {
-            var issues = new HealthIssuesCollection();
-
-            // TODO: Check gathered health statistics, and add appropriate health issues message to issues
-
+            var issues = new HealthIssuesCollection
+            {
+                {"OrderCounter", Lykke.Service.HFT.Core.Constants.OrderCounter.ToString()},
+                {"TotalProcessingTime", Lykke.Service.HFT.Core.Constants.TotalProcessingTime.ToString()},
+                {"ValidationTime", Lykke.Service.HFT.Core.Constants.ValidationTime.ToString()},
+                {"MongoTime", Lykke.Service.HFT.Core.Constants.MongoTime.ToString()},
+                {"FeeTime", Lykke.Service.HFT.Core.Constants.FeeTime.ToString()},
+                {"MeTime", Lykke.Service.HFT.Core.Constants.MeTime.ToString()},
+            };
             return issues;
         }
     }
