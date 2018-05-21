@@ -1,6 +1,6 @@
-﻿using System.Collections.Generic;
-using Lykke.Service.HFT.Core.Domain.Health;
+﻿using Lykke.Service.HFT.Core.Domain.Health;
 using Lykke.Service.HFT.Core.Services;
+using System.Collections.Generic;
 
 namespace Lykke.Service.HFT.Services
 {
@@ -21,6 +21,7 @@ namespace Lykke.Service.HFT.Services
                 {"TotalProcessingTime", Lykke.Service.HFT.Core.Constants.TotalProcessingTime.ToString()},
                 {"ValidationTime", Lykke.Service.HFT.Core.Constants.ValidationTime.ToString()},
                 {"MongoTime", Lykke.Service.HFT.Core.Constants.MongoTime.ToString()},
+                {"AssetPairTime", Lykke.Service.HFT.Core.Constants.AssetPairTime.ToString()},
                 {"FeeTime", Lykke.Service.HFT.Core.Constants.FeeTime.ToString()},
                 {"MeTime", Lykke.Service.HFT.Core.Constants.MeTime.ToString()},
             };

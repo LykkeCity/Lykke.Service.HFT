@@ -210,6 +210,9 @@ namespace Lykke.Service.HFT.Controllers
             }
 
             var assetPair = await _assetServiceDecorator.GetAssetPairAsync(order.AssetPairId);
+            var assetPairTime = _stopwatch.Elapsed;
+            Lykke.Service.HFT.Core.Constants.AssetPairTime += assetPairTime;
+
             if (!_requestValidator.ValidateAssetPair(order.AssetPairId, assetPair, out var badRequestModel))
             {
                 return BadRequest(badRequestModel);
@@ -234,7 +237,7 @@ namespace Lykke.Service.HFT.Controllers
                 return BadRequest(badRequestModel);
             }
 
-            Lykke.Service.HFT.Core.Constants.ValidationTime += _stopwatch.Elapsed;
+            Lykke.Service.HFT.Core.Constants.ValidationTime += _stopwatch.Elapsed - assetPairTime;
             var clientId = User.GetUserId();
             var response = await _matchingEngineAdapter.PlaceLimitOrderAsync(
                 clientId: clientId,
