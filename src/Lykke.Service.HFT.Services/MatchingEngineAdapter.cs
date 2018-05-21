@@ -1,8 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Diagnostics;
-using System.Threading.Tasks;
-using Common.Log;
+﻿using Common.Log;
 using JetBrains.Annotations;
 using Lykke.MatchingEngine.Connector.Abstractions.Models;
 using Lykke.MatchingEngine.Connector.Abstractions.Services;
@@ -11,6 +7,10 @@ using Lykke.Service.FeeCalculator.Client;
 using Lykke.Service.HFT.Core;
 using Lykke.Service.HFT.Core.Domain;
 using Lykke.Service.HFT.Core.Services;
+using System;
+using System.Collections.Generic;
+using System.Diagnostics;
+using System.Threading.Tasks;
 using FeeType = Lykke.Service.FeeCalculator.AutorestClient.Models.FeeType;
 using OrderAction = Lykke.Service.HFT.Core.Domain.OrderAction;
 
@@ -22,7 +22,7 @@ namespace Lykke.Service.HFT.Services
         private readonly IMatchingEngineClient _matchingEngineClient;
         private readonly IRepository<LimitOrderState> _orderStateRepository;
         private readonly IFeeCalculatorClient _feeCalculatorClient;
-        private readonly IAssetsService _assetsService;
+        private readonly IAssetsServiceWithCache _assetsService;
         private readonly FeeSettings _feeSettings;
 
         private static readonly Dictionary<MeStatusCodes, ResponseModel.ErrorCodeType> StatusCodesMap = new Dictionary<MeStatusCodes, ResponseModel.ErrorCodeType>
@@ -46,7 +46,7 @@ namespace Lykke.Service.HFT.Services
         public MatchingEngineAdapter(IMatchingEngineClient matchingEngineClient,
             IRepository<LimitOrderState> orderStateRepository,
             IFeeCalculatorClient feeCalculatorClient,
-            IAssetsService assetsService,
+            IAssetsServiceWithCache assetsService,
             FeeSettings feeSettings,
             [NotNull] ILog log)
         {
@@ -162,7 +162,7 @@ namespace Lykke.Service.HFT.Services
 
         private async Task<MarketOrderFeeModel> GetMarketOrderFee(string clientId, string assetPairId, OrderAction orderAction)
         {
-            var assetPair = await _assetsService.AssetPairGetAsync(assetPairId);
+            var assetPair = await _assetsService.TryGetAssetPairAsync(assetPairId);
             var fee = await _feeCalculatorClient.GetMarketOrderAssetFee(clientId, assetPairId, assetPair?.BaseAssetId, orderAction.ToFeeOrderAction());
 
             return new MarketOrderFeeModel
@@ -184,7 +184,7 @@ namespace Lykke.Service.HFT.Services
 
         private async Task<LimitOrderFeeModel> GetLimitOrderFee(string clientId, string assetPairId, OrderAction orderAction)
         {
-            var assetPair = await _assetsService.AssetPairGetAsync(assetPairId);
+            var assetPair = await _assetsService.TryGetAssetPairAsync(assetPairId);
             var fee = await _feeCalculatorClient.GetLimitOrderFees(clientId, assetPairId, assetPair?.BaseAssetId, orderAction.ToFeeOrderAction());
 
             return new LimitOrderFeeModel
