@@ -11,7 +11,7 @@ namespace Lykke.Service.HFT.Contracts.Events
     public class Order
     {
         public Guid Id { get; set; }
-        public OrderStatus Status { get; set; }
+        public string Status { get; set; }
         public string AssetPairId { get; set; }
         public double Volume { get; set; }
         public double? Price { get; set; }
@@ -27,53 +27,5 @@ namespace Lykke.Service.HFT.Contracts.Events
         public DateTime Timestamp { get; set; }
         public string OppositeAsset { get; set; }
         public double OppositeVolume { get; set; }
-    }
-
-    public enum OrderStatus
-    {
-        /// <summary>
-        /// Initial status, limit order in order book
-        /// </summary>
-        InOrderBook,
-        /// <summary>
-        /// Partially matched
-        /// </summary>
-        Processing,
-        /// <summary>
-        /// Fully matched
-        /// </summary>
-        Matched,
-        /// <summary>
-        /// Not enough funds on account
-        /// </summary>
-        NotEnoughFunds,
-        /// <summary>
-        /// Reserved volume greater than balance
-        /// </summary>
-        ReservedVolumeGreaterThanBalance,
-        /// <summary>
-        /// No liquidity
-        /// </summary>
-        NoLiquidity,
-        /// <summary>
-        /// Unknown asset
-        /// </summary>
-        UnknownAsset,
-        /// <summary>
-        /// Cancelled
-        /// </summary>
-        Cancelled,
-        /// <summary>
-        /// Lead to negative spread
-        /// </summary>
-        LeadToNegativeSpread,
-        /// <summary>
-        /// Too small volume
-        /// </summary>
-        TooSmallVolume,
-        /// <summary>
-        /// Unexpected status code
-        /// </summary>
-        Runtime
     }
 }

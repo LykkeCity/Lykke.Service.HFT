@@ -21,7 +21,7 @@ namespace Lykke.Service.HFT.Services.Consumers.Messages
             public string AssetPairId { get; set; }
             public string ClientId { get; set; }
             public double Volume { get; set; }
-            public OrderStatus Status { get; set; }
+            public string Status { get; set; }
             public DateTime CreatedAt { get; set; }
             public DateTime Registered { get; set; }
         }

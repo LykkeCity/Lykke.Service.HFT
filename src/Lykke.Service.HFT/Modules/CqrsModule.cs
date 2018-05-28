@@ -49,7 +49,7 @@ namespace Lykke.Service.HFT.Modules
             builder.Register(context => new AutofacDependencyResolver(context)).As<IDependencyResolver>().SingleInstance();
 
             var rabbitMqSettings = new RabbitMQ.Client.ConnectionFactory { Uri = _settings.SagasRabbitMqConnStr };
-#if DEBUG
+#if DEBUG2
             var virtualHost = "/debug";
             var messagingEngine = new MessagingEngine(_log,
                 new TransportResolver(new Dictionary<string, TransportInfo>

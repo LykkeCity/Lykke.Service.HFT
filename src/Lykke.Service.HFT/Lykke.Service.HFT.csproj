@@ -31,7 +31,7 @@
     <PackageReference Include="Lykke.Cqrs" Version="4.5.0" />
     <PackageReference Include="Lykke.Http" Version="1.0.0" />
     <PackageReference Include="Lykke.Logs" Version="4.3.3" />
-    <PackageReference Include="Lykke.MatchingEngineConnector" Version="6.0.2" />
+    <PackageReference Include="Lykke.MatchingEngineConnector" Version="6.0.3" />
     <PackageReference Include="Lykke.Messaging" Version="5.0.0" />
     <PackageReference Include="Lykke.Messaging.RabbitMq" Version="2.0.0" />
     <PackageReference Include="Lykke.MonitoringServiceApiCaller" Version="1.3.0" />

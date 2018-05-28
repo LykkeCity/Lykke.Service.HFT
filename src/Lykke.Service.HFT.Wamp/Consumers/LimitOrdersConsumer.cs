@@ -85,7 +85,7 @@ namespace Lykke.Service.HFT.Wamp.Consumers
                             Order = new Order
                             {
                                 Id = orderId,
-                                Status = Enum.TryParse(order.Order.Status.ToString(), out Contracts.Events.OrderStatus status) ? status : Contracts.Events.OrderStatus.Runtime,
+                                Status = order.Order.Status,
                                 AssetPairId = order.Order.AssetPairId,
                                 Volume = order.Order.Volume,
                                 Price = order.Order.Price,

@@ -26,6 +26,7 @@ namespace Lykke.Service.HFT.Services
 
         public async Task InitApiKeyCache()
         {
+            return;
             await ClearExistingRecords();
             var keys = GetApiKeys();
             await InsertValues(keys);
