@@ -2,17 +2,14 @@
 using JetBrains.Annotations;
 using Lykke.MatchingEngine.Connector.Abstractions.Models;
 using Lykke.MatchingEngine.Connector.Abstractions.Services;
-using Lykke.Service.Assets.Client;
-using Lykke.Service.FeeCalculator.Client;
-using Lykke.Service.HFT.Core;
+using Lykke.Service.Assets.Client.Models;
 using Lykke.Service.HFT.Core.Domain;
 using Lykke.Service.HFT.Core.Services;
+using Lykke.Service.HFT.Services.Fees;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Threading.Tasks;
-using Lykke.Service.Assets.Client.Models;
-using FeeType = Lykke.Service.FeeCalculator.AutorestClient.Models.FeeType;
 using OrderAction = Lykke.Service.HFT.Core.Domain.OrderAction;
 
 namespace Lykke.Service.HFT.Services
@@ -22,8 +19,7 @@ namespace Lykke.Service.HFT.Services
         private readonly ILog _log;
         private readonly IMatchingEngineClient _matchingEngineClient;
         private readonly IRepository<LimitOrderState> _orderStateRepository;
-        private readonly IFeeCalculatorClient _feeCalculatorClient;
-        private readonly FeeSettings _feeSettings;
+        private readonly FeeCalculatorAdapter _feeCalculator;
 
         private static readonly Dictionary<MeStatusCodes, ResponseModel.ErrorCodeType> StatusCodesMap = new Dictionary<MeStatusCodes, ResponseModel.ErrorCodeType>
         {
@@ -45,16 +41,14 @@ namespace Lykke.Service.HFT.Services
 
         public MatchingEngineAdapter(IMatchingEngineClient matchingEngineClient,
             IRepository<LimitOrderState> orderStateRepository,
-            IFeeCalculatorClient feeCalculatorClient,
-            FeeSettings feeSettings,
+            FeeCalculatorAdapter feeCalculator,
             [NotNull] ILog log)
         {
             _matchingEngineClient =
                 matchingEngineClient ?? throw new ArgumentNullException(nameof(matchingEngineClient));
             _orderStateRepository =
                 orderStateRepository ?? throw new ArgumentNullException(nameof(orderStateRepository));
-            _feeCalculatorClient = feeCalculatorClient ?? throw new ArgumentNullException(nameof(feeCalculatorClient));
-            _feeSettings = feeSettings ?? throw new ArgumentNullException(nameof(feeSettings));
+            _feeCalculator = feeCalculator ?? throw new ArgumentNullException(nameof(feeCalculator));
             _log = log ?? throw new ArgumentNullException(nameof(log));
         }
 
@@ -78,7 +72,7 @@ namespace Lykke.Service.HFT.Services
                 Straight = straight,
                 Volume = Math.Abs(volume),
                 OrderAction = orderAction.ToMeOrderAction(),
-                Fees = new[] { await GetMarketOrderFee(clientId, assetPair, orderAction) }
+                Fees = new[] { await _feeCalculator.GetMarketOrderFee(clientId, assetPair, orderAction) }
             };
 
             var response = await _matchingEngineClient.HandleMarketOrderAsync(order);
@@ -110,7 +104,7 @@ namespace Lykke.Service.HFT.Services
                 CancelPreviousOrders = cancelPreviousOrders,
                 Volume = Math.Abs(volume),
                 OrderAction = orderAction.ToMeOrderAction(),
-                Fees = new[] { await GetLimitOrderFee(clientId, assetPair, orderAction) }
+                Fees = new[] { await _feeCalculator.GetLimitOrderFee(clientId, assetPair, orderAction) }
             };
 
             Lykke.Service.HFT.Core.Constants.FeeTime += _stopwatch.Elapsed;
@@ -156,50 +150,6 @@ namespace Lykke.Service.HFT.Services
         private ResponseModel<T> ConvertToApiModel<T>(MeStatusCodes status)
         {
             return ResponseModel<T>.CreateFail(StatusCodesMap[status]);
-        }
-
-        private async Task<MarketOrderFeeModel> GetMarketOrderFee(string clientId, AssetPair assetPair, OrderAction orderAction)
-        {
-            var fee = await _feeCalculatorClient.GetMarketOrderAssetFee(clientId, assetPair.Id, assetPair?.BaseAssetId, orderAction.ToFeeOrderAction());
-
-            return new MarketOrderFeeModel
-            {
-                Size = (double)fee.Amount,
-                SizeType = fee.Type == FeeType.Absolute
-                    ? (int)FeeSizeType.ABSOLUTE
-                    : (int)FeeSizeType.PERCENTAGE,
-                SourceClientId = clientId,
-                TargetClientId = fee.TargetWalletId ?? _feeSettings.TargetClientId.Hft,
-                Type = fee.Amount == 0m
-                    ? (int)MarketOrderFeeType.NO_FEE
-                    : (int)MarketOrderFeeType.CLIENT_FEE,
-                AssetId = string.IsNullOrEmpty(fee.TargetAssetId)
-                    ? Array.Empty<string>()
-                    : new[] { fee.TargetAssetId }
-            };
-        }
-
-        private async Task<LimitOrderFeeModel> GetLimitOrderFee(string clientId, AssetPair assetPair, OrderAction orderAction)
-        {
-            var fee = await _feeCalculatorClient.GetLimitOrderFees(clientId, assetPair.Id, assetPair?.BaseAssetId, orderAction.ToFeeOrderAction());
-
-            return new LimitOrderFeeModel
-            {
-                MakerSize = (double)fee.MakerFeeSize,
-                TakerSize = (double)fee.TakerFeeSize,
-                SourceClientId = clientId,
-                TargetClientId = _feeSettings.TargetClientId.Hft,
-                Type = fee.MakerFeeSize == 0m && fee.TakerFeeSize == 0m
-                    ? (int)LimitOrderFeeType.NO_FEE
-                    : (int)LimitOrderFeeType.CLIENT_FEE,
-                MakerFeeModificator = (double)fee.MakerFeeModificator,
-                MakerSizeType = fee.MakerFeeType == FeeType.Absolute
-                    ? (int)FeeSizeType.ABSOLUTE
-                    : (int)FeeSizeType.PERCENTAGE,
-                TakerSizeType = fee.TakerFeeType == FeeType.Absolute
-                    ? (int)FeeSizeType.ABSOLUTE
-                    : (int)FeeSizeType.PERCENTAGE
-            };
         }
     }
 }

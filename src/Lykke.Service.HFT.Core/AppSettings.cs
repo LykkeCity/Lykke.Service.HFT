@@ -1,9 +1,9 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Net;
-using Lykke.Common.Chaos;
+﻿using Lykke.Common.Chaos;
 using Lykke.Service.OperationsHistory.Client;
 using Lykke.SettingsReader.Attributes;
+using System;
+using System.Collections.Generic;
+using System.Net;
 
 namespace Lykke.Service.HFT.Core
 {
@@ -98,6 +98,10 @@ namespace Lykke.Service.HFT.Core
 
         public string FinanceDataCacheInstance { get; set; }
         public string OrderBooksCacheKeyPattern { get; set; }
+
+        public string FeeCacheInstance { get; set; }
+        public string FeeCacheLimitOrderPattern { get; set; }
+        public string FeeCacheDuration { get; set; }
     }
 
     public static class CacheSettingsExt
