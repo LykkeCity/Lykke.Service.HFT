@@ -1,12 +1,12 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-using Lykke.Service.HFT.Core;
+﻿using Lykke.Service.HFT.Core;
 using Lykke.Service.HFT.Core.Domain;
 using Lykke.Service.HFT.Core.Services;
 using Microsoft.Extensions.Caching.Distributed;
 using Newtonsoft.Json;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
 
 namespace Lykke.Service.HFT.Services
 {
@@ -28,40 +28,24 @@ namespace Lykke.Service.HFT.Services
 
         public async Task<ICollection<Guid>> GetOrderIdsAsync(IEnumerable<string> assetPairs)
         {
-            var orderBooks = new List<string>();
-            foreach (var pair in assetPairs)
-            {
-                var orderBook = await _distributedCache.GetStringAsync(_settings.GetKeyForOrderBook(pair, true));
-                if (orderBook != null)
-                    orderBooks.AddRange(JsonConvert.DeserializeObject<OrderBookInternal>(orderBook).Prices.Select(x => x.Id));
+            var tasks = assetPairs
+                .SelectMany(x => new[]
+                {
+                    ( Pair: x, Buy: true),
+                    ( Pair: x, Buy: false)
+                })
+                .Select(x => GetOrderIds(x.Pair, x.Buy));
+            var results = await Task.WhenAll(tasks);
 
-                orderBook = await _distributedCache.GetStringAsync(_settings.GetKeyForOrderBook(pair, false));
-                if (orderBook != null)
-                    orderBooks.AddRange(JsonConvert.DeserializeObject<OrderBookInternal>(orderBook).Prices.Select(x => x.Id));
-            }
-
-            return orderBooks
-                .Where(x => Guid.TryParse(x, out Guid _))
-                .Select(Guid.Parse)
-                .ToHashSet();
+            return results.SelectMany(x => x).ToHashSet();
         }
 
         public async Task<IEnumerable<OrderBook>> GetAllAsync()
         {
             var assetPairs = await _assetServiceDecorator.GetAllEnabledAssetPairsAsync();
-            var orderBooks = new List<OrderBook>();
-            foreach (var pair in assetPairs)
-            {
-                var buyBook = await GetOrderBook(pair.Id, true);
-                if (buyBook != null)
-                    orderBooks.Add(buyBook);
+            var results = await Task.WhenAll(assetPairs.Select(pair => GetAsync(pair.Id)));
 
-                var sellBook = await GetOrderBook(pair.Id, false);
-                if (sellBook != null)
-                    orderBooks.Add(sellBook);
-            }
-
-            return orderBooks;
+            return results.SelectMany(x => x).Where(x => x != null).ToList();
         }
 
         public async Task<IEnumerable<OrderBook>> GetAsync(string assetPairId)
@@ -77,8 +61,24 @@ namespace Lykke.Service.HFT.Services
         private async Task<OrderBook> GetOrderBook(string assetPair, bool buy)
         {
             var orderBook = await _distributedCache.GetStringAsync(_settings.GetKeyForOrderBook(assetPair, buy));
-            return orderBook != null ? JsonConvert.DeserializeObject<OrderBook>(orderBook) :
-                new OrderBook { AssetPair = assetPair, IsBuy = buy, Timestamp = DateTime.UtcNow };
+            return orderBook != null
+                ? JsonConvert.DeserializeObject<OrderBook>(orderBook)
+                : new OrderBook { AssetPair = assetPair, IsBuy = buy, Timestamp = DateTime.UtcNow };
+        }
+
+        private async Task<IEnumerable<Guid>> GetOrderIds(string assetPairId, bool buy)
+        {
+            var orderBook = await _distributedCache.GetStringAsync(_settings.GetKeyForOrderBook(assetPairId, buy));
+            if (orderBook == null)
+            {
+                return Enumerable.Empty<Guid>();
+            }
+
+            return JsonConvert.DeserializeObject<OrderBookInternal>(orderBook)
+                .Prices
+                .Select(x => x.Id)
+                .Where(x => Guid.TryParse(x, out Guid _))
+                .Select(Guid.Parse);
         }
     }
 }
