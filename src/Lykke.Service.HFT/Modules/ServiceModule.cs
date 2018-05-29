@@ -1,5 +1,4 @@
-﻿using System;
-using Autofac;
+﻿using Autofac;
 using Autofac.Core;
 using AzureStorage;
 using AzureStorage.Tables;
@@ -15,16 +14,21 @@ using Lykke.Service.HFT.MongoRepositories;
 using Lykke.Service.HFT.PeriodicalHandlers;
 using Lykke.Service.HFT.Services;
 using Lykke.Service.HFT.Services.Consumers;
+using Lykke.Service.HFT.Services.Fees;
 using Lykke.SettingsReader;
 using Microsoft.Extensions.Caching.Distributed;
 using Microsoft.Extensions.Caching.Redis;
 using Microsoft.WindowsAzure.Storage.Table;
 using MongoDB.Driver;
+using System;
 
 namespace Lykke.Service.HFT.Modules
 {
     public class ServiceModule : Module
     {
+        private const string FinanceDataCache = "financeData";
+        private const string ApiKeysCache = "apiKeys";
+        private const string FeesCache = "hftFees";
         private readonly IReloadingManager<AppSettings> _settings;
         private readonly ILog _log;
 
@@ -57,6 +61,8 @@ namespace Lykke.Service.HFT.Modules
 
             RegisterApiKeyService(builder);
 
+            RegisterFeeServices(builder);
+
             RegisterOrderBooks(builder);
 
             RegisterAssets(builder);
@@ -78,7 +84,7 @@ namespace Lykke.Service.HFT.Modules
             });
             builder.RegisterInstance(financeDataRedisCache)
                 .As<IDistributedCache>()
-                .Keyed<IDistributedCache>("financeData")
+                .Keyed<IDistributedCache>(FinanceDataCache)
                 .SingleInstance();
 
             var apiKeysRedisCache = new RedisCache(new RedisCacheOptions
@@ -88,7 +94,18 @@ namespace Lykke.Service.HFT.Modules
             });
             builder.RegisterInstance(apiKeysRedisCache)
                 .As<IDistributedCache>()
-                .Keyed<IDistributedCache>("apiKeys")
+                .Keyed<IDistributedCache>(ApiKeysCache)
+                .SingleInstance();
+
+            var feesRedisCache = new RedisCache(new RedisCacheOptions
+            {
+                Configuration = settings.RedisConfiguration,
+                InstanceName = settings.FeeCacheInstance
+            });
+
+            builder.RegisterInstance(feesRedisCache)
+                .As<IDistributedCache>()
+                .Keyed<IDistributedCache>(FeesCache)
                 .SingleInstance();
         }
 
@@ -106,7 +123,7 @@ namespace Lykke.Service.HFT.Modules
                 .WithParameter(
                     new ResolvedParameter(
                         (pi, ctx) => pi.ParameterType == typeof(IDistributedCache),
-                        (pi, ctx) => ctx.ResolveKeyed<IDistributedCache>("apiKeys")))
+                        (pi, ctx) => ctx.ResolveKeyed<IDistributedCache>(ApiKeysCache)))
                 .As<IHftClientService>()
                 .SingleInstance();
 
@@ -122,12 +139,29 @@ namespace Lykke.Service.HFT.Modules
                 .WithParameter(
                     new ResolvedParameter(
                         (pi, ctx) => pi.ParameterType == typeof(IDistributedCache),
-                        (pi, ctx) => ctx.ResolveKeyed<IDistributedCache>("apiKeys")))
+                        (pi, ctx) => ctx.ResolveKeyed<IDistributedCache>(ApiKeysCache)))
                 .As<IApiKeyCacheInitializer>()
                 .SingleInstance();
 
             builder.RegisterType<MongoRepository<ApiKey>>()
                 .As<IRepository<ApiKey>>()
+                .SingleInstance();
+        }
+
+        private void RegisterFeeServices(ContainerBuilder builder)
+        {
+            builder.RegisterType<LimitOrderFeeCache>()
+                .WithParameter(TypedParameter.From(_settings.CurrentValue.FeeSettings))
+                .WithParameter(TypedParameter.From(_settings.CurrentValue.HighFrequencyTradingService.CacheSettings))
+                .WithParameter(
+                    new ResolvedParameter(
+                        (pi, ctx) => pi.ParameterType == typeof(IDistributedCache),
+                        (pi, ctx) => ctx.ResolveKeyed<IDistributedCache>(FeesCache)))
+                .SingleInstance();
+
+            builder.RegisterType<FeeCalculatorAdapter>()
+                .As<IFeeCalculatorAdapter>()
+                .WithParameter(TypedParameter.From(_settings.CurrentValue.FeeSettings))
                 .SingleInstance();
         }
 
@@ -138,7 +172,7 @@ namespace Lykke.Service.HFT.Modules
                 .WithParameter(
                     new ResolvedParameter(
                         (pi, ctx) => pi.ParameterType == typeof(IDistributedCache),
-                        (pi, ctx) => ctx.ResolveKeyed<IDistributedCache>("financeData")))
+                        (pi, ctx) => ctx.ResolveKeyed<IDistributedCache>(FinanceDataCache)))
                 .SingleInstance();
         }
 

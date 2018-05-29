@@ -37,7 +37,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Lykke.Service.HFT.Contracts
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Lykke.Service.HFT.AzureRepositories", "src\Lykke.Service.HFT.AzureRepositories\Lykke.Service.HFT.AzureRepositories.csproj", "{EEF9F67E-0840-4D11-B9D1-97DC7035C684}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Lykke.Service.HFT.Benchmarks", "tests\Lykke.Service.HFT.Benchmarks\Lykke.Service.HFT.Benchmarks.csproj", "{3C05E8CC-8118-4220-8C9A-158BE648B893}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Lykke.Service.HFT.Benchmarks", "tests\Lykke.Service.HFT.Benchmarks\Lykke.Service.HFT.Benchmarks.csproj", "{3C05E8CC-8118-4220-8C9A-158BE648B893}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
