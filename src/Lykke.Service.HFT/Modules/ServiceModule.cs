@@ -72,7 +72,7 @@ namespace Lykke.Service.HFT.Modules
             BindRedis(builder, currentSettings.HighFrequencyTradingService.CacheSettings);
             BindRabbitMq(builder, currentSettings.HighFrequencyTradingService);
 
-            //RegisterPeriodicalHandlers(builder);
+            RegisterPeriodicalHandlers(builder);
         }
 
         private void BindRedis(ContainerBuilder builder, CacheSettings settings)
