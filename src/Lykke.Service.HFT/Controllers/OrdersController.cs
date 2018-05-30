@@ -1,8 +1,3 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Net;
-using System.Threading.Tasks;
 using Common;
 using Lykke.Service.HFT.Core.Domain;
 using Lykke.Service.HFT.Core.Repositories;
@@ -14,6 +9,12 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.ModelBinding;
 using Swashbuckle.AspNetCore.SwaggerGen;
+using System;
+using System.Collections.Generic;
+using System.Diagnostics;
+using System.Linq;
+using System.Net;
+using System.Threading.Tasks;
 using OrderStatus = Lykke.Service.HFT.Models.Requests.OrderStatus;
 
 namespace Lykke.Service.HFT.Controllers
@@ -176,7 +177,7 @@ namespace Lykke.Service.HFT.Controllers
             var clientId = User.GetUserId();
             var response = await _matchingEngineAdapter.HandleMarketOrderAsync(
                 clientId: clientId,
-                assetPairId: order.AssetPairId,
+                assetPair: assetPair,
                 orderAction: order.OrderAction,
                 volume: volume,
                 straight: straight,
@@ -200,12 +201,18 @@ namespace Lykke.Service.HFT.Controllers
         [ProducesResponseType(typeof(ResponseModel), (int)HttpStatusCode.BadRequest)]
         public async Task<IActionResult> PlaceLimitOrder([FromBody] LimitOrderRequest order)
         {
+            Lykke.Service.HFT.Core.Constants.OrderCounter++;
+            var _stopwatch = new Stopwatch();
+            _stopwatch.Restart();
             if (!ModelState.IsValid)
             {
                 return BadRequest(ToResponseModel(ModelState));
             }
 
-            var assetPair = await _assetServiceDecorator.GetEnabledAssetPairAsync(order.AssetPairId);
+            var assetPair = await _assetServiceDecorator.GetAssetPairAsync(order.AssetPairId);
+            var assetPairTime = _stopwatch.Elapsed;
+            Lykke.Service.HFT.Core.Constants.AssetPairTime += assetPairTime;
+
             if (!_requestValidator.ValidateAssetPair(order.AssetPairId, assetPair, out var badRequestModel))
             {
                 return BadRequest(badRequestModel);
@@ -228,10 +235,11 @@ namespace Lykke.Service.HFT.Controllers
                 return BadRequest(badRequestModel);
             }
 
+            Lykke.Service.HFT.Core.Constants.ValidationTime += _stopwatch.Elapsed - assetPairTime;
             var clientId = User.GetUserId();
             var response = await _matchingEngineAdapter.PlaceLimitOrderAsync(
                 clientId: clientId,
-                assetPairId: order.AssetPairId,
+                assetPair: assetPair,
                 orderAction: order.OrderAction,
                 volume: volume,
                 price: price);
@@ -240,6 +248,8 @@ namespace Lykke.Service.HFT.Controllers
                 return BadRequest(response);
             }
 
+            Lykke.Service.HFT.Core.Constants.TotalProcessingTime += _stopwatch.Elapsed;
+            _stopwatch.Restart();
             return Ok(response.Result);
         }
 
