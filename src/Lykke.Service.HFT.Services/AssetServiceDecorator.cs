@@ -16,7 +16,6 @@ namespace Lykke.Service.HFT.Services
         public AssetServiceDecorator(IAssetsServiceWithCache apiService)
         {
             _apiService = apiService ?? throw new ArgumentNullException(nameof(apiService));
-            _updater = apiService.StartAutoCacheUpdate();
         }
 
         public async Task<AssetPair> GetAssetPairAsync(string assetPairId)

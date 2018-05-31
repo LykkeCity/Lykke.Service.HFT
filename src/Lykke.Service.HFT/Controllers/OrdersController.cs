@@ -1,4 +1,4 @@
-﻿using Common;
+using Common;
 using Lykke.Service.HFT.Core.Domain;
 using Lykke.Service.HFT.Core.Repositories;
 using Lykke.Service.HFT.Core.Services;

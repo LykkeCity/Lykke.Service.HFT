@@ -5,11 +5,11 @@ using Lykke.MatchingEngine.Connector.Abstractions.Services;
 using Lykke.Service.Assets.Client.Models;
 using Lykke.Service.HFT.Core.Domain;
 using Lykke.Service.HFT.Core.Services;
-using Lykke.Service.HFT.Services.Fees;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Threading.Tasks;
+using Lykke.Service.HFT.Services.Fees;
 using OrderAction = Lykke.Service.HFT.Core.Domain.OrderAction;
 
 namespace Lykke.Service.HFT.Services
