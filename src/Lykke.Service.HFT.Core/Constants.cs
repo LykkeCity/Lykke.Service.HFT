@@ -1,6 +1,4 @@
-﻿using System;
-
-namespace Lykke.Service.HFT.Core
+﻿namespace Lykke.Service.HFT.Core
 {
     public static class Constants
     {

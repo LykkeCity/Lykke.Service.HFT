@@ -126,7 +126,6 @@ namespace Lykke.Service.HFT.Modules
                 .As<IApiKeyCacheInitializer>()
                 .SingleInstance();
 
-
             builder.RegisterType<MongoRepository<ApiKey>>()
                 .As<IRepository<ApiKey>>()
                 .SingleInstance();

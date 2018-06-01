@@ -30,7 +30,6 @@ namespace Lykke.Service.HFT.Controllers
         private readonly IRepository<Core.Domain.LimitOrderState> _orderStateCache;
         private readonly ILimitOrderStateRepository _orderStateArchive;
 
-
         public OrdersController(
             IMatchingEngineAdapter frequencyTradingService,
             IAssetServiceDecorator assetServiceDecorator,
@@ -206,7 +205,7 @@ namespace Lykke.Service.HFT.Controllers
                 return BadRequest(ToResponseModel(ModelState));
             }
 
-            var assetPair = await _assetServiceDecorator.GetAssetPairAsync(order.AssetPairId);
+            var assetPair = await _assetServiceDecorator.GetEnabledAssetPairAsync(order.AssetPairId);
 
             if (!_requestValidator.ValidateAssetPair(order.AssetPairId, assetPair, out var badRequestModel))
             {
