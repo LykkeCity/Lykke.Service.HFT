@@ -8,22 +8,18 @@ using System.Threading.Tasks;
 
 namespace Lykke.Service.HFT.Services
 {
-    public class AssetServiceDecorator : IAssetServiceDecorator, IDisposable
+    public class AssetServiceDecorator : IAssetServiceDecorator
     {
         private readonly IAssetsServiceWithCache _apiService;
-        private IDisposable _updater;
 
         public AssetServiceDecorator(IAssetsServiceWithCache apiService)
         {
             _apiService = apiService ?? throw new ArgumentNullException(nameof(apiService));
         }
 
-        public async Task<AssetPair> GetAssetPairAsync(string assetPairId)
-            => await _apiService.TryGetAssetPairAsync(assetPairId);
-
         public async Task<AssetPair> GetEnabledAssetPairAsync(string assetPairId)
         {
-            var pair = await GetAssetPairAsync(assetPairId);
+            var pair = await _apiService.TryGetAssetPairAsync(assetPairId);
             return pair == null || pair.IsDisabled ? null : pair;
         }
 
@@ -41,8 +37,5 @@ namespace Lykke.Service.HFT.Services
             var asset = await GetAssetAsync(assetId);
             return asset == null || asset.IsDisabled ? null : asset;
         }
-
-        public void Dispose()
-            => _updater?.Dispose();
     }
 }

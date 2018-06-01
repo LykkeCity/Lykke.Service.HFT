@@ -1,6 +1,6 @@
-﻿using Lykke.Service.HFT.Core.Domain.Health;
+﻿using System.Collections.Generic;
+using Lykke.Service.HFT.Core.Domain.Health;
 using Lykke.Service.HFT.Core.Services;
-using System.Collections.Generic;
 
 namespace Lykke.Service.HFT.Services
 {
@@ -15,9 +15,10 @@ namespace Lykke.Service.HFT.Services
 
         public IEnumerable<HealthIssue> GetHealthIssues()
         {
-            var issues = new HealthIssuesCollection
-            {
-            };
+            var issues = new HealthIssuesCollection();
+
+            // TODO: Check gathered health statistics, and add appropriate health issues message to issues
+
             return issues;
         }
     }
