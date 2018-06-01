@@ -17,13 +17,6 @@ namespace Lykke.Service.HFT.Services
         {
             var issues = new HealthIssuesCollection
             {
-                {"OrderCounter", Lykke.Service.HFT.Core.Constants.OrderCounter.ToString()},
-                {"TotalProcessingTime", Lykke.Service.HFT.Core.Constants.TotalProcessingTime.ToString()},
-                {"ValidationTime", Lykke.Service.HFT.Core.Constants.ValidationTime.ToString()},
-                {"MongoTime", Lykke.Service.HFT.Core.Constants.MongoTime.ToString()},
-                {"AssetPairTime", Lykke.Service.HFT.Core.Constants.AssetPairTime.ToString()},
-                {"FeeTime", Lykke.Service.HFT.Core.Constants.FeeTime.ToString()},
-                {"MeTime", Lykke.Service.HFT.Core.Constants.MeTime.ToString()},
             };
             return issues;
         }

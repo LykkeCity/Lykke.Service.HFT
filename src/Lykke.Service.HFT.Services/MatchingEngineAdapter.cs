@@ -93,13 +93,9 @@ namespace Lykke.Service.HFT.Services
         public async Task<ResponseModel<Guid>> PlaceLimitOrderAsync(string clientId, AssetPair assetPair, OrderAction orderAction, double volume,
             double price, bool cancelPreviousOrders = false)
         {
-            var _stopwatch = new Stopwatch();
-            _stopwatch.Restart();
             var requestId = GetNextRequestId();
 
             await _orderStateRepository.Add(new LimitOrderState { Id = requestId, ClientId = clientId, AssetPairId = assetPair.Id, Volume = volume, Price = price });
-            Lykke.Service.HFT.Core.Constants.MongoTime += _stopwatch.Elapsed;
-            _stopwatch.Restart();
 
             var order = new LimitOrderModel
             {
@@ -113,9 +109,6 @@ namespace Lykke.Service.HFT.Services
                 Fees = new[] { await GetLimitOrderFee(clientId, assetPair, orderAction) }
             };
 
-            Lykke.Service.HFT.Core.Constants.FeeTime += _stopwatch.Elapsed;
-            _stopwatch.Restart();
-
             var response = await _matchingEngineClient.PlaceLimitOrderAsync(order);
             await CheckResponseAndThrowIfNull(response);
             if (response.Status == MeStatusCodes.Ok)
@@ -125,8 +118,6 @@ namespace Lykke.Service.HFT.Services
 
             var responseModel = ConvertToApiModel<Guid>(response.Status);
             responseModel.Result = requestId;
-            Lykke.Service.HFT.Core.Constants.MeTime += _stopwatch.Elapsed;
-            _stopwatch.Restart();
             return responseModel;
         }
 
