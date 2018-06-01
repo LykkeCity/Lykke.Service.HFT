@@ -201,17 +201,12 @@ namespace Lykke.Service.HFT.Controllers
         [ProducesResponseType(typeof(ResponseModel), (int)HttpStatusCode.BadRequest)]
         public async Task<IActionResult> PlaceLimitOrder([FromBody] LimitOrderRequest order)
         {
-            Lykke.Service.HFT.Core.Constants.OrderCounter++;
-            var _stopwatch = new Stopwatch();
-            _stopwatch.Restart();
             if (!ModelState.IsValid)
             {
                 return BadRequest(ToResponseModel(ModelState));
             }
 
             var assetPair = await _assetServiceDecorator.GetAssetPairAsync(order.AssetPairId);
-            var assetPairTime = _stopwatch.Elapsed;
-            Lykke.Service.HFT.Core.Constants.AssetPairTime += assetPairTime;
 
             if (!_requestValidator.ValidateAssetPair(order.AssetPairId, assetPair, out var badRequestModel))
             {
@@ -237,7 +232,6 @@ namespace Lykke.Service.HFT.Controllers
                 return BadRequest(badRequestModel);
             }
 
-            Lykke.Service.HFT.Core.Constants.ValidationTime += _stopwatch.Elapsed - assetPairTime;
             var clientId = User.GetUserId();
             var response = await _matchingEngineAdapter.PlaceLimitOrderAsync(
                 clientId: clientId,
@@ -250,8 +244,6 @@ namespace Lykke.Service.HFT.Controllers
                 return BadRequest(response);
             }
 
-            Lykke.Service.HFT.Core.Constants.TotalProcessingTime += _stopwatch.Elapsed;
-            _stopwatch.Restart();
             return Ok(response.Result);
         }
 
