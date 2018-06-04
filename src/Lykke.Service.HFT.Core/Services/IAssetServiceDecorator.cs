@@ -1,6 +1,6 @@
-﻿using System.Collections.Generic;
+﻿using Lykke.Service.Assets.Client.Models;
+using System.Collections.Generic;
 using System.Threading.Tasks;
-using Lykke.Service.Assets.Client.Models;
 
 namespace Lykke.Service.HFT.Core.Services
 {
@@ -8,6 +8,7 @@ namespace Lykke.Service.HFT.Core.Services
     {
         Task<AssetPair> GetEnabledAssetPairAsync(string assetPairId);
         Task<IEnumerable<AssetPair>> GetAllEnabledAssetPairsAsync();
-        Task<Asset> GetEnabledAssetAsync(string assetPairId);
+        Task<Asset> GetAssetAsync(string assetId);
+        Task<Asset> GetEnabledAssetAsync(string assetId);
     }
 }

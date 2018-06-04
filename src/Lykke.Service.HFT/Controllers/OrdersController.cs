@@ -1,8 +1,3 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Net;
-using System.Threading.Tasks;
 using Common;
 using Lykke.Service.HFT.Core.Domain;
 using Lykke.Service.HFT.Core.Repositories;
@@ -14,6 +9,12 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.ModelBinding;
 using Swashbuckle.AspNetCore.SwaggerGen;
+using System;
+using System.Collections.Generic;
+using System.Diagnostics;
+using System.Linq;
+using System.Net;
+using System.Threading.Tasks;
 using OrderStatus = Lykke.Service.HFT.Models.Requests.OrderStatus;
 
 namespace Lykke.Service.HFT.Controllers
@@ -28,7 +29,6 @@ namespace Lykke.Service.HFT.Controllers
         private readonly IAssetServiceDecorator _assetServiceDecorator;
         private readonly IRepository<Core.Domain.LimitOrderState> _orderStateCache;
         private readonly ILimitOrderStateRepository _orderStateArchive;
-
 
         public OrdersController(
             IMatchingEngineAdapter frequencyTradingService,
@@ -176,7 +176,7 @@ namespace Lykke.Service.HFT.Controllers
             var clientId = User.GetUserId();
             var response = await _matchingEngineAdapter.HandleMarketOrderAsync(
                 clientId: clientId,
-                assetPairId: order.AssetPairId,
+                assetPair: assetPair,
                 orderAction: order.OrderAction,
                 volume: volume,
                 straight: straight,
@@ -206,6 +206,7 @@ namespace Lykke.Service.HFT.Controllers
             }
 
             var assetPair = await _assetServiceDecorator.GetEnabledAssetPairAsync(order.AssetPairId);
+
             if (!_requestValidator.ValidateAssetPair(order.AssetPairId, assetPair, out var badRequestModel))
             {
                 return BadRequest(badRequestModel);
@@ -231,7 +232,7 @@ namespace Lykke.Service.HFT.Controllers
             var clientId = User.GetUserId();
             var response = await _matchingEngineAdapter.PlaceLimitOrderAsync(
                 clientId: clientId,
-                assetPairId: order.AssetPairId,
+                assetPair: assetPair,
                 orderAction: order.OrderAction,
                 volume: volume,
                 price: price);
