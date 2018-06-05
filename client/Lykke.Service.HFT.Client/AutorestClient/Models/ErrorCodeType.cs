@@ -19,8 +19,8 @@ namespace Lykke.Service.HFT.AutorestClient.Models
     {
         [EnumMember(Value = "InvalidInputField")]
         InvalidInputField,
-        [EnumMember(Value = "Ok")]
-        Ok,
+        [EnumMember(Value = "BadRequest")]
+        BadRequest,
         [EnumMember(Value = "LowBalance")]
         LowBalance,
         [EnumMember(Value = "AlreadyProcessed")]
@@ -41,10 +41,18 @@ namespace Lykke.Service.HFT.AutorestClient.Models
         BalanceLowerThanReserved,
         [EnumMember(Value = "LeadToNegativeSpread")]
         LeadToNegativeSpread,
-        [EnumMember(Value = "PriceGapTooHigh")]
-        PriceGapTooHigh,
-        [EnumMember(Value = "RuntimeError")]
-        RuntimeError
+        [EnumMember(Value = "InvalidFee")]
+        InvalidFee,
+        [EnumMember(Value = "Duplicate")]
+        Duplicate,
+        [EnumMember(Value = "InvalidPrice")]
+        InvalidPrice,
+        [EnumMember(Value = "Replaced")]
+        Replaced,
+        [EnumMember(Value = "NotFoundPrevious")]
+        NotFoundPrevious,
+        [EnumMember(Value = "Runtime")]
+        Runtime
     }
     internal static class ErrorCodeTypeEnumExtension
     {
@@ -59,8 +67,8 @@ namespace Lykke.Service.HFT.AutorestClient.Models
             {
                 case ErrorCodeType.InvalidInputField:
                     return "InvalidInputField";
-                case ErrorCodeType.Ok:
-                    return "Ok";
+                case ErrorCodeType.BadRequest:
+                    return "BadRequest";
                 case ErrorCodeType.LowBalance:
                     return "LowBalance";
                 case ErrorCodeType.AlreadyProcessed:
@@ -81,10 +89,18 @@ namespace Lykke.Service.HFT.AutorestClient.Models
                     return "BalanceLowerThanReserved";
                 case ErrorCodeType.LeadToNegativeSpread:
                     return "LeadToNegativeSpread";
-                case ErrorCodeType.PriceGapTooHigh:
-                    return "PriceGapTooHigh";
-                case ErrorCodeType.RuntimeError:
-                    return "RuntimeError";
+                case ErrorCodeType.InvalidFee:
+                    return "InvalidFee";
+                case ErrorCodeType.Duplicate:
+                    return "Duplicate";
+                case ErrorCodeType.InvalidPrice:
+                    return "InvalidPrice";
+                case ErrorCodeType.Replaced:
+                    return "Replaced";
+                case ErrorCodeType.NotFoundPrevious:
+                    return "NotFoundPrevious";
+                case ErrorCodeType.Runtime:
+                    return "Runtime";
             }
             return null;
         }
@@ -95,8 +111,8 @@ namespace Lykke.Service.HFT.AutorestClient.Models
             {
                 case "InvalidInputField":
                     return ErrorCodeType.InvalidInputField;
-                case "Ok":
-                    return ErrorCodeType.Ok;
+                case "BadRequest":
+                    return ErrorCodeType.BadRequest;
                 case "LowBalance":
                     return ErrorCodeType.LowBalance;
                 case "AlreadyProcessed":
@@ -117,10 +133,18 @@ namespace Lykke.Service.HFT.AutorestClient.Models
                     return ErrorCodeType.BalanceLowerThanReserved;
                 case "LeadToNegativeSpread":
                     return ErrorCodeType.LeadToNegativeSpread;
-                case "PriceGapTooHigh":
-                    return ErrorCodeType.PriceGapTooHigh;
-                case "RuntimeError":
-                    return ErrorCodeType.RuntimeError;
+                case "InvalidFee":
+                    return ErrorCodeType.InvalidFee;
+                case "Duplicate":
+                    return ErrorCodeType.Duplicate;
+                case "InvalidPrice":
+                    return ErrorCodeType.InvalidPrice;
+                case "Replaced":
+                    return ErrorCodeType.Replaced;
+                case "NotFoundPrevious":
+                    return ErrorCodeType.NotFoundPrevious;
+                case "Runtime":
+                    return ErrorCodeType.Runtime;
             }
             return null;
         }

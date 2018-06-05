@@ -85,21 +85,24 @@ namespace Lykke.Service.HFT.AutorestClient
             /// <param name='operations'>
             /// The operations group for this extension method.
             /// </param>
-            /// <param name='take'>
-            /// How many maximum items have to be returned
-            /// </param>
-            /// <param name='skip'>
-            /// How many items skip before returning
-            /// </param>
             /// <param name='apiKey'>
             /// access token
             /// </param>
             /// <param name='assetId'>
             /// Asset identifier
             /// </param>
-            public static object GetTrades(this IHighFrequencytradingAPI operations, int take, int skip, string apiKey, string assetId = default(string))
+            /// <param name='assetPairId'>
+            /// Asset-pair identifier
+            /// </param>
+            /// <param name='skip'>
+            /// How many items skip before returning
+            /// </param>
+            /// <param name='take'>
+            /// How many maximum items have to be returned
+            /// </param>
+            public static object GetTrades(this IHighFrequencytradingAPI operations, string apiKey, string assetId = default(string), string assetPairId = default(string), int? skip = default(int?), int? take = default(int?))
             {
-                return operations.GetTradesAsync(take, skip, apiKey, assetId).GetAwaiter().GetResult();
+                return operations.GetTradesAsync(apiKey, assetId, assetPairId, skip, take).GetAwaiter().GetResult();
             }
 
             /// <summary>
@@ -108,24 +111,27 @@ namespace Lykke.Service.HFT.AutorestClient
             /// <param name='operations'>
             /// The operations group for this extension method.
             /// </param>
-            /// <param name='take'>
-            /// How many maximum items have to be returned
-            /// </param>
-            /// <param name='skip'>
-            /// How many items skip before returning
-            /// </param>
             /// <param name='apiKey'>
             /// access token
             /// </param>
             /// <param name='assetId'>
             /// Asset identifier
             /// </param>
+            /// <param name='assetPairId'>
+            /// Asset-pair identifier
+            /// </param>
+            /// <param name='skip'>
+            /// How many items skip before returning
+            /// </param>
+            /// <param name='take'>
+            /// How many maximum items have to be returned
+            /// </param>
             /// <param name='cancellationToken'>
             /// The cancellation token.
             /// </param>
-            public static async Task<object> GetTradesAsync(this IHighFrequencytradingAPI operations, int take, int skip, string apiKey, string assetId = default(string), CancellationToken cancellationToken = default(CancellationToken))
+            public static async Task<object> GetTradesAsync(this IHighFrequencytradingAPI operations, string apiKey, string assetId = default(string), string assetPairId = default(string), int? skip = default(int?), int? take = default(int?), CancellationToken cancellationToken = default(CancellationToken))
             {
-                using (var _result = await operations.GetTradesWithHttpMessagesAsync(take, skip, apiKey, assetId, null, cancellationToken).ConfigureAwait(false))
+                using (var _result = await operations.GetTradesWithHttpMessagesAsync(apiKey, assetId, assetPairId, skip, take, null, cancellationToken).ConfigureAwait(false))
                 {
                     return _result.Body;
                 }
@@ -262,7 +268,7 @@ namespace Lykke.Service.HFT.AutorestClient
             }
 
             /// <summary>
-            /// Get all client orders.
+            /// Get the last client orders.
             /// </summary>
             /// <param name='operations'>
             /// The operations group for this extension method.
@@ -271,17 +277,19 @@ namespace Lykke.Service.HFT.AutorestClient
             /// access token
             /// </param>
             /// <param name='status'>
-            /// Possible values include: 'Pending', 'InOrderBook', 'Processing', 'Matched',
-            /// 'NotEnoughFunds', 'NoLiquidity', 'UnknownAsset', 'Cancelled',
-            /// 'LeadToNegativeSpread'
+            /// Order status. Possible values include: 'All', 'Open', 'InOrderBook',
+            /// 'Processing', 'Matched', 'Cancelled', 'Rejected'
             /// </param>
-            public static IList<LimitOrderState> GetOrders(this IHighFrequencytradingAPI operations, string apiKey, string status = default(string))
+            /// <param name='take'>
+            /// Default 100; max 500.
+            /// </param>
+            public static IList<LimitOrderState> GetOrders(this IHighFrequencytradingAPI operations, string apiKey, OrderStatus? status = default(OrderStatus?), int? take = default(int?))
             {
-                return operations.GetOrdersAsync(apiKey, status).GetAwaiter().GetResult();
+                return operations.GetOrdersAsync(apiKey, status, take).GetAwaiter().GetResult();
             }
 
             /// <summary>
-            /// Get all client orders.
+            /// Get the last client orders.
             /// </summary>
             /// <param name='operations'>
             /// The operations group for this extension method.
@@ -290,16 +298,18 @@ namespace Lykke.Service.HFT.AutorestClient
             /// access token
             /// </param>
             /// <param name='status'>
-            /// Possible values include: 'Pending', 'InOrderBook', 'Processing', 'Matched',
-            /// 'NotEnoughFunds', 'NoLiquidity', 'UnknownAsset', 'Cancelled',
-            /// 'LeadToNegativeSpread'
+            /// Order status. Possible values include: 'All', 'Open', 'InOrderBook',
+            /// 'Processing', 'Matched', 'Cancelled', 'Rejected'
+            /// </param>
+            /// <param name='take'>
+            /// Default 100; max 500.
             /// </param>
             /// <param name='cancellationToken'>
             /// The cancellation token.
             /// </param>
-            public static async Task<IList<LimitOrderState>> GetOrdersAsync(this IHighFrequencytradingAPI operations, string apiKey, string status = default(string), CancellationToken cancellationToken = default(CancellationToken))
+            public static async Task<IList<LimitOrderState>> GetOrdersAsync(this IHighFrequencytradingAPI operations, string apiKey, OrderStatus? status = default(OrderStatus?), int? take = default(int?), CancellationToken cancellationToken = default(CancellationToken))
             {
-                using (var _result = await operations.GetOrdersWithHttpMessagesAsync(apiKey, status, null, cancellationToken).ConfigureAwait(false))
+                using (var _result = await operations.GetOrdersWithHttpMessagesAsync(apiKey, status, take, null, cancellationToken).ConfigureAwait(false))
                 {
                     return _result.Body;
                 }

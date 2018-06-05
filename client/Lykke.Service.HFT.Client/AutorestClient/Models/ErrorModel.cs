@@ -23,11 +23,12 @@ namespace Lykke.Service.HFT.AutorestClient.Models
         /// Initializes a new instance of the ErrorModel class.
         /// </summary>
         /// <param name="code">Possible values include: 'InvalidInputField',
-        /// 'Ok', 'LowBalance', 'AlreadyProcessed', 'UnknownAsset',
+        /// 'BadRequest', 'LowBalance', 'AlreadyProcessed', 'UnknownAsset',
         /// 'NoLiquidity', 'NotEnoughFunds', 'Dust',
         /// 'ReservedVolumeHigherThanBalance', 'NotFound',
-        /// 'BalanceLowerThanReserved', 'LeadToNegativeSpread',
-        /// 'PriceGapTooHigh', 'RuntimeError'</param>
+        /// 'BalanceLowerThanReserved', 'LeadToNegativeSpread', 'InvalidFee',
+        /// 'Duplicate', 'InvalidPrice', 'Replaced', 'NotFoundPrevious',
+        /// 'Runtime'</param>
         public ErrorModel(ErrorCodeType code, string field = default(string), string message = default(string))
         {
             Code = code;
@@ -42,11 +43,13 @@ namespace Lykke.Service.HFT.AutorestClient.Models
         partial void CustomInit();
 
         /// <summary>
-        /// Gets or sets possible values include: 'InvalidInputField', 'Ok',
-        /// 'LowBalance', 'AlreadyProcessed', 'UnknownAsset', 'NoLiquidity',
-        /// 'NotEnoughFunds', 'Dust', 'ReservedVolumeHigherThanBalance',
-        /// 'NotFound', 'BalanceLowerThanReserved', 'LeadToNegativeSpread',
-        /// 'PriceGapTooHigh', 'RuntimeError'
+        /// Gets or sets possible values include: 'InvalidInputField',
+        /// 'BadRequest', 'LowBalance', 'AlreadyProcessed', 'UnknownAsset',
+        /// 'NoLiquidity', 'NotEnoughFunds', 'Dust',
+        /// 'ReservedVolumeHigherThanBalance', 'NotFound',
+        /// 'BalanceLowerThanReserved', 'LeadToNegativeSpread', 'InvalidFee',
+        /// 'Duplicate', 'InvalidPrice', 'Replaced', 'NotFoundPrevious',
+        /// 'Runtime'
         /// </summary>
         [JsonProperty(PropertyName = "Code")]
         public ErrorCodeType Code { get; set; }
