@@ -15,46 +15,38 @@ namespace Lykke.Service.HFT.Services.Fees
     {
         private readonly IFeeCalculatorClient _feeCalculatorClient;
         private readonly FeeSettings _feeSettings;
-        private readonly LimitOrderFeeCache _cache;
 
-        public FeeCalculatorAdapter(IFeeCalculatorClient feeCalculatorClient, FeeSettings feeSettings, LimitOrderFeeCache cache)
+        public FeeCalculatorAdapter(IFeeCalculatorClient feeCalculatorClient, FeeSettings feeSettings)
         {
             _feeCalculatorClient = feeCalculatorClient ?? throw new ArgumentNullException(nameof(feeCalculatorClient));
             _feeSettings = feeSettings ?? throw new ArgumentNullException(nameof(feeSettings));
-            _cache = cache ?? throw new ArgumentNullException(nameof(cache));
         }
 
-        public async Task<MarketOrderFeeModel[]> GetMarketOrderFees(string clientId, AssetPair assetPair, OrderAction orderAction)
+        public async Task<MarketOrderFeeModel[]> GetMarketOrderFees(string clientId, AssetPair assetPair,
+            OrderAction orderAction)
         {
-            var fee = await _feeCalculatorClient.GetMarketOrderAssetFee(clientId, assetPair.Id, assetPair.BaseAssetId, ToFeeOrderAction(orderAction));
+            var fee = await _feeCalculatorClient.GetMarketOrderAssetFee(clientId, assetPair.Id, assetPair.BaseAssetId,
+                ToFeeOrderAction(orderAction));
 
-            return new[]
+            var model = new MarketOrderFeeModel
             {
-                new MarketOrderFeeModel
-                {
-                    Size = (double) fee.Amount,
-                    SizeType = GetFeeSizeType(fee.Type),
-                    SourceClientId = clientId,
-                    TargetClientId = fee.TargetWalletId ?? _feeSettings.TargetClientId.Hft,
-                    Type = fee.Amount == 0m
-                        ? (int) MarketOrderFeeType.NO_FEE
-                        : (int) MarketOrderFeeType.CLIENT_FEE,
-                    AssetId = string.IsNullOrEmpty(fee.TargetAssetId)
-                        ? Array.Empty<string>()
-                        : new[] {fee.TargetAssetId}
-                }
+                Size = (double) fee.Amount,
+                SizeType = GetFeeSizeType(fee.Type),
+                SourceClientId = clientId,
+                TargetClientId = fee.TargetWalletId ?? _feeSettings.TargetClientId.Hft,
+                Type = fee.Amount == 0m
+                    ? (int) MarketOrderFeeType.NO_FEE
+                    : (int) MarketOrderFeeType.CLIENT_FEE,
+                AssetId = string.IsNullOrEmpty(fee.TargetAssetId)
+                    ? Array.Empty<string>()
+                    : new[] {fee.TargetAssetId}
             };
+
+            return new[] {model};
         }
 
         public async Task<LimitOrderFeeModel[]> GetLimitOrderFees(string clientId, AssetPair assetPair, OrderAction orderAction)
         {
-            // Check if fee is available in the cache otherwise request it from the calculator.
-            var cachedFee = await _cache.TryGetLimitOrderFee(clientId, assetPair, orderAction);
-            if (cachedFee != null)
-            {
-                return new[] { cachedFee };
-            }
-
             var fee = await _feeCalculatorClient.GetLimitOrderFees(clientId, assetPair.Id, assetPair.BaseAssetId, ToFeeOrderAction(orderAction));
 
             var model = new LimitOrderFeeModel
@@ -70,9 +62,6 @@ namespace Lykke.Service.HFT.Services.Fees
                 MakerSizeType = GetFeeSizeType(fee.MakerFeeType),
                 TakerSizeType = GetFeeSizeType(fee.TakerFeeType)
             };
-
-            // Add to cache
-            _cache.CacheLimitOrderFee(clientId, assetPair, orderAction, model);
 
             return new[] { model };
         }

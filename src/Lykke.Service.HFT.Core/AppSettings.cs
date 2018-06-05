@@ -98,10 +98,6 @@ namespace Lykke.Service.HFT.Core
 
         public string FinanceDataCacheInstance { get; set; }
         public string OrderBooksCacheKeyPattern { get; set; }
-
-        public string FeeCacheInstance { get; set; }
-        public string FeeCacheLimitOrderPattern { get; set; }
-        public string FeeCacheDuration { get; set; }
     }
 
     public static class CacheSettingsExt
