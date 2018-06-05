@@ -61,11 +61,20 @@ namespace Lykke.Service.HFT.Core.Strings {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Already Processed.
+        ///   Looks up a localized string similar to Already processed.
         /// </summary>
         internal static string AlreadyProcessed {
             get {
                 return ResourceManager.GetString("AlreadyProcessed", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Bad request.
+        /// </summary>
+        internal static string BadRequest {
+            get {
+                return ResourceManager.GetString("BadRequest", resourceCulture);
             }
         }
         
@@ -79,11 +88,47 @@ namespace Lykke.Service.HFT.Core.Strings {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Duplicate.
+        /// </summary>
+        internal static string Duplicate {
+            get {
+                return ResourceManager.GetString("Duplicate", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Please try to send higher order.
         /// </summary>
         internal static string Dust {
             get {
                 return ResourceManager.GetString("Dust", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Invalid fee.
+        /// </summary>
+        internal static string InvalidFee {
+            get {
+                return ResourceManager.GetString("InvalidFee", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Invalid input field.
+        /// </summary>
+        internal static string InvalidInputField {
+            get {
+                return ResourceManager.GetString("InvalidInputField", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Invalid price.
+        /// </summary>
+        internal static string InvalidPrice {
+            get {
+                return ResourceManager.GetString("InvalidPrice", resourceCulture);
             }
         }
         
@@ -133,6 +178,24 @@ namespace Lykke.Service.HFT.Core.Strings {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Previous not found.
+        /// </summary>
+        internal static string NotFoundPrevious {
+            get {
+                return ResourceManager.GetString("NotFoundPrevious", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Replaced.
+        /// </summary>
+        internal static string Replaced {
+            get {
+                return ResourceManager.GetString("Replaced", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Reserved volume higher than balance.
         /// </summary>
         internal static string ReservedVolumeHigherThanBalance {
@@ -147,6 +210,15 @@ namespace Lykke.Service.HFT.Core.Strings {
         internal static string RuntimeError {
             get {
                 return ResourceManager.GetString("RuntimeError", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Runtime error {0}.
+        /// </summary>
+        internal static string RuntimeErrorX {
+            get {
+                return ResourceManager.GetString("RuntimeErrorX", resourceCulture);
             }
         }
         

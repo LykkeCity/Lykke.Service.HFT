@@ -41,6 +41,10 @@
         /// </summary>
         LeadToNegativeSpread = 8,
         /// <summary>
+        /// Invalid price accuracy
+        /// </summary>
+        InvalidPriceAccuracy = 9,
+        /// <summary>
         /// Reserved volume greater than balance
         /// </summary>
         ReservedVolumeGreaterThanBalance = 414,
@@ -52,5 +56,32 @@
         /// Unexpected status code
         /// </summary>
         Runtime = 500
+    }
+
+    public static class OrderStatusMixin
+    {
+        public static bool IsRejected(this OrderStatus status)
+        {
+            switch (status)
+            {
+                case OrderStatus.NotEnoughFunds:
+                case OrderStatus.NoLiquidity:
+                case OrderStatus.UnknownAsset:
+                case OrderStatus.LeadToNegativeSpread:
+                case OrderStatus.ReservedVolumeGreaterThanBalance:
+                case OrderStatus.TooSmallVolume:
+                case OrderStatus.InvalidPriceAccuracy:
+                case OrderStatus.Runtime:
+                    return true;
+                case OrderStatus.Pending:
+                case OrderStatus.InOrderBook:
+                case OrderStatus.Processing:
+                case OrderStatus.Matched:
+                case OrderStatus.Cancelled:
+                    return false;
+                default:
+                    return true;
+            }
+        }
     }
 }

@@ -66,8 +66,6 @@ namespace Lykke.Service.HFT.Modules
                 new RabbitMqTransportFactory());
 #endif
 
-            var defaultRetryDelay = (long)_settings.RetryDelay.TotalMilliseconds;
-
             builder.RegisterType<ApiKeyProjection>()
                 .WithParameter(
                     new ResolvedParameter(
