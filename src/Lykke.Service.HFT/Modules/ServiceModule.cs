@@ -28,7 +28,6 @@ namespace Lykke.Service.HFT.Modules
     {
         private const string FinanceDataCache = "financeData";
         private const string ApiKeysCache = "apiKeys";
-        private const string FeesCache = "hftFees";
         private readonly IReloadingManager<AppSettings> _settings;
         private readonly ILog _log;
 
@@ -96,17 +95,6 @@ namespace Lykke.Service.HFT.Modules
                 .As<IDistributedCache>()
                 .Keyed<IDistributedCache>(ApiKeysCache)
                 .SingleInstance();
-
-            var feesRedisCache = new RedisCache(new RedisCacheOptions
-            {
-                Configuration = settings.RedisConfiguration,
-                InstanceName = settings.FeeCacheInstance
-            });
-
-            builder.RegisterInstance(feesRedisCache)
-                .As<IDistributedCache>()
-                .Keyed<IDistributedCache>(FeesCache)
-                .SingleInstance();
         }
 
         private void RegisterApiKeyService(ContainerBuilder builder)
@@ -150,16 +138,8 @@ namespace Lykke.Service.HFT.Modules
 
         private void RegisterFeeServices(ContainerBuilder builder)
         {
-            builder.RegisterType<LimitOrderFeeCache>()
-                .WithParameter(TypedParameter.From(_settings.CurrentValue.FeeSettings))
-                .WithParameter(TypedParameter.From(_settings.CurrentValue.HighFrequencyTradingService.CacheSettings))
-                .WithParameter(
-                    new ResolvedParameter(
-                        (pi, ctx) => pi.ParameterType == typeof(IDistributedCache),
-                        (pi, ctx) => ctx.ResolveKeyed<IDistributedCache>(FeesCache)))
-                .SingleInstance();
-
             builder.RegisterType<FeeCalculatorAdapter>()
+                .As<IFeeCalculatorAdapter>()
                 .WithParameter(TypedParameter.From(_settings.CurrentValue.FeeSettings))
                 .SingleInstance();
         }

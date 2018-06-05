@@ -1,15 +1,13 @@
-﻿using Common.Log;
+﻿using System;
+using System.Collections.Generic;
+using System.Threading.Tasks;
+using Common.Log;
 using JetBrains.Annotations;
 using Lykke.MatchingEngine.Connector.Abstractions.Models;
 using Lykke.MatchingEngine.Connector.Abstractions.Services;
 using Lykke.Service.Assets.Client.Models;
 using Lykke.Service.HFT.Core.Domain;
 using Lykke.Service.HFT.Core.Services;
-using System;
-using System.Collections.Generic;
-using System.Diagnostics;
-using System.Threading.Tasks;
-using Lykke.Service.HFT.Services.Fees;
 using OrderAction = Lykke.Service.HFT.Core.Domain.OrderAction;
 
 namespace Lykke.Service.HFT.Services
@@ -19,7 +17,7 @@ namespace Lykke.Service.HFT.Services
         private readonly ILog _log;
         private readonly IMatchingEngineClient _matchingEngineClient;
         private readonly IRepository<LimitOrderState> _orderStateRepository;
-        private readonly FeeCalculatorAdapter _feeCalculator;
+        private readonly IFeeCalculatorAdapter _feeCalculator;
 
         private static readonly Dictionary<MeStatusCodes, ResponseModel.ErrorCodeType> StatusCodesMap = new Dictionary<MeStatusCodes, ResponseModel.ErrorCodeType>
         {
@@ -41,13 +39,11 @@ namespace Lykke.Service.HFT.Services
 
         public MatchingEngineAdapter(IMatchingEngineClient matchingEngineClient,
             IRepository<LimitOrderState> orderStateRepository,
-            FeeCalculatorAdapter feeCalculator,
+            IFeeCalculatorAdapter feeCalculator,
             [NotNull] ILog log)
         {
-            _matchingEngineClient =
-                matchingEngineClient ?? throw new ArgumentNullException(nameof(matchingEngineClient));
-            _orderStateRepository =
-                orderStateRepository ?? throw new ArgumentNullException(nameof(orderStateRepository));
+            _matchingEngineClient = matchingEngineClient ?? throw new ArgumentNullException(nameof(matchingEngineClient));
+            _orderStateRepository = orderStateRepository ?? throw new ArgumentNullException(nameof(orderStateRepository));
             _feeCalculator = feeCalculator ?? throw new ArgumentNullException(nameof(feeCalculator));
             _log = log ?? throw new ArgumentNullException(nameof(log));
         }
@@ -72,7 +68,7 @@ namespace Lykke.Service.HFT.Services
                 Straight = straight,
                 Volume = Math.Abs(volume),
                 OrderAction = orderAction.ToMeOrderAction(),
-                Fees = new[] { await _feeCalculator.GetMarketOrderFee(clientId, assetPair, orderAction) }
+                Fees = await _feeCalculator.GetMarketOrderFees(clientId, assetPair, orderAction)
             };
 
             var response = await _matchingEngineClient.HandleMarketOrderAsync(order);
@@ -100,7 +96,7 @@ namespace Lykke.Service.HFT.Services
                 CancelPreviousOrders = cancelPreviousOrders,
                 Volume = Math.Abs(volume),
                 OrderAction = orderAction.ToMeOrderAction(),
-                Fees = new[] { await _feeCalculator.GetLimitOrderFee(clientId, assetPair, orderAction) }
+                Fees = await _feeCalculator.GetLimitOrderFees(clientId, assetPair, orderAction)
             };
 
             var response = await _matchingEngineClient.PlaceLimitOrderAsync(order);
