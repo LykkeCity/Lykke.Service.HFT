@@ -1,9 +1,9 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Net;
-using Lykke.Common.Chaos;
+﻿using Lykke.Common.Chaos;
 using Lykke.Service.OperationsHistory.Client;
 using Lykke.SettingsReader.Attributes;
+using System;
+using System.Collections.Generic;
+using System.Net;
 
 namespace Lykke.Service.HFT.Core
 {
