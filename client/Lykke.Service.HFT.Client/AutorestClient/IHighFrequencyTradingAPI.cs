@@ -62,17 +62,20 @@ namespace Lykke.Service.HFT.AutorestClient
         /// <summary>
         /// Get trades
         /// </summary>
-        /// <param name='take'>
-        /// How many maximum items have to be returned
-        /// </param>
-        /// <param name='skip'>
-        /// How many items skip before returning
-        /// </param>
         /// <param name='apiKey'>
         /// access token
         /// </param>
         /// <param name='assetId'>
         /// Asset identifier
+        /// </param>
+        /// <param name='assetPairId'>
+        /// Asset-pair identifier
+        /// </param>
+        /// <param name='skip'>
+        /// How many items skip before returning
+        /// </param>
+        /// <param name='take'>
+        /// How many maximum items have to be returned
         /// </param>
         /// <param name='customHeaders'>
         /// The headers that will be added to request.
@@ -80,7 +83,7 @@ namespace Lykke.Service.HFT.AutorestClient
         /// <param name='cancellationToken'>
         /// The cancellation token.
         /// </param>
-        Task<HttpOperationResponse<object>> GetTradesWithHttpMessagesAsync(int take, int skip, string apiKey, string assetId = default(string), Dictionary<string, List<string>> customHeaders = null, CancellationToken cancellationToken = default(CancellationToken));
+        Task<HttpOperationResponse<object>> GetTradesWithHttpMessagesAsync(string apiKey, string assetId = default(string), string assetPairId = default(string), int? skip = default(int?), int? take = default(int?), Dictionary<string, List<string>> customHeaders = null, CancellationToken cancellationToken = default(CancellationToken));
 
         /// <summary>
         /// Get trade details by id
@@ -136,15 +139,17 @@ namespace Lykke.Service.HFT.AutorestClient
         Task<HttpOperationResponse<IList<OrderBook>>> GetOrderBookWithHttpMessagesAsync(string assetPairId, Dictionary<string, List<string>> customHeaders = null, CancellationToken cancellationToken = default(CancellationToken));
 
         /// <summary>
-        /// Get all client orders.
+        /// Get the last client orders.
         /// </summary>
         /// <param name='apiKey'>
         /// access token
         /// </param>
         /// <param name='status'>
-        /// Possible values include: 'Pending', 'InOrderBook', 'Processing',
-        /// 'Matched', 'NotEnoughFunds', 'NoLiquidity', 'UnknownAsset',
-        /// 'Cancelled', 'LeadToNegativeSpread'
+        /// Order status. Possible values include: 'All', 'Open',
+        /// 'InOrderBook', 'Processing', 'Matched', 'Cancelled', 'Rejected'
+        /// </param>
+        /// <param name='take'>
+        /// Default 100; max 500.
         /// </param>
         /// <param name='customHeaders'>
         /// The headers that will be added to request.
@@ -152,7 +157,7 @@ namespace Lykke.Service.HFT.AutorestClient
         /// <param name='cancellationToken'>
         /// The cancellation token.
         /// </param>
-        Task<HttpOperationResponse<IList<LimitOrderState>>> GetOrdersWithHttpMessagesAsync(string apiKey, string status = default(string), Dictionary<string, List<string>> customHeaders = null, CancellationToken cancellationToken = default(CancellationToken));
+        Task<HttpOperationResponse<IList<LimitOrderState>>> GetOrdersWithHttpMessagesAsync(string apiKey, OrderStatus? status = default(OrderStatus?), int? take = default(int?), Dictionary<string, List<string>> customHeaders = null, CancellationToken cancellationToken = default(CancellationToken));
 
         /// <summary>
         /// Get the order info.

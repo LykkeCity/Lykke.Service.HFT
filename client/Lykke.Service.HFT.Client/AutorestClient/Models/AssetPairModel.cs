@@ -22,7 +22,7 @@ namespace Lykke.Service.HFT.AutorestClient.Models
         /// <summary>
         /// Initializes a new instance of the AssetPairModel class.
         /// </summary>
-        public AssetPairModel(int accuracy, int invertedAccuracy, string id = default(string), string name = default(string), string baseAssetId = default(string), string quotingAssetId = default(string))
+        public AssetPairModel(int accuracy, int invertedAccuracy, double minVolume, double minInvertedVolume, string id = default(string), string name = default(string), string baseAssetId = default(string), string quotingAssetId = default(string))
         {
             Id = id;
             Name = name;
@@ -30,6 +30,8 @@ namespace Lykke.Service.HFT.AutorestClient.Models
             InvertedAccuracy = invertedAccuracy;
             BaseAssetId = baseAssetId;
             QuotingAssetId = quotingAssetId;
+            MinVolume = minVolume;
+            MinInvertedVolume = minInvertedVolume;
             CustomInit();
         }
 
@@ -67,6 +69,16 @@ namespace Lykke.Service.HFT.AutorestClient.Models
         /// </summary>
         [JsonProperty(PropertyName = "QuotingAssetId")]
         public string QuotingAssetId { get; set; }
+
+        /// <summary>
+        /// </summary>
+        [JsonProperty(PropertyName = "MinVolume")]
+        public double MinVolume { get; set; }
+
+        /// <summary>
+        /// </summary>
+        [JsonProperty(PropertyName = "MinInvertedVolume")]
+        public double MinInvertedVolume { get; set; }
 
         /// <summary>
         /// Validate the object.

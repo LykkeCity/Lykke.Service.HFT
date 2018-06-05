@@ -17,24 +17,20 @@ namespace Lykke.Service.HFT.AutorestClient.Models
     [JsonConverter(typeof(StringEnumConverter))]
     public enum OrderStatus
     {
-        [EnumMember(Value = "Pending")]
-        Pending,
+        [EnumMember(Value = "All")]
+        All,
+        [EnumMember(Value = "Open")]
+        Open,
         [EnumMember(Value = "InOrderBook")]
         InOrderBook,
         [EnumMember(Value = "Processing")]
         Processing,
         [EnumMember(Value = "Matched")]
         Matched,
-        [EnumMember(Value = "NotEnoughFunds")]
-        NotEnoughFunds,
-        [EnumMember(Value = "NoLiquidity")]
-        NoLiquidity,
-        [EnumMember(Value = "UnknownAsset")]
-        UnknownAsset,
         [EnumMember(Value = "Cancelled")]
         Cancelled,
-        [EnumMember(Value = "LeadToNegativeSpread")]
-        LeadToNegativeSpread
+        [EnumMember(Value = "Rejected")]
+        Rejected
     }
     internal static class OrderStatusEnumExtension
     {
@@ -47,24 +43,20 @@ namespace Lykke.Service.HFT.AutorestClient.Models
         {
             switch( value )
             {
-                case OrderStatus.Pending:
-                    return "Pending";
+                case OrderStatus.All:
+                    return "All";
+                case OrderStatus.Open:
+                    return "Open";
                 case OrderStatus.InOrderBook:
                     return "InOrderBook";
                 case OrderStatus.Processing:
                     return "Processing";
                 case OrderStatus.Matched:
                     return "Matched";
-                case OrderStatus.NotEnoughFunds:
-                    return "NotEnoughFunds";
-                case OrderStatus.NoLiquidity:
-                    return "NoLiquidity";
-                case OrderStatus.UnknownAsset:
-                    return "UnknownAsset";
                 case OrderStatus.Cancelled:
                     return "Cancelled";
-                case OrderStatus.LeadToNegativeSpread:
-                    return "LeadToNegativeSpread";
+                case OrderStatus.Rejected:
+                    return "Rejected";
             }
             return null;
         }
@@ -73,24 +65,20 @@ namespace Lykke.Service.HFT.AutorestClient.Models
         {
             switch( value )
             {
-                case "Pending":
-                    return OrderStatus.Pending;
+                case "All":
+                    return OrderStatus.All;
+                case "Open":
+                    return OrderStatus.Open;
                 case "InOrderBook":
                     return OrderStatus.InOrderBook;
                 case "Processing":
                     return OrderStatus.Processing;
                 case "Matched":
                     return OrderStatus.Matched;
-                case "NotEnoughFunds":
-                    return OrderStatus.NotEnoughFunds;
-                case "NoLiquidity":
-                    return OrderStatus.NoLiquidity;
-                case "UnknownAsset":
-                    return OrderStatus.UnknownAsset;
                 case "Cancelled":
                     return OrderStatus.Cancelled;
-                case "LeadToNegativeSpread":
-                    return OrderStatus.LeadToNegativeSpread;
+                case "Rejected":
+                    return OrderStatus.Rejected;
             }
             return null;
         }

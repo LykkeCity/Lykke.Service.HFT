@@ -22,14 +22,9 @@ namespace Lykke.Service.HFT.AutorestClient.Models
         /// <summary>
         /// Initializes a new instance of the LimitOrderState class.
         /// </summary>
-        /// <param name="status">Possible values include: 'Pending',
-        /// 'InOrderBook', 'Processing', 'Matched', 'NotEnoughFunds',
-        /// 'NoLiquidity', 'UnknownAsset', 'Cancelled',
-        /// 'LeadToNegativeSpread'</param>
-        public LimitOrderState(System.Guid id, OrderStatus status, double volume, double remainingVolume, System.DateTime createdAt, System.DateTime registered, string clientId = default(string), string assetPairId = default(string), double? price = default(double?), System.DateTime? lastMatchTime = default(System.DateTime?))
+        public LimitOrderState(System.Guid id, double volume, double remainingVolume, System.DateTime createdAt, string status = default(string), string assetPairId = default(string), double? price = default(double?), System.DateTime? lastMatchTime = default(System.DateTime?))
         {
             Id = id;
-            ClientId = clientId;
             Status = status;
             AssetPairId = assetPairId;
             Volume = volume;
@@ -37,7 +32,6 @@ namespace Lykke.Service.HFT.AutorestClient.Models
             RemainingVolume = remainingVolume;
             LastMatchTime = lastMatchTime;
             CreatedAt = createdAt;
-            Registered = registered;
             CustomInit();
         }
 
@@ -53,16 +47,8 @@ namespace Lykke.Service.HFT.AutorestClient.Models
 
         /// <summary>
         /// </summary>
-        [JsonProperty(PropertyName = "ClientId")]
-        public string ClientId { get; set; }
-
-        /// <summary>
-        /// Gets or sets possible values include: 'Pending', 'InOrderBook',
-        /// 'Processing', 'Matched', 'NotEnoughFunds', 'NoLiquidity',
-        /// 'UnknownAsset', 'Cancelled', 'LeadToNegativeSpread'
-        /// </summary>
         [JsonProperty(PropertyName = "Status")]
-        public OrderStatus Status { get; set; }
+        public string Status { get; set; }
 
         /// <summary>
         /// </summary>
@@ -95,11 +81,6 @@ namespace Lykke.Service.HFT.AutorestClient.Models
         public System.DateTime CreatedAt { get; set; }
 
         /// <summary>
-        /// </summary>
-        [JsonProperty(PropertyName = "Registered")]
-        public System.DateTime Registered { get; set; }
-
-        /// <summary>
         /// Validate the object.
         /// </summary>
         /// <exception cref="Microsoft.Rest.ValidationException">
@@ -107,6 +88,7 @@ namespace Lykke.Service.HFT.AutorestClient.Models
         /// </exception>
         public virtual void Validate()
         {
+            //Nothing to validate
         }
     }
 }

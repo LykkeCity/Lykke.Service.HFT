@@ -2,7 +2,7 @@
 
 namespace Lykke.Service.HFT.Wamp.Consumers.Messages
 {
-    class LimitOrderMessage
+    internal class LimitOrderMessage
     {
         public LimitOrder[] Orders { get; set; }
 
@@ -37,54 +37,6 @@ namespace Lykke.Service.HFT.Wamp.Consumers.Messages
             public string OppositeAsset { get; set; }
             public string OppositeClientId { get; set; }
             public double OppositeVolume { get; set; }
-        }
-
-        public enum OrderStatus
-        {
-            /// <summary>
-            /// Initial status, limit order in order book
-            /// </summary>
-            InOrderBook,
-            /// <summary>
-            /// Partially matched
-            /// </summary>
-            Processing,
-            /// <summary>
-            /// Fully matched
-            /// </summary>
-            Matched,
-            /// <summary>
-            /// Not enough funds on account
-            /// </summary>
-            NotEnoughFunds,
-            /// <summary>
-            /// Reserved volume greater than balance
-            /// </summary>
-            ReservedVolumeGreaterThanBalance,
-            /// <summary>
-            /// No liquidity
-            /// </summary>
-            NoLiquidity,
-            /// <summary>
-            /// Unknown asset
-            /// </summary>
-            UnknownAsset,
-            /// <summary>
-            /// Cancelled
-            /// </summary>
-            Cancelled,
-            /// <summary>
-            /// Lead to negative spread
-            /// </summary>
-            LeadToNegativeSpread,
-            /// <summary>
-            /// Invalid fee
-            /// </summary>
-            InvalidFee,
-            /// <summary>
-            /// Too small volume
-            /// </summary>
-            TooSmallVolume
         }
     }
 }

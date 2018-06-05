@@ -1,29 +1,15 @@
-﻿using System.Collections.Generic;
-using Lykke.Service.HFT.Core.Strings;
+﻿using Lykke.Service.HFT.Core.Strings;
 
 namespace Lykke.Service.HFT.Core.Domain
 {
     public class ResponseModel
     {
-        protected static readonly Dictionary<ErrorCodeType, string> StatusCodesMap = new Dictionary<ErrorCodeType, string>
-        {
-            {ErrorCodeType.LowBalance, ErrorMessages.LowBalance},
-            {ErrorCodeType.AlreadyProcessed, ErrorMessages.AlreadyProcessed},
-            {ErrorCodeType.UnknownAsset, ErrorMessages.UnknownAsset},
-            {ErrorCodeType.NoLiquidity, ErrorMessages.NoLiquidity},
-            {ErrorCodeType.NotEnoughFunds, ErrorMessages.NotEnoughFunds},
-            {ErrorCodeType.Dust, ErrorMessages.Dust},
-            {ErrorCodeType.ReservedVolumeHigherThanBalance, ErrorMessages.ReservedVolumeHigherThanBalance},
-            {ErrorCodeType.NotFound, ErrorMessages.NotFound},
-            {ErrorCodeType.BalanceLowerThanReserved, ErrorMessages.BalanceLowerThanReserved},
-            {ErrorCodeType.LeadToNegativeSpread, ErrorMessages.LeadToNegativeSpread},
-            {ErrorCodeType.Runtime, ErrorMessages.RuntimeError},
-        };
         public ErrorModel Error { get; set; }
 
         public enum ErrorCodeType
         {
             InvalidInputField = 0,
+            BadRequest = 400,
             LowBalance = 401,
             AlreadyProcessed = 402,
             UnknownAsset = 410,
@@ -34,7 +20,12 @@ namespace Lykke.Service.HFT.Core.Domain
             NotFound = 415,
             BalanceLowerThanReserved = 416,
             LeadToNegativeSpread = 417,
-            Runtime = 500
+            InvalidFee = 419,
+            Duplicate = 420,
+            InvalidPrice = 421,
+            Replaced = 422,
+            NotFoundPrevious = 423,
+            Runtime = 500,
         }
 
         public class ErrorModel
@@ -65,17 +56,12 @@ namespace Lykke.Service.HFT.Core.Domain
 
         public static ResponseModel CreateFail(ErrorCodeType errorCodeType, string message = null)
         {
-            if (message == null)
-            {
-                StatusCodesMap.TryGetValue(errorCodeType, out message);
-            }
-
             return new ResponseModel
             {
                 Error = new ErrorModel
                 {
                     Code = errorCodeType,
-                    Message = message
+                    Message = message ?? GetErrorMessage(errorCodeType)
                 }
             };
         }
@@ -85,6 +71,51 @@ namespace Lykke.Service.HFT.Core.Domain
         public static ResponseModel CreateOk()
         {
             return OkInstance;
+        }
+
+        protected static string GetErrorMessage(ErrorCodeType code)
+        {
+            switch (code)
+            {
+                case ErrorCodeType.LowBalance:
+                    return ErrorMessages.LowBalance;
+                case ErrorCodeType.AlreadyProcessed:
+                    return ErrorMessages.AlreadyProcessed;
+                case ErrorCodeType.UnknownAsset:
+                    return ErrorMessages.UnknownAsset;
+                case ErrorCodeType.NoLiquidity:
+                    return ErrorMessages.NoLiquidity;
+                case ErrorCodeType.NotEnoughFunds:
+                    return ErrorMessages.NotEnoughFunds;
+                case ErrorCodeType.Dust:
+                    return ErrorMessages.Dust;
+                case ErrorCodeType.ReservedVolumeHigherThanBalance:
+                    return ErrorMessages.ReservedVolumeHigherThanBalance;
+                case ErrorCodeType.NotFound:
+                    return ErrorMessages.NotFound;
+                case ErrorCodeType.BalanceLowerThanReserved:
+                    return ErrorMessages.BalanceLowerThanReserved;
+                case ErrorCodeType.LeadToNegativeSpread:
+                    return ErrorMessages.LeadToNegativeSpread;
+                case ErrorCodeType.Runtime:
+                    return ErrorMessages.RuntimeError;
+                case ErrorCodeType.NotFoundPrevious:
+                    return ErrorMessages.NotFoundPrevious;
+                case ErrorCodeType.Replaced:
+                    return ErrorMessages.Replaced;
+                case ErrorCodeType.InvalidPrice:
+                    return ErrorMessages.InvalidPrice;
+                case ErrorCodeType.Duplicate:
+                    return ErrorMessages.Duplicate;
+                case ErrorCodeType.InvalidFee:
+                    return ErrorMessages.InvalidFee;
+                case ErrorCodeType.BadRequest:
+                    return ErrorMessages.BadRequest;
+                case ErrorCodeType.InvalidInputField:
+                    return ErrorMessages.InvalidInputField;
+                default:
+                    return string.Format(ErrorMessages.RuntimeErrorX, (int)code);
+            }
         }
     }
 
@@ -115,17 +146,12 @@ namespace Lykke.Service.HFT.Core.Domain
 
         public new static ResponseModel<T> CreateFail(ErrorCodeType errorCodeType, string message = null)
         {
-            if (message == null)
-            {
-                StatusCodesMap.TryGetValue(errorCodeType, out message);
-            }
-
             return new ResponseModel<T>
             {
                 Error = new ErrorModel
                 {
                     Code = errorCodeType,
-                    Message = message
+                    Message = message ?? GetErrorMessage(errorCodeType)
                 }
             };
         }
