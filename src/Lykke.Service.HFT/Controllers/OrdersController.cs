@@ -73,7 +73,8 @@ namespace Lykke.Service.HFT.Controllers
                 case OrderStatus.All:
                     break;
                 case OrderStatus.Open:
-                    orders = orders.Where(x => x.Status == Core.Domain.OrderStatus.InOrderBook || x.Status == Core.Domain.OrderStatus.Processing);
+                    orders = orders.Where(x => x.Status == Core.Domain.OrderStatus.InOrderBook
+                                            || x.Status == Core.Domain.OrderStatus.Processing);
                     break;
                 case OrderStatus.InOrderBook:
                     orders = orders.Where(x => x.Status == Core.Domain.OrderStatus.InOrderBook);
@@ -88,13 +89,23 @@ namespace Lykke.Service.HFT.Controllers
                     orders = orders.Where(x => x.Status == Core.Domain.OrderStatus.Cancelled);
                     break;
                 case OrderStatus.Rejected:
-                    orders = orders.Where(order => order.Status.IsRejected());
+                    orders = orders.Where(x => x.Status != Core.Domain.OrderStatus.Pending
+                                            && x.Status != Core.Domain.OrderStatus.InOrderBook
+                                            && x.Status != Core.Domain.OrderStatus.Processing
+                                            && x.Status != Core.Domain.OrderStatus.Matched
+                                            && x.Status != Core.Domain.OrderStatus.Cancelled);
                     break;
                 default:
                     throw new ArgumentOutOfRangeException(nameof(status), status, null);
             }
 
-            return Ok(orders.OrderByDescending(x => x.CreatedAt).Take((int)take.Value).ToList().Select(x => x.ConvertToApiModel()));
+            var result = orders
+                .OrderByDescending(x => x.CreatedAt)
+                .Take((int) take.Value)
+                .ToList()
+                .Select(x => x.ConvertToApiModel());
+
+            return Ok(result);
         }
 
 

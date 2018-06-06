@@ -32,8 +32,14 @@ namespace Lykke.Service.HFT.Wamp.Consumers
             IWampHostedRealm realm,
             ISessionRepository sessionRepository)
         {
-            Guard.AgainstNull(settings, nameof(settings));
-            Guard.AgainstNull(log, nameof(log));
+            if (settings == null)
+            {
+                throw new ArgumentNullException(nameof(settings));
+            }
+            if (log == null)
+            {
+                throw new ArgumentNullException(nameof(log));
+            }
 
             _sessionRepository = sessionRepository ?? throw new ArgumentNullException(nameof(sessionRepository));
             _orderStateRepository = orderStateRepository ?? throw new ArgumentNullException(nameof(orderStateRepository));
