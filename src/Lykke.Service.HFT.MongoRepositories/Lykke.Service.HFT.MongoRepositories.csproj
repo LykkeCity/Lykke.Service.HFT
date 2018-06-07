@@ -1,14 +1,14 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFramework>netcoreapp2.0</TargetFramework>
-	<AssemblyName>Lykke.Service.HFT.MongoRepositories</AssemblyName>
-	<RootNamespace>Lykke.Service.HFT.MongoRepositories</RootNamespace>
-	<Version>1.0.0</Version>
+    <TargetFramework>netcoreapp2.1</TargetFramework>
+  <AssemblyName>Lykke.Service.HFT.MongoRepositories</AssemblyName>
+  <RootNamespace>Lykke.Service.HFT.MongoRepositories</RootNamespace>
+  <Version>1.0.0</Version>
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="AsyncEnumerator" Version="2.2.0" />
+    <PackageReference Include="AsyncEnumerator" Version="2.2.1" />
     <PackageReference Include="MongoDB.Driver" Version="2.6.1" />
   </ItemGroup>
 

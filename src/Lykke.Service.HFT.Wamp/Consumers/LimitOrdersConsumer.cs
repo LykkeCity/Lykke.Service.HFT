@@ -3,7 +3,6 @@ using System.Collections.Async;
 using System.Linq;
 using System.Threading.Tasks;
 using Common.Log;
-using JetBrains.Annotations;
 using Lykke.RabbitMqBroker;
 using Lykke.RabbitMqBroker.Subscriber;
 using Lykke.Service.HFT.Contracts.Events;
@@ -20,7 +19,6 @@ namespace Lykke.Service.HFT.Wamp.Consumers
     public class LimitOrdersConsumer : IDisposable
     {
         private readonly ISessionRepository _sessionRepository;
-        private readonly ILog _log;
         private readonly IRepository<LimitOrderState> _orderStateRepository;
         private readonly RabbitMqSubscriber<LimitOrderMessage> _subscriber;
         private const string QueueName = "highfrequencytrading-wamp";
@@ -32,15 +30,19 @@ namespace Lykke.Service.HFT.Wamp.Consumers
             AppSettings.RabbitMqSettings settings,
             IRepository<LimitOrderState> orderStateRepository,
             IWampHostedRealm realm,
-            [NotNull] ISessionRepository sessionRepository)
+            ISessionRepository sessionRepository)
         {
-            _sessionRepository = sessionRepository ?? throw new ArgumentNullException(nameof(sessionRepository));
-
-            _log = log ?? throw new ArgumentNullException(nameof(log));
             if (settings == null)
+            {
                 throw new ArgumentNullException(nameof(settings));
-            _orderStateRepository = orderStateRepository ?? throw new ArgumentNullException(nameof(orderStateRepository));
+            }
+            if (log == null)
+            {
+                throw new ArgumentNullException(nameof(log));
+            }
 
+            _sessionRepository = sessionRepository ?? throw new ArgumentNullException(nameof(sessionRepository));
+            _orderStateRepository = orderStateRepository ?? throw new ArgumentNullException(nameof(orderStateRepository));
             _subject = realm.Services.GetSubject(TopicUri);
 
             try
@@ -52,16 +54,16 @@ namespace Lykke.Service.HFT.Wamp.Consumers
                     ExchangeName = settings.ExchangeName,
                     IsDurable = QueueDurable
                 };
-                _subscriber = new RabbitMqSubscriber<LimitOrderMessage>(subscriptionSettings, new DefaultErrorHandlingStrategy(_log, subscriptionSettings))
+                _subscriber = new RabbitMqSubscriber<LimitOrderMessage>(subscriptionSettings, new DefaultErrorHandlingStrategy(log, subscriptionSettings))
                     .SetMessageDeserializer(new JsonMessageDeserializer<LimitOrderMessage>())
                     .SetMessageReadStrategy(new MessageReadWithTemporaryQueueStrategy())
                     .Subscribe(ProcessLimitOrder)
-                    .SetLogger(_log)
+                    .SetLogger(log)
                     .Start();
             }
             catch (Exception ex)
             {
-                _log.WriteErrorAsync(nameof(LimitOrdersConsumer), null, null, ex).Wait();
+                log.WriteErrorAsync(nameof(LimitOrdersConsumer), null, null, ex).Wait();
                 throw;
             }
         }

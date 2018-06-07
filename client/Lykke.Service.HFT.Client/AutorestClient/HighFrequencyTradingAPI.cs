@@ -113,7 +113,7 @@ namespace Lykke.Service.HFT.AutorestClient
         /// </summary>
         private void Initialize()
         {
-            BaseUri = new System.Uri("http://localhost/");
+            BaseUri = new System.Uri("http://localhost");
             SerializationSettings = new JsonSerializerSettings
             {
                 Formatting = Newtonsoft.Json.Formatting.Indented,
@@ -399,17 +399,20 @@ namespace Lykke.Service.HFT.AutorestClient
         /// <summary>
         /// Get trades
         /// </summary>
-        /// <param name='take'>
-        /// How many maximum items have to be returned
-        /// </param>
-        /// <param name='skip'>
-        /// How many items skip before returning
-        /// </param>
         /// <param name='apiKey'>
         /// access token
         /// </param>
         /// <param name='assetId'>
         /// Asset identifier
+        /// </param>
+        /// <param name='assetPairId'>
+        /// Asset-pair identifier
+        /// </param>
+        /// <param name='skip'>
+        /// How many items skip before returning
+        /// </param>
+        /// <param name='take'>
+        /// How many maximum items have to be returned
         /// </param>
         /// <param name='customHeaders'>
         /// Headers that will be added to request.
@@ -432,7 +435,7 @@ namespace Lykke.Service.HFT.AutorestClient
         /// <return>
         /// A response object containing the response body and response headers.
         /// </return>
-        public async Task<HttpOperationResponse<object>> GetTradesWithHttpMessagesAsync(int take, int skip, string apiKey, string assetId = default(string), Dictionary<string, List<string>> customHeaders = null, CancellationToken cancellationToken = default(CancellationToken))
+        public async Task<HttpOperationResponse<object>> GetTradesWithHttpMessagesAsync(string apiKey, string assetId = default(string), string assetPairId = default(string), int? skip = default(int?), int? take = default(int?), Dictionary<string, List<string>> customHeaders = null, CancellationToken cancellationToken = default(CancellationToken))
         {
             if (apiKey == null)
             {
@@ -446,8 +449,9 @@ namespace Lykke.Service.HFT.AutorestClient
                 _invocationId = ServiceClientTracing.NextInvocationId.ToString();
                 Dictionary<string, object> tracingParameters = new Dictionary<string, object>();
                 tracingParameters.Add("assetId", assetId);
-                tracingParameters.Add("take", take);
+                tracingParameters.Add("assetPairId", assetPairId);
                 tracingParameters.Add("skip", skip);
+                tracingParameters.Add("take", take);
                 tracingParameters.Add("apiKey", apiKey);
                 tracingParameters.Add("cancellationToken", cancellationToken);
                 ServiceClientTracing.Enter(_invocationId, this, "GetTrades", tracingParameters);
@@ -460,8 +464,18 @@ namespace Lykke.Service.HFT.AutorestClient
             {
                 _queryParameters.Add(string.Format("assetId={0}", System.Uri.EscapeDataString(assetId)));
             }
-            _queryParameters.Add(string.Format("take={0}", System.Uri.EscapeDataString(SafeJsonConvert.SerializeObject(take, SerializationSettings).Trim('"'))));
-            _queryParameters.Add(string.Format("skip={0}", System.Uri.EscapeDataString(SafeJsonConvert.SerializeObject(skip, SerializationSettings).Trim('"'))));
+            if (assetPairId != null)
+            {
+                _queryParameters.Add(string.Format("assetPairId={0}", System.Uri.EscapeDataString(assetPairId)));
+            }
+            if (skip != null)
+            {
+                _queryParameters.Add(string.Format("skip={0}", System.Uri.EscapeDataString(SafeJsonConvert.SerializeObject(skip, SerializationSettings).Trim('"'))));
+            }
+            if (take != null)
+            {
+                _queryParameters.Add(string.Format("take={0}", System.Uri.EscapeDataString(SafeJsonConvert.SerializeObject(take, SerializationSettings).Trim('"'))));
+            }
             if (_queryParameters.Count > 0)
             {
                 _url += "?" + string.Join("&", _queryParameters);
@@ -510,7 +524,7 @@ namespace Lykke.Service.HFT.AutorestClient
             HttpStatusCode _statusCode = _httpResponse.StatusCode;
             cancellationToken.ThrowIfCancellationRequested();
             string _responseContent = null;
-            if ((int)_statusCode != 200 && (int)_statusCode != 400)
+            if ((int)_statusCode != 200 && (int)_statusCode != 400 && (int)_statusCode != 404)
             {
                 var ex = new HttpOperationException(string.Format("Operation returned an invalid status code '{0}'", _statusCode));
                 if (_httpResponse.Content != null) {
@@ -560,7 +574,7 @@ namespace Lykke.Service.HFT.AutorestClient
                 _responseContent = await _httpResponse.Content.ReadAsStringAsync().ConfigureAwait(false);
                 try
                 {
-                    _result.Body = SafeJsonConvert.DeserializeObject<ErrorResponse>(_responseContent, DeserializationSettings);
+                    _result.Body = SafeJsonConvert.DeserializeObject<ResponseModel>(_responseContent, DeserializationSettings);
                 }
                 catch (JsonException ex)
                 {
@@ -1124,15 +1138,17 @@ namespace Lykke.Service.HFT.AutorestClient
         }
 
         /// <summary>
-        /// Get all client orders.
+        /// Get the last client orders.
         /// </summary>
         /// <param name='apiKey'>
         /// access token
         /// </param>
         /// <param name='status'>
-        /// Possible values include: 'Pending', 'InOrderBook', 'Processing', 'Matched',
-        /// 'NotEnoughFunds', 'NoLiquidity', 'UnknownAsset', 'Cancelled',
-        /// 'LeadToNegativeSpread'
+        /// Order status. Possible values include: 'All', 'Open', 'InOrderBook',
+        /// 'Processing', 'Matched', 'Cancelled', 'Rejected'
+        /// </param>
+        /// <param name='take'>
+        /// Default 100; max 500.
         /// </param>
         /// <param name='customHeaders'>
         /// Headers that will be added to request.
@@ -1155,7 +1171,7 @@ namespace Lykke.Service.HFT.AutorestClient
         /// <return>
         /// A response object containing the response body and response headers.
         /// </return>
-        public async Task<HttpOperationResponse<IList<LimitOrderState>>> GetOrdersWithHttpMessagesAsync(string apiKey, string status = default(string), Dictionary<string, List<string>> customHeaders = null, CancellationToken cancellationToken = default(CancellationToken))
+        public async Task<HttpOperationResponse<IList<LimitOrderState>>> GetOrdersWithHttpMessagesAsync(string apiKey, OrderStatus? status = default(OrderStatus?), int? take = default(int?), Dictionary<string, List<string>> customHeaders = null, CancellationToken cancellationToken = default(CancellationToken))
         {
             if (apiKey == null)
             {
@@ -1169,6 +1185,7 @@ namespace Lykke.Service.HFT.AutorestClient
                 _invocationId = ServiceClientTracing.NextInvocationId.ToString();
                 Dictionary<string, object> tracingParameters = new Dictionary<string, object>();
                 tracingParameters.Add("status", status);
+                tracingParameters.Add("take", take);
                 tracingParameters.Add("apiKey", apiKey);
                 tracingParameters.Add("cancellationToken", cancellationToken);
                 ServiceClientTracing.Enter(_invocationId, this, "GetOrders", tracingParameters);
@@ -1179,7 +1196,11 @@ namespace Lykke.Service.HFT.AutorestClient
             List<string> _queryParameters = new List<string>();
             if (status != null)
             {
-                _queryParameters.Add(string.Format("status={0}", System.Uri.EscapeDataString(status)));
+                _queryParameters.Add(string.Format("status={0}", System.Uri.EscapeDataString(SafeJsonConvert.SerializeObject(status, SerializationSettings).Trim('"'))));
+            }
+            if (take != null)
+            {
+                _queryParameters.Add(string.Format("take={0}", System.Uri.EscapeDataString(SafeJsonConvert.SerializeObject(take, SerializationSettings).Trim('"'))));
             }
             if (_queryParameters.Count > 0)
             {
@@ -1229,7 +1250,7 @@ namespace Lykke.Service.HFT.AutorestClient
             HttpStatusCode _statusCode = _httpResponse.StatusCode;
             cancellationToken.ThrowIfCancellationRequested();
             string _responseContent = null;
-            if ((int)_statusCode != 200)
+            if ((int)_statusCode != 200 && (int)_statusCode != 400)
             {
                 var ex = new HttpOperationException(string.Format("Operation returned an invalid status code '{0}'", _statusCode));
                 if (_httpResponse.Content != null) {
@@ -1869,7 +1890,7 @@ namespace Lykke.Service.HFT.AutorestClient
             HttpStatusCode _statusCode = _httpResponse.StatusCode;
             cancellationToken.ThrowIfCancellationRequested();
             string _responseContent = null;
-            if ((int)_statusCode != 200 && (int)_statusCode != 404 && (int)_statusCode != 403 && (int)_statusCode != 400)
+            if ((int)_statusCode != 200 && (int)_statusCode != 400 && (int)_statusCode != 403 && (int)_statusCode != 404)
             {
                 var ex = new HttpOperationException(string.Format("Operation returned an invalid status code '{0}'", _statusCode));
                 if (_httpResponse.Content != null) {

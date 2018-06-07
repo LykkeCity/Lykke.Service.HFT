@@ -118,13 +118,28 @@
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
   <data name="AlreadyProcessed" xml:space="preserve">
-    <value>Already Processed</value>
+    <value>Already processed</value>
+  </data>
+  <data name="BadRequest" xml:space="preserve">
+    <value>Bad request</value>
   </data>
   <data name="BalanceLowerThanReserved" xml:space="preserve">
     <value>Balance lower than reserved</value>
   </data>
+  <data name="Duplicate" xml:space="preserve">
+    <value>Duplicate</value>
+  </data>
   <data name="Dust" xml:space="preserve">
     <value>Please try to send higher order</value>
+  </data>
+  <data name="InvalidFee" xml:space="preserve">
+    <value>Invalid fee</value>
+  </data>
+  <data name="InvalidInputField" xml:space="preserve">
+    <value>Invalid input field</value>
+  </data>
+  <data name="InvalidPrice" xml:space="preserve">
+    <value>Invalid price</value>
   </data>
   <data name="LeadToNegativeSpread" xml:space="preserve">
     <value>The order leads to negative spread</value>
@@ -141,11 +156,20 @@
   <data name="NotFound" xml:space="preserve">
     <value>Not found</value>
   </data>
+  <data name="NotFoundPrevious" xml:space="preserve">
+    <value>Previous not found</value>
+  </data>
+  <data name="Replaced" xml:space="preserve">
+    <value>Replaced</value>
+  </data>
   <data name="ReservedVolumeHigherThanBalance" xml:space="preserve">
     <value>Reserved volume higher than balance</value>
   </data>
   <data name="RuntimeError" xml:space="preserve">
     <value>Runtime error</value>
+  </data>
+  <data name="RuntimeErrorX" xml:space="preserve">
+    <value>Runtime error {0}</value>
   </data>
   <data name="UnknownAsset" xml:space="preserve">
     <value>Unknown asset</value>

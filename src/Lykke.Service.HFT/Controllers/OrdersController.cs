@@ -1,3 +1,8 @@
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Net;
+using System.Threading.Tasks;
 using Common;
 using Lykke.Service.HFT.Core.Domain;
 using Lykke.Service.HFT.Core.Repositories;
@@ -9,12 +14,6 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.ModelBinding;
 using Swashbuckle.AspNetCore.SwaggerGen;
-using System;
-using System.Collections.Generic;
-using System.Diagnostics;
-using System.Linq;
-using System.Net;
-using System.Threading.Tasks;
 using OrderStatus = Lykke.Service.HFT.Models.Requests.OrderStatus;
 
 namespace Lykke.Service.HFT.Controllers
@@ -54,7 +53,7 @@ namespace Lykke.Service.HFT.Controllers
         [SwaggerOperation("GetOrders")]
         [ProducesResponseType(typeof(IEnumerable<Models.LimitOrderState>), (int)HttpStatusCode.OK)]
         [ProducesResponseType((int)HttpStatusCode.BadRequest)]
-        public async Task<IActionResult> GetOrders([FromQuery] OrderStatus? status = null, [FromQuery] uint? take = 100)
+        public IActionResult GetOrders([FromQuery] OrderStatus? status = null, [FromQuery] uint? take = 100)
         {
             if (take > MaxPageSize)
             {
@@ -74,7 +73,8 @@ namespace Lykke.Service.HFT.Controllers
                 case OrderStatus.All:
                     break;
                 case OrderStatus.Open:
-                    orders = orders.Where(x => x.Status == Core.Domain.OrderStatus.InOrderBook || x.Status == Core.Domain.OrderStatus.Processing);
+                    orders = orders.Where(x => x.Status == Core.Domain.OrderStatus.InOrderBook
+                                            || x.Status == Core.Domain.OrderStatus.Processing);
                     break;
                 case OrderStatus.InOrderBook:
                     orders = orders.Where(x => x.Status == Core.Domain.OrderStatus.InOrderBook);
@@ -89,20 +89,23 @@ namespace Lykke.Service.HFT.Controllers
                     orders = orders.Where(x => x.Status == Core.Domain.OrderStatus.Cancelled);
                     break;
                 case OrderStatus.Rejected:
-                    orders = orders.Where(order =>
-                        order.Status == Core.Domain.OrderStatus.NotEnoughFunds
-                        || order.Status == Core.Domain.OrderStatus.NoLiquidity
-                        || order.Status == Core.Domain.OrderStatus.UnknownAsset
-                        || order.Status == Core.Domain.OrderStatus.LeadToNegativeSpread
-                        || order.Status == Core.Domain.OrderStatus.ReservedVolumeGreaterThanBalance
-                        || order.Status == Core.Domain.OrderStatus.TooSmallVolume
-                        || order.Status == Core.Domain.OrderStatus.Runtime);
+                    orders = orders.Where(x => x.Status != Core.Domain.OrderStatus.Pending
+                                            && x.Status != Core.Domain.OrderStatus.InOrderBook
+                                            && x.Status != Core.Domain.OrderStatus.Processing
+                                            && x.Status != Core.Domain.OrderStatus.Matched
+                                            && x.Status != Core.Domain.OrderStatus.Cancelled);
                     break;
                 default:
                     throw new ArgumentOutOfRangeException(nameof(status), status, null);
             }
 
-            return Ok(orders.OrderByDescending(x => x.CreatedAt).Take((int)take.Value).ToList().Select(x => x.ConvertToApiModel()));
+            var result = orders
+                .OrderByDescending(x => x.CreatedAt)
+                .Take((int) take.Value)
+                .ToList()
+                .Select(x => x.ConvertToApiModel());
+
+            return Ok(result);
         }
 
 
@@ -282,13 +285,7 @@ namespace Lykke.Service.HFT.Controllers
                 return Ok();
             }
             // if rejected, do nothing
-            if (order.Status == Core.Domain.OrderStatus.NotEnoughFunds
-                || order.Status == Core.Domain.OrderStatus.NoLiquidity
-                || order.Status == Core.Domain.OrderStatus.UnknownAsset
-                || order.Status == Core.Domain.OrderStatus.LeadToNegativeSpread
-                || order.Status == Core.Domain.OrderStatus.ReservedVolumeGreaterThanBalance
-                || order.Status == Core.Domain.OrderStatus.TooSmallVolume
-                || order.Status == Core.Domain.OrderStatus.Runtime)
+            if (order.Status.IsRejected())
             {
                 return Ok();
             }

@@ -22,16 +22,18 @@ namespace Lykke.Service.HFT.AutorestClient.Models
         /// <summary>
         /// Initializes a new instance of the HistoryTradeModel class.
         /// </summary>
-        public HistoryTradeModel(System.DateTime dateTime, double price, double amount, string id = default(string), string limitOrderId = default(string), string marketOrderId = default(string), string assetId = default(string), string state = default(string))
+        /// <param name="state">Possible values include: 'InProgress',
+        /// 'Finished', 'Canceled', 'Failed'</param>
+        public HistoryTradeModel(System.DateTime dateTime, HistoryOperationState state, double amount, string id = default(string), string asset = default(string), string assetPair = default(string), double? price = default(double?), Fee fee = default(Fee))
         {
             Id = id;
             DateTime = dateTime;
-            LimitOrderId = limitOrderId;
-            MarketOrderId = marketOrderId;
-            Price = price;
-            Amount = amount;
-            AssetId = assetId;
             State = state;
+            Amount = amount;
+            Asset = asset;
+            AssetPair = assetPair;
+            Price = price;
+            Fee = fee;
             CustomInit();
         }
 
@@ -51,19 +53,11 @@ namespace Lykke.Service.HFT.AutorestClient.Models
         public System.DateTime DateTime { get; set; }
 
         /// <summary>
+        /// Gets or sets possible values include: 'InProgress', 'Finished',
+        /// 'Canceled', 'Failed'
         /// </summary>
-        [JsonProperty(PropertyName = "LimitOrderId")]
-        public string LimitOrderId { get; set; }
-
-        /// <summary>
-        /// </summary>
-        [JsonProperty(PropertyName = "MarketOrderId")]
-        public string MarketOrderId { get; set; }
-
-        /// <summary>
-        /// </summary>
-        [JsonProperty(PropertyName = "Price")]
-        public double Price { get; set; }
+        [JsonProperty(PropertyName = "State")]
+        public HistoryOperationState State { get; set; }
 
         /// <summary>
         /// </summary>
@@ -72,13 +66,23 @@ namespace Lykke.Service.HFT.AutorestClient.Models
 
         /// <summary>
         /// </summary>
-        [JsonProperty(PropertyName = "AssetId")]
-        public string AssetId { get; set; }
+        [JsonProperty(PropertyName = "Asset")]
+        public string Asset { get; set; }
 
         /// <summary>
         /// </summary>
-        [JsonProperty(PropertyName = "State")]
-        public string State { get; set; }
+        [JsonProperty(PropertyName = "AssetPair")]
+        public string AssetPair { get; set; }
+
+        /// <summary>
+        /// </summary>
+        [JsonProperty(PropertyName = "Price")]
+        public double? Price { get; set; }
+
+        /// <summary>
+        /// </summary>
+        [JsonProperty(PropertyName = "Fee")]
+        public Fee Fee { get; set; }
 
         /// <summary>
         /// Validate the object.
@@ -88,7 +92,10 @@ namespace Lykke.Service.HFT.AutorestClient.Models
         /// </exception>
         public virtual void Validate()
         {
-            //Nothing to validate
+            if (Fee != null)
+            {
+                Fee.Validate();
+            }
         }
     }
 }
