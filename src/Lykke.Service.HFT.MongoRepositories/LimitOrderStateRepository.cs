@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 using Common.Log;
 using Lykke.Service.HFT.Core.Domain;
@@ -11,63 +12,24 @@ namespace Lykke.Service.HFT.MongoRepositories
     public class LimitOrderStateRepository : MongoRepository<LimitOrderState>, ILimitOrderStateRepository
     {
         private readonly FilterDefinitionBuilder<LimitOrderState> _filterBuilder;
+        private readonly SortDefinitionBuilder<LimitOrderState> _sortBuilder;
 
         public LimitOrderStateRepository(IMongoDatabase database, ILog log, int rpsLimit = 100) : base(database, log, rpsLimit)
         {
-            _filterBuilder = new MongoDB.Driver.FilterDefinitionBuilder<LimitOrderState>();
+            _filterBuilder = new FilterDefinitionBuilder<LimitOrderState>();
+            _sortBuilder = new SortDefinitionBuilder<LimitOrderState>();
         }
 
-        public async Task<IEnumerable<LimitOrderState>> GetOrders(string clientId, QueryOrderStatus status, int take = 100, int skip = 0)
+        public async Task<IEnumerable<LimitOrderState>> GetOrdersByStatus(string clientId, IEnumerable<OrderStatus> states, int take = 100, int skip = 0)
         {
             var filter = _filterBuilder.Where(x => x.ClientId == clientId);
+            var inStates = states.ToList() ?? new List<OrderStatus>();
 
-            switch (status)
+            if (inStates.Count != 0)
             {
-                case QueryOrderStatus.All:
-                    break;
-                case QueryOrderStatus.Open:
-                    {
-                        var statusFilter = _filterBuilder.Where(x => x.Status == OrderStatus.InOrderBook
-                                                                     || x.Status == OrderStatus.Processing);
-                        filter = _filterBuilder.And(filter, statusFilter);
-                        break;
-                    }
-                case QueryOrderStatus.InOrderBook:
-                    {
-                        var statusFilter = _filterBuilder.Where(x => x.Status == OrderStatus.InOrderBook);
-                        filter = _filterBuilder.And(filter, statusFilter);
-                        break;
-                    }
-                case QueryOrderStatus.Processing:
-                    {
-                        var statusFilter = _filterBuilder.Where(x => x.Status == OrderStatus.Processing);
-                        filter = _filterBuilder.And(filter, statusFilter);
-                        break;
-                    }
-                case QueryOrderStatus.Matched:
-                    {
-                        var statusFilter = _filterBuilder.Where(x => x.Status == OrderStatus.Matched);
-                        filter = _filterBuilder.And(filter, statusFilter);
-                        break;
-                    }
-                case QueryOrderStatus.Cancelled:
-                    {
-                        var statusFilter = _filterBuilder.Where(x => x.Status == OrderStatus.Cancelled);
-                        filter = _filterBuilder.And(filter, statusFilter);
-                        break;
-                    }
-                case QueryOrderStatus.Rejected:
-                    {
-                        var statusFilter = _filterBuilder.Where(x => x.Status != OrderStatus.Pending
-                                                                     && x.Status != OrderStatus.InOrderBook
-                                                                     && x.Status != OrderStatus.Processing
-                                                                     && x.Status != OrderStatus.Matched
-                                                                     && x.Status != OrderStatus.Cancelled);
-                        filter = _filterBuilder.And(filter, statusFilter);
-                        break;
-                    }
-                default:
-                    throw new ArgumentOutOfRangeException(nameof(status), status, null);
+                filter = _filterBuilder.And(
+                    filter, 
+                    _filterBuilder.In(x => x.Status, inStates));
             }
 
             var options = new FindOptions<LimitOrderState>
@@ -75,7 +37,7 @@ namespace Lykke.Service.HFT.MongoRepositories
                 Limit = take,
                 BatchSize = take,
                 Skip = skip,
-                Sort = new JsonSortDefinition<LimitOrderState>($"{{ {nameof(LimitOrderState.CreatedAt)} : -1 }}")
+                Sort = _sortBuilder.Descending(x => x.CreatedAt)
             };
 
             var result = await GetCollection().FindAsync(filter, options);

@@ -69,9 +69,44 @@ namespace Lykke.Service.HFT.Controllers
                 status = OrderStatus.All;
             }
 
-            var queryStatus = (QueryOrderStatus) (int) status;
             var clientId = User.GetUserId();
-            var result = await _orderStateCache.GetOrders(clientId, queryStatus, (int) take.Value, (int) skip.Value);
+
+            var states = new List<Core.Domain.OrderStatus>();
+            switch (status)
+            {
+                case OrderStatus.All:
+                    break;
+                case OrderStatus.Open:
+                    states.AddRange(new[] { Core.Domain.OrderStatus.InOrderBook, Core.Domain.OrderStatus.Processing });
+                    break;
+                case OrderStatus.InOrderBook:
+                    states.Add(Core.Domain.OrderStatus.InOrderBook);
+                    break;
+                case OrderStatus.Processing:
+                    states.Add(Core.Domain.OrderStatus.Processing);
+                    break;
+                case OrderStatus.Matched:
+                    states.Add(Core.Domain.OrderStatus.Matched);
+                    break;
+                case OrderStatus.Cancelled:
+                    states.Add(Core.Domain.OrderStatus.Cancelled);
+                    break;
+                case OrderStatus.Rejected:
+                    states = Enum.GetValues(typeof(Core.Domain.OrderStatus))
+                        .Cast<Core.Domain.OrderStatus>()
+                        .Except(new[]
+                        {
+                            Core.Domain.OrderStatus.Pending,
+                            Core.Domain.OrderStatus.InOrderBook,
+                            Core.Domain.OrderStatus.Processing,
+                            Core.Domain.OrderStatus.Matched,
+                            Core.Domain.OrderStatus.Cancelled
+                        })
+                        .ToList();
+                    break;
+            }
+
+            var result = await _orderStateCache.GetOrdersByStatus(clientId, states, (int) take.Value, (int) skip.Value);
 
             return Ok(result.Select(x => x.ConvertToApiModel()));
         }
@@ -93,7 +128,7 @@ namespace Lykke.Service.HFT.Controllers
                 return NotFound();
             }
 
-            var order = _orderStateCache.Get(id) as ILimitOrderState;
+            var order = await _orderStateCache.Get(id) as ILimitOrderState;
 
             if (order == null)
             {
