@@ -6,6 +6,6 @@ namespace Lykke.Service.HFT.Core.Repositories
 {
     public interface ILimitOrderStateRepository : IRepository<LimitOrderState>
     {
-        Task<IEnumerable<LimitOrderState>> GetOrdersByStatus(string clientId, IEnumerable<OrderStatus> states, int take = 100, int skip = 0);
+        Task<IEnumerable<LimitOrderState>> GetOrdersByStatus(string clientId, IEnumerable<OrderStatus> states, int take = 100);
     }
 }

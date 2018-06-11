@@ -48,7 +48,6 @@ namespace Lykke.Service.HFT.Controllers
         /// </summary>
         /// <param name="status">Order status</param>
         /// <param name="take">The amount of orders to take, default 100; max 500.</param>
-        /// <param name="skip">The amount of orders to skip, default 0</param>
         /// <returns>Client orders.</returns>
         [HttpGet]
         [SwaggerOperation("GetOrders")]
@@ -56,8 +55,7 @@ namespace Lykke.Service.HFT.Controllers
         [ProducesResponseType((int)HttpStatusCode.BadRequest)]
         public async Task<IActionResult> GetOrders(
             [FromQuery] OrderStatus? status = null,
-            [FromQuery] uint? take = 100,
-            [FromQuery] uint? skip = 0)
+            [FromQuery] uint? take = 100)
         {
             if (take > MaxPageSize)
             {
@@ -106,7 +104,7 @@ namespace Lykke.Service.HFT.Controllers
                     break;
             }
 
-            var result = await _orderStateCache.GetOrdersByStatus(clientId, states, (int) take.Value, (int) skip.Value);
+            var result = await _orderStateCache.GetOrdersByStatus(clientId, states, (int) take.Value);
 
             return Ok(result.Select(x => x.ConvertToApiModel()));
         }

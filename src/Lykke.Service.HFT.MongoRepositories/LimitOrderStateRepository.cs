@@ -20,10 +20,10 @@ namespace Lykke.Service.HFT.MongoRepositories
             _sortBuilder = new SortDefinitionBuilder<LimitOrderState>();
         }
 
-        public async Task<IEnumerable<LimitOrderState>> GetOrdersByStatus(string clientId, IEnumerable<OrderStatus> states, int take = 100, int skip = 0)
+        public async Task<IEnumerable<LimitOrderState>> GetOrdersByStatus(string clientId, IEnumerable<OrderStatus> states, int take = 100)
         {
             var filter = _filterBuilder.Where(x => x.ClientId == clientId);
-            var inStates = states.ToList() ?? new List<OrderStatus>();
+            var inStates = states?.ToList() ?? new List<OrderStatus>();
 
             if (inStates.Count != 0)
             {
@@ -36,7 +36,6 @@ namespace Lykke.Service.HFT.MongoRepositories
             {
                 Limit = take,
                 BatchSize = take,
-                Skip = skip,
                 Sort = _sortBuilder.Descending(x => x.CreatedAt)
             };
 
