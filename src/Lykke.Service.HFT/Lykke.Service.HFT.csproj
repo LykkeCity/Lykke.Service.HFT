@@ -40,9 +40,13 @@
     <PackageReference Include="Lykke.Service.OperationsRepository.Contract" Version="1.0.13" />
     <PackageReference Include="Lykke.Service.Session" Version="1.0.33" />
     <PackageReference Include="Lykke.SlackNotification.AzureQueue" Version="2.0.4" />
-    <PackageReference Include="Microsoft.AspNetCore.Authentication" Version="2.1.0" />
+    <PackageReference Include="Microsoft.ApplicationInsights.AspNetCore" Version="2.3.0" />
+    <PackageReference Include="Microsoft.AspNetCore" Version="2.1.0" />
+    <PackageReference Include="Microsoft.AspNetCore.Authentication" Version="2.1.0" />	     
+    <PackageReference Include="Microsoft.AspNetCore.Mvc" Version="2.1.0" />
     <PackageReference Include="Microsoft.AspNetCore.StaticFiles" Version="2.1.0" />
-    <PackageReference Include="Microsoft.Extensions.Caching.Redis" Version="2.1.0" />
+    <PackageReference Include="Microsoft.Extensions.Caching.Redis" Version="2.1.0" />	     
+    <PackageReference Include="Microsoft.Extensions.Logging.Debug" Version="2.1.0" />   
     <PackageReference Include="Swashbuckle.AspNetCore" Version="2.4.0" />
   </ItemGroup>
   
