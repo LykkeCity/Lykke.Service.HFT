@@ -173,14 +173,15 @@ namespace Lykke.Service.HFT.Modules
         {
             var mongoUrl = new MongoUrl(_settings.CurrentValue.HighFrequencyTradingService.Db.OrderStateConnString);
             var database = new MongoClient(mongoUrl).GetDatabase(mongoUrl.DatabaseName);
-            builder.RegisterInstance(new MongoRepository<LimitOrderState>(database, _log))
+            builder.RegisterInstance(new LimitOrderStateRepository(database, _log))
                 .As<IRepository<LimitOrderState>>()
+                .As<ILimitOrderStateRepository>()
                 .SingleInstance();
 
             var ordersArchiveTable = CreateTable<LimitOrderStateEntity>(
                 _settings.ConnectionString(x => x.HighFrequencyTradingService.Db.OrdersArchiveConnString), "HftOrderStateArchive");
-            builder.RegisterInstance(new LimitOrderStateRepository(ordersArchiveTable))
-                .As<ILimitOrderStateRepository>()
+            builder.RegisterInstance(new LimitOrderStateArchive(ordersArchiveTable))
+                .As<ILimitOrderStateArchive>()
                 .SingleInstance();
         }
 

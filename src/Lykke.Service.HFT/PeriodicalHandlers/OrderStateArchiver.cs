@@ -17,20 +17,20 @@ namespace Lykke.Service.HFT.PeriodicalHandlers
         private readonly ILog _log;
         private readonly TimeSpan _activeOrdersWindow;
         private readonly IRepository<LimitOrderState> _orderStateCache;
-        private readonly ILimitOrderStateRepository _orderStateArchive;
+        private readonly ILimitOrderStateArchive _orderStateArchive;
 
         public OrderStateArchiver(
             TimeSpan checkInterval,
             TimeSpan activeOrdersWindow,
             ILog log,
             IRepository<LimitOrderState> orderStateCache,
-            ILimitOrderStateRepository orderStateArchive)
+            ILimitOrderStateArchive orderStateArchive)
             : base(nameof(OrderStateArchiver), (int)checkInterval.TotalMilliseconds, log)
         {
             _log = log.CreateComponentScope(nameof(OrderStateArchiver));
             _activeOrdersWindow = activeOrdersWindow;
-            _orderStateCache = orderStateCache;
-            _orderStateArchive = orderStateArchive;
+            _orderStateCache = orderStateCache ?? throw new ArgumentNullException(nameof(orderStateCache));
+            _orderStateArchive = orderStateArchive ?? throw new ArgumentNullException(nameof(orderStateArchive));
         }
 
         public override async Task Execute()

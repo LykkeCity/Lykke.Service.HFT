@@ -9,12 +9,11 @@ using Lykke.Service.HFT.Core.Repositories;
 
 namespace Lykke.Service.HFT.AzureRepositories
 {
-    public class LimitOrderStateRepository : ILimitOrderStateRepository
+    public class LimitOrderStateArchive : ILimitOrderStateArchive
     {
         private readonly INoSQLTableStorage<LimitOrderStateEntity> _orderStateTable;
 
-        public LimitOrderStateRepository(
-            INoSQLTableStorage<LimitOrderStateEntity> orderStateTable)
+        public LimitOrderStateArchive(INoSQLTableStorage<LimitOrderStateEntity> orderStateTable)
         {
             _orderStateTable = orderStateTable;
         }

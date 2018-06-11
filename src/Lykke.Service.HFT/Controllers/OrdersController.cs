@@ -26,14 +26,14 @@ namespace Lykke.Service.HFT.Controllers
         private readonly RequestValidator _requestValidator;
         private readonly IMatchingEngineAdapter _matchingEngineAdapter;
         private readonly IAssetServiceDecorator _assetServiceDecorator;
-        private readonly IRepository<Core.Domain.LimitOrderState> _orderStateCache;
-        private readonly ILimitOrderStateRepository _orderStateArchive;
+        private readonly ILimitOrderStateRepository _orderStateCache;
+        private readonly ILimitOrderStateArchive _orderStateArchive;
 
         public OrdersController(
             IMatchingEngineAdapter frequencyTradingService,
             IAssetServiceDecorator assetServiceDecorator,
-            IRepository<Core.Domain.LimitOrderState> orderStateCache,
-            ILimitOrderStateRepository orderStateArchive,
+            ILimitOrderStateRepository orderStateCache,
+            ILimitOrderStateArchive orderStateArchive,
             RequestValidator requestValidator)
         {
             _matchingEngineAdapter = frequencyTradingService ?? throw new ArgumentNullException(nameof(frequencyTradingService));
@@ -47,13 +47,15 @@ namespace Lykke.Service.HFT.Controllers
         /// Get the last client orders.
         /// </summary>
         /// <param name="status">Order status</param>
-        /// <param name="take">Default 100; max 500.</param>
+        /// <param name="take">The amount of orders to take, default 100; max 500.</param>
         /// <returns>Client orders.</returns>
         [HttpGet]
         [SwaggerOperation("GetOrders")]
         [ProducesResponseType(typeof(IEnumerable<Models.LimitOrderState>), (int)HttpStatusCode.OK)]
         [ProducesResponseType((int)HttpStatusCode.BadRequest)]
-        public IActionResult GetOrders([FromQuery] OrderStatus? status = null, [FromQuery] uint? take = 100)
+        public async Task<IActionResult> GetOrders(
+            [FromQuery] OrderStatus? status = null,
+            [FromQuery] uint? take = 100)
         {
             if (take > MaxPageSize)
             {
@@ -67,45 +69,44 @@ namespace Lykke.Service.HFT.Controllers
 
             var clientId = User.GetUserId();
 
-            var orders = _orderStateCache.All().Where(x => x.ClientId == clientId); // todo: fix default limit of 101 element
+            var states = new List<Core.Domain.OrderStatus>();
             switch (status)
             {
                 case OrderStatus.All:
                     break;
                 case OrderStatus.Open:
-                    orders = orders.Where(x => x.Status == Core.Domain.OrderStatus.InOrderBook
-                                            || x.Status == Core.Domain.OrderStatus.Processing);
+                    states.AddRange(new[] { Core.Domain.OrderStatus.InOrderBook, Core.Domain.OrderStatus.Processing });
                     break;
                 case OrderStatus.InOrderBook:
-                    orders = orders.Where(x => x.Status == Core.Domain.OrderStatus.InOrderBook);
+                    states.Add(Core.Domain.OrderStatus.InOrderBook);
                     break;
                 case OrderStatus.Processing:
-                    orders = orders.Where(x => x.Status == Core.Domain.OrderStatus.Processing);
+                    states.Add(Core.Domain.OrderStatus.Processing);
                     break;
                 case OrderStatus.Matched:
-                    orders = orders.Where(x => x.Status == Core.Domain.OrderStatus.Matched);
+                    states.Add(Core.Domain.OrderStatus.Matched);
                     break;
                 case OrderStatus.Cancelled:
-                    orders = orders.Where(x => x.Status == Core.Domain.OrderStatus.Cancelled);
+                    states.Add(Core.Domain.OrderStatus.Cancelled);
                     break;
                 case OrderStatus.Rejected:
-                    orders = orders.Where(x => x.Status != Core.Domain.OrderStatus.Pending
-                                            && x.Status != Core.Domain.OrderStatus.InOrderBook
-                                            && x.Status != Core.Domain.OrderStatus.Processing
-                                            && x.Status != Core.Domain.OrderStatus.Matched
-                                            && x.Status != Core.Domain.OrderStatus.Cancelled);
+                    states = Enum.GetValues(typeof(Core.Domain.OrderStatus))
+                        .Cast<Core.Domain.OrderStatus>()
+                        .Except(new[]
+                        {
+                            Core.Domain.OrderStatus.Pending,
+                            Core.Domain.OrderStatus.InOrderBook,
+                            Core.Domain.OrderStatus.Processing,
+                            Core.Domain.OrderStatus.Matched,
+                            Core.Domain.OrderStatus.Cancelled
+                        })
+                        .ToList();
                     break;
-                default:
-                    throw new ArgumentOutOfRangeException(nameof(status), status, null);
             }
 
-            var result = orders
-                .OrderByDescending(x => x.CreatedAt)
-                .Take((int) take.Value)
-                .ToList()
-                .Select(x => x.ConvertToApiModel());
+            var result = await _orderStateCache.GetOrdersByStatus(clientId, states, (int) take.Value);
 
-            return Ok(result);
+            return Ok(result.Select(x => x.ConvertToApiModel()));
         }
 
 
@@ -126,6 +127,7 @@ namespace Lykke.Service.HFT.Controllers
             }
 
             var order = await _orderStateCache.Get(id) as ILimitOrderState;
+
             if (order == null)
             {
                 var clientId = User.GetUserId();
