@@ -4,6 +4,7 @@ using System.Linq;
 using System.Net;
 using System.Threading.Tasks;
 using Common;
+using Lykke.Service.Assets.Client.Models;
 using Lykke.Service.HFT.Core.Domain;
 using Lykke.Service.HFT.Core.Repositories;
 using Lykke.Service.HFT.Core.Services;
@@ -50,7 +51,7 @@ namespace Lykke.Service.HFT.Controllers
         /// <param name="take">The amount of orders to take, default 100; max 500.</param>
         /// <returns>Client orders.</returns>
         [HttpGet]
-        [SwaggerOperation("GetOrders")]
+        [SwaggerOperation(nameof(GetOrders))]
         [ProducesResponseType(typeof(IEnumerable<Models.LimitOrderState>), (int)HttpStatusCode.OK)]
         [ProducesResponseType((int)HttpStatusCode.BadRequest)]
         public async Task<IActionResult> GetOrders(
@@ -76,7 +77,12 @@ namespace Lykke.Service.HFT.Controllers
                 case OrderStatus.All:
                     break;
                 case OrderStatus.Open:
-                    states.AddRange(new[] { Core.Domain.OrderStatus.InOrderBook, Core.Domain.OrderStatus.Processing });
+                    states.AddRange(new[] 
+                    {
+                        Core.Domain.OrderStatus.Pending,
+                        Core.Domain.OrderStatus.InOrderBook,
+                        Core.Domain.OrderStatus.Processing
+                    });
                     break;
                 case OrderStatus.InOrderBook:
                     states.Add(Core.Domain.OrderStatus.InOrderBook);
@@ -117,7 +123,7 @@ namespace Lykke.Service.HFT.Controllers
         /// <param name="id">Limit order id</param>
         /// <returns>Order info.</returns>
         [HttpGet("{id}")]
-        [SwaggerOperation("GetOrder")]
+        [SwaggerOperation(nameof(GetOrder))]
         [ProducesResponseType(typeof(Models.LimitOrderState), (int)HttpStatusCode.OK)]
         [ProducesResponseType((int)HttpStatusCode.NotFound)]
         public async Task<IActionResult> GetOrder(Guid id)
@@ -147,7 +153,7 @@ namespace Lykke.Service.HFT.Controllers
         /// </summary>
         /// <returns>Average strike price.</returns>
         [HttpPost("market")]
-        [SwaggerOperation("PlaceMarketOrder")]
+        [SwaggerOperation(nameof(PlaceMarketOrder))]
         [ProducesResponseType(typeof(ResponseModel<double>), (int)HttpStatusCode.OK)]
         [ProducesResponseType(typeof(ResponseModel<double>), (int)HttpStatusCode.BadRequest)]
         public async Task<IActionResult> PlaceMarketOrder([FromBody] MarketOrderRequest order)
@@ -201,7 +207,7 @@ namespace Lykke.Service.HFT.Controllers
         /// </summary>
         /// <returns>Request id.</returns>
         [HttpPost("limit")]
-        [SwaggerOperation("PlaceLimitOrder")]
+        [SwaggerOperation(nameof(PlaceLimitOrder))]
         [ProducesResponseType(typeof(Guid), (int)HttpStatusCode.OK)]
         [ProducesResponseType(typeof(ResponseModel), (int)HttpStatusCode.BadRequest)]
         public async Task<IActionResult> PlaceLimitOrder([FromBody] LimitOrderRequest order)
@@ -255,7 +261,17 @@ namespace Lykke.Service.HFT.Controllers
         /// </summary>
         /// <param name="id">Limit order id</param>
         [HttpPost("{id}/Cancel")]
-        [SwaggerOperation("CancelLimitOrder")]
+        [SwaggerOperation(nameof(CancelLimitOrderOld))]
+        [Obsolete("Use http delete {id} instead.")]
+        public Task<IActionResult> CancelLimitOrderOld(Guid id)
+            => CancelLimitOrder(id);
+
+        /// <summary>
+        /// Cancel the limit order.
+        /// </summary>
+        /// <param name="id">Limit order id</param>
+        [HttpDelete("{id}")]
+        [SwaggerOperation(nameof(CancelLimitOrder))]
         [ProducesResponseType((int)HttpStatusCode.OK)]
         [ProducesResponseType((int)HttpStatusCode.NotFound)]
         [ProducesResponseType((int)HttpStatusCode.Forbidden)]
@@ -298,6 +314,51 @@ namespace Lykke.Service.HFT.Controllers
             {
                 return BadRequest(response);
             }
+            return Ok();
+        }
+
+        /// <summary>
+        /// Cancels all open limit orders.
+        /// </summary>
+        [HttpDelete]
+        [SwaggerOperation(nameof(CancelAll))]
+        [ProducesResponseType(typeof(IEnumerable<Guid>), (int)HttpStatusCode.OK)]
+        [ProducesResponseType(typeof(ResponseModel), (int)HttpStatusCode.BadRequest)]
+        [ProducesResponseType((int)HttpStatusCode.NotFound)]
+        public async Task<IActionResult> CancelAll(
+            [FromQuery] string assetPairId = null,
+            [FromQuery] Side? side = null)
+        {
+            AssetPair assetPair = null;
+            if (!string.IsNullOrWhiteSpace(assetPairId))
+            {
+                assetPair = await _assetServiceDecorator.GetEnabledAssetPairAsync(assetPairId);
+                if (assetPair == null)
+                {
+                    return NotFound($"Assetpair '{assetPairId}' could not be found or is disabled.");
+                }
+            }
+
+            bool? isBuy;
+            switch (side)
+            {
+                case Side.Buy:
+                    isBuy = true;
+                    break;
+                case Side.Sell:
+                    isBuy = false;
+                    break;
+                default:
+                    isBuy = null;
+                    break;
+            }
+
+            var response = await _matchingEngineAdapter.CancelAllAsync(User.GetUserId(), assetPair, isBuy);
+            if (response.Error != null)
+            {
+                return BadRequest(response);
+            }
+
             return Ok();
         }
 

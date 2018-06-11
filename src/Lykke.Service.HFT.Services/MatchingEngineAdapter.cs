@@ -1,4 +1,6 @@
 ﻿using System;
+using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 using Common.Log;
 using JetBrains.Annotations;
@@ -6,6 +8,7 @@ using Lykke.MatchingEngine.Connector.Abstractions.Models;
 using Lykke.MatchingEngine.Connector.Abstractions.Services;
 using Lykke.Service.Assets.Client.Models;
 using Lykke.Service.HFT.Core.Domain;
+using Lykke.Service.HFT.Core.Repositories;
 using Lykke.Service.HFT.Core.Services;
 using OrderAction = Lykke.Service.HFT.Core.Domain.OrderAction;
 
@@ -15,11 +18,11 @@ namespace Lykke.Service.HFT.Services
     {
         private readonly ILog _log;
         private readonly IMatchingEngineClient _matchingEngineClient;
-        private readonly IRepository<LimitOrderState> _orderStateRepository;
+        private readonly ILimitOrderStateRepository _orderStateRepository;
         private readonly IFeeCalculatorAdapter _feeCalculator;
 
         public MatchingEngineAdapter(IMatchingEngineClient matchingEngineClient,
-            IRepository<LimitOrderState> orderStateRepository,
+            ILimitOrderStateRepository orderStateRepository,
             IFeeCalculatorAdapter feeCalculator,
             [NotNull] ILog log)
         {
@@ -33,6 +36,27 @@ namespace Lykke.Service.HFT.Services
         {
             var response = await _matchingEngineClient.CancelLimitOrderAsync(limitOrderId.ToString());
             await CheckResponseAndThrowIfNull(response);
+
+            return ConvertToApiModel(response.Status);
+        }
+
+        public async Task<ResponseModel> CancelAllAsync(string clientId, AssetPair pair, bool? isBuy)
+        {
+            var model = new LimitOrderMassCancelModel
+            {
+                Id = GetNextRequestId().ToString(),
+                AssetPairId = pair?.Id,
+                ClientId = clientId,
+                IsBuy = isBuy
+            };
+
+            var response = await _matchingEngineClient.MassCancelLimitOrdersAsync(model);
+            await CheckResponseAndThrowIfNull(response);
+
+            if (response.Status == MeStatusCodes.Ok)
+            {
+                return ResponseModel.CreateOk();
+            }
 
             return ConvertToApiModel(response.Status);
         }
