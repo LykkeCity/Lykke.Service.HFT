@@ -205,6 +205,12 @@ namespace Lykke.Service.HFT.Modules
                 .As<IStartable>()
                 .AutoActivate()
                 .SingleInstance();
+
+            builder.RegisterType<PendingOrdersChecker>()
+                .WithParameter(TypedParameter.From(TimeSpan.FromMinutes(5)))
+                .As<IStartable>()
+                .AutoActivate()
+                .SingleInstance();
         }
     }
 }

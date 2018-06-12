@@ -33,8 +33,8 @@
     <PackageReference Include="Lykke.MatchingEngineConnector" Version="6.0.3" />
     <PackageReference Include="Lykke.Messaging" Version="5.0.0" />
     <PackageReference Include="Lykke.Messaging.RabbitMq" Version="2.0.0" />
-    <PackageReference Include="Lykke.MonitoringServiceApiCaller" Version="1.3.1" />
-    <PackageReference Include="Lykke.Service.Balances.Client" Version="1.1.1" />
+    <PackageReference Include="Lykke.MonitoringServiceApiCaller" Version="1.4.0" />
+    <PackageReference Include="Lykke.Service.Balances.Client" Version="1.1.2" />
     <PackageReference Include="Lykke.Service.FeeCalculator.Client" Version="2.1.4" />
     <PackageReference Include="Lykke.Service.OperationsHistory.Client" Version="2.1.3" />
     <PackageReference Include="Lykke.Service.OperationsRepository.Contract" Version="1.0.13" />
