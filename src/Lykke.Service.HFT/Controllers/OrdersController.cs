@@ -55,11 +55,12 @@ namespace Lykke.Service.HFT.Controllers
         [ProducesResponseType((int)HttpStatusCode.BadRequest)]
         public async Task<IActionResult> GetOrders(
             [FromQuery] OrderStatus? status = null,
-            [FromQuery] uint? take = 100)
+            [FromQuery] int? take = 100)
         {
-            if (take > MaxPageSize)
+            var toTake = take.ValidateAndGetValue(nameof(take), MaxPageSize, 100);
+            if (toTake.Error != null)
             {
-                return BadRequest(ResponseModel.CreateInvalidFieldError("take", $"Page size {take} is to big"));
+                return BadRequest(new ResponseModel { Error = toTake.Error });
             }
 
             if (!status.HasValue)
@@ -104,7 +105,7 @@ namespace Lykke.Service.HFT.Controllers
                     break;
             }
 
-            var result = await _orderStateCache.GetOrdersByStatus(clientId, states, (int) take.Value);
+            var result = await _orderStateCache.GetOrdersByStatus(clientId, states, toTake.Result);
 
             return Ok(result.Select(x => x.ConvertToApiModel()));
         }

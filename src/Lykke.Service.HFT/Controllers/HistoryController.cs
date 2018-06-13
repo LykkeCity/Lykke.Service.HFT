@@ -44,16 +44,22 @@ namespace Lykke.Service.HFT.Controllers
         [ProducesResponseType(typeof(IEnumerable<HistoryTradeModel>), (int)HttpStatusCode.OK)]
         [ProducesResponseType(typeof(ResponseModel), (int)HttpStatusCode.BadRequest)]
         [ProducesResponseType(typeof(void), (int)HttpStatusCode.NotFound)]
-        public async Task<IActionResult> GetTrades([FromQuery] string assetId, [FromQuery] string assetPairId = null, [FromQuery] uint? skip = 0, [FromQuery] uint? take = 100)
+        public async Task<IActionResult> GetTrades(
+            [FromQuery] string assetId, 
+            [FromQuery] string assetPairId = null, 
+            [FromQuery] int? skip = 0, 
+            [FromQuery] int? take = 100)
         {
-            if (take > MaxPageSize)
+            var toTake = take.ValidateAndGetValue(nameof(take), MaxPageSize, 100);
+            if (toTake.Error != null)
             {
-                return BadRequest(ResponseModel.CreateInvalidFieldError("take", $"Page size {take} is to big"));
+                return BadRequest(new ResponseModel { Error = toTake.Error });
             }
 
-            if (skip > MaxSkipSize)
+            var toSkip = skip.ValidateAndGetValue(nameof(skip), MaxSkipSize, 0);
+            if (toSkip.Error != null)
             {
-                return BadRequest(ResponseModel.CreateInvalidFieldError("skip", $"Skip size {take} is to big"));
+                return BadRequest(new ResponseModel { Error = toSkip.Error });
             }
 
             if (assetId != null && await _assetServiceDecorator.GetAssetAsync(assetId) == null)
@@ -68,8 +74,8 @@ namespace Lykke.Service.HFT.Controllers
                 operationType: null,
                 assetId: assetId,
                 assetPairId: assetPairId,
-                take: (int)take,
-                skip: (int)skip);
+                take: toTake.Result,
+                skip: toSkip.Result);
 
             if (response.Error != null)
             {
