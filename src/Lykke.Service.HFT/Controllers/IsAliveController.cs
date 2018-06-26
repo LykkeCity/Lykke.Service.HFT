@@ -1,7 +1,8 @@
 ﻿using System.Linq;
 using System.Net;
+using Lykke.Service.HFT.Contracts;
+using Lykke.Service.HFT.Contracts.Health;
 using Lykke.Service.HFT.Core.Services;
-using Lykke.Service.HFT.Models;
 using Microsoft.AspNetCore.Mvc;
 using Swashbuckle.AspNetCore.SwaggerGen;
 
@@ -24,8 +25,8 @@ namespace Lykke.Service.HFT.Controllers
         /// <returns></returns>
         [HttpGet]
         [SwaggerOperation("IsAlive")]
-        [ProducesResponseType(typeof(IsAliveResponse), (int)HttpStatusCode.OK)]
-        [ProducesResponseType(typeof(ErrorResponse), (int)HttpStatusCode.InternalServerError)]
+        [ProducesResponseType(typeof(IsAliveModel), (int)HttpStatusCode.OK)]
+        [ProducesResponseType(typeof(ErrorModel), (int)HttpStatusCode.InternalServerError)]
         public IActionResult Get()
         {
             var healthViloationMessage = _healthService.GetHealthViolationMessage();
@@ -33,11 +34,11 @@ namespace Lykke.Service.HFT.Controllers
             {
                 return StatusCode(
                     (int)HttpStatusCode.InternalServerError,
-                    ErrorResponse.Create($"Service is unhealthy: {healthViloationMessage}"));
+                    new ErrorModel { Message = $"Service is unhealthy: {healthViloationMessage}" });
             }
 
             // NOTE: Feel free to extend IsAliveResponse, to display job-specific indicators
-            return Ok(new IsAliveResponse
+            return Ok(new IsAliveModel
             {
                 Version = Microsoft.Extensions.PlatformAbstractions.PlatformServices.Default.Application.ApplicationVersion,
                 Env = Program.EnvInfo,
@@ -47,11 +48,6 @@ namespace Lykke.Service.HFT.Controllers
                 IsDebug = false,
 #endif
                 IssueIndicators = _healthService.GetHealthIssues()
-                    .Select(i => new IsAliveResponse.IssueIndicator
-                    {
-                        Type = i.Type,
-                        Value = i.Value
-                    })
             });
         }
     }

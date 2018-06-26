@@ -7,7 +7,7 @@ using Lykke.Service.HFT.Core;
 using Lykke.Service.HFT.Core.Services;
 using FeeOrderAction = Lykke.Service.FeeCalculator.AutorestClient.Models.OrderAction;
 using FeeType = Lykke.Service.FeeCalculator.AutorestClient.Models.FeeType;
-using OrderAction = Lykke.Service.HFT.Core.Domain.OrderAction;
+using OrderAction = Lykke.Service.HFT.Contracts.Orders.OrderAction;
 
 namespace Lykke.Service.HFT.Services.Fees
 {

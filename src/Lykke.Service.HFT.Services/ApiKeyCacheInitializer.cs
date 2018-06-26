@@ -4,6 +4,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using Lykke.Service.HFT.Core;
 using Lykke.Service.HFT.Core.Domain;
+using Lykke.Service.HFT.Core.Repositories;
 using Lykke.Service.HFT.Core.Services.ApiKey;
 using StackExchange.Redis;
 

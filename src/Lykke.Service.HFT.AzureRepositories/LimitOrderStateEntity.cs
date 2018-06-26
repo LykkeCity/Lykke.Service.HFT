@@ -1,4 +1,5 @@
 ﻿using System;
+using Lykke.Service.HFT.Contracts.Orders;
 using Lykke.Service.HFT.Core.Domain;
 using Microsoft.WindowsAzure.Storage.Table;
 

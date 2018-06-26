@@ -15,6 +15,10 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\Lykke.Service.HFT.Contracts\Lykke.Service.HFT.Contracts.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
     <Compile Update="Strings\ErrorMessages.Designer.cs">
       <DesignTime>True</DesignTime>
       <AutoGen>True</AutoGen>

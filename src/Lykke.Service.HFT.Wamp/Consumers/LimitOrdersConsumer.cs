@@ -6,8 +6,10 @@ using Common.Log;
 using Lykke.RabbitMqBroker;
 using Lykke.RabbitMqBroker.Subscriber;
 using Lykke.Service.HFT.Contracts.Events;
+using Lykke.Service.HFT.Contracts.Orders;
 using Lykke.Service.HFT.Core;
 using Lykke.Service.HFT.Core.Domain;
+using Lykke.Service.HFT.Core.Repositories;
 using Lykke.Service.HFT.Core.Services;
 using Lykke.Service.HFT.Wamp.Consumers.Messages;
 using WampSharp.V2;
@@ -87,7 +89,7 @@ namespace Lykke.Service.HFT.Wamp.Consumers
                             Order = new Order
                             {
                                 Id = orderId,
-                                Status = Enum.TryParse(order.Order.Status.ToString(), out Contracts.Events.OrderStatus status) ? status : Contracts.Events.OrderStatus.Runtime,
+                                Status = Enum.TryParse(order.Order.Status.ToString(), out OrderStatus status) ? status : OrderStatus.Runtime,
                                 AssetPairId = order.Order.AssetPairId,
                                 Volume = order.Order.Volume,
                                 Price = order.Order.Price,

@@ -4,7 +4,9 @@ using System.Linq.Expressions;
 using System.Threading.Tasks;
 using Common;
 using Common.Log;
+using Lykke.Service.HFT.Contracts.Orders;
 using Lykke.Service.HFT.Core.Domain;
+using Lykke.Service.HFT.Core.Repositories;
 using Lykke.Service.HFT.Core.Services;
 
 namespace Lykke.Service.HFT.PeriodicalHandlers

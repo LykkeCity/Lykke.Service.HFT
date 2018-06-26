@@ -1,14 +1,10 @@
-﻿using BenchmarkDotNet.Environments;
+﻿using System;
 using BenchmarkDotNet.Running;
-using System;
 
 namespace Lykke.Service.HFT.Benchmarks
 {
     public static class Benchmarks
     {
-        public static Platform Strategy { get; private set; }
-        public static object Config { get; private set; }
-
         public static void Main()
         {
             BenchmarkRunner.Run<HftProductionBenchmark>();

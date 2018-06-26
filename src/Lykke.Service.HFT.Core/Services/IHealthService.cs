@@ -1,5 +1,5 @@
 ﻿using System.Collections.Generic;
-using Lykke.Service.HFT.Core.Domain.Health;
+using Lykke.Service.HFT.Contracts.Health;
 
 namespace Lykke.Service.HFT.Core.Services
 {
@@ -7,6 +7,6 @@ namespace Lykke.Service.HFT.Core.Services
     public interface IHealthService
     {
         string GetHealthViolationMessage();
-        IEnumerable<HealthIssue> GetHealthIssues();
+        IEnumerable<IssueModel> GetHealthIssues();
     }
 }
