@@ -5,18 +5,18 @@ using Microsoft.AspNetCore.Hosting;
 
 namespace Lykke.Service.HFT
 {
-    public class Program
+    public static class Program
     {
         public static string EnvInfo => Environment.GetEnvironmentVariable("ENV_INFO");
         public static void Main(string[] args)
         {
-            Console.WriteLine($"{Core.Constants.ComponentName} version {Microsoft.Extensions.PlatformAbstractions.PlatformServices.Default.Application.ApplicationVersion}");
+            Console.WriteLine($@"{Core.Constants.ComponentName} version {Microsoft.Extensions.PlatformAbstractions.PlatformServices.Default.Application.ApplicationVersion}");
 #if DEBUG
-            Console.WriteLine("Is DEBUG");
+            Console.WriteLine(@"Is DEBUG");
 #else
-            Console.WriteLine("Is RELEASE");
+            Console.WriteLine(@"Is RELEASE");
 #endif           
-            Console.WriteLine($"ENV_INFO: {EnvInfo}");
+            Console.WriteLine($@"ENV_INFO: {EnvInfo}");
 
             try
             {
@@ -32,14 +32,14 @@ namespace Lykke.Service.HFT
             }
             catch (Exception ex)
             {
-                Console.WriteLine("Fatal error:");
+                Console.WriteLine(@"Fatal error:");
                 Console.WriteLine(ex);
 
                 // Lets devops to see startup error in console between restarts in the Kubernetes
                 var delay = TimeSpan.FromMinutes(1);
 
                 Console.WriteLine();
-                Console.WriteLine($"Process will be terminated in {delay}. Press any key to terminate immediately.");
+                Console.WriteLine($@"Process will be terminated in {delay}. Press any key to terminate immediately.");
 
                 Task.WhenAny(
                         Task.Delay(delay),
@@ -50,7 +50,7 @@ namespace Lykke.Service.HFT
                     .Wait();
             }
 
-            Console.WriteLine("Terminated");
+            Console.WriteLine(@"Terminated");
         }
     }
 }

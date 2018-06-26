@@ -3,8 +3,9 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Net;
 using System.Threading.Tasks;
+using Lykke.Service.Assets.Client.Models;
+using Lykke.Service.HFT.Contracts.Assets;
 using Lykke.Service.HFT.Core.Services;
-using Lykke.Service.HFT.Models;
 using Microsoft.AspNetCore.Mvc;
 using Swashbuckle.AspNetCore.SwaggerGen;
 
@@ -30,7 +31,7 @@ namespace Lykke.Service.HFT.Controllers
         public async Task<IActionResult> GetAssetPairs()
         {
             var assetPairs = await _assetServiceDecorator.GetAllEnabledAssetPairsAsync();
-            return Ok(assetPairs.Select(x => x.ConvertToApiModel()));
+            return Ok(assetPairs.Select(ToModel));
         }
 
         /// <summary>
@@ -49,7 +50,27 @@ namespace Lykke.Service.HFT.Controllers
             {
                 return NotFound();
             }
-            return Ok(assetPair.ConvertToApiModel());
+            return Ok(ToModel(assetPair));
+        }
+
+        private static AssetPairModel ToModel(AssetPair src)
+        {
+            if (src == null)
+            {
+                return null;
+            }
+
+            return new AssetPairModel
+            {
+                Id = src.Id,
+                Name = src.Name,
+                Accuracy = src.Accuracy,
+                InvertedAccuracy = src.InvertedAccuracy,
+                BaseAssetId = src.BaseAssetId,
+                QuotingAssetId = src.QuotingAssetId,
+                MinVolume = src.MinVolume,
+                MinInvertedVolume = src.MinInvertedVolume
+            };
         }
     }
 }

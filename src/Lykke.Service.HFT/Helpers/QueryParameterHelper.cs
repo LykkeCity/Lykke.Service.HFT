@@ -1,4 +1,4 @@
-﻿using Lykke.Service.HFT.Core.Domain;
+﻿using Lykke.Service.HFT.Contracts;
 
 namespace Lykke.Service.HFT.Helpers
 {

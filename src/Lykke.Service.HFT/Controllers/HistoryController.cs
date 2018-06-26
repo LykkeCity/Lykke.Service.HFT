@@ -1,16 +1,17 @@
-﻿using Lykke.Service.HFT.Core.Domain;
+﻿using System.Collections.Generic;
+using System.Linq;
+using System.Net;
+using System.Threading.Tasks;
+using Lykke.Service.HFT.Contracts;
+using Lykke.Service.HFT.Contracts.History;
 using Lykke.Service.HFT.Core.Services;
 using Lykke.Service.HFT.Helpers;
-using Lykke.Service.HFT.Models;
 using Lykke.Service.OperationsHistory.AutorestClient.Models;
 using Lykke.Service.OperationsHistory.Client;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Swashbuckle.AspNetCore.SwaggerGen;
-using System.Collections.Generic;
-using System.Linq;
-using System.Net;
-using System.Threading.Tasks;
+using FeeType = Lykke.Service.HFT.Contracts.History.FeeType;
 
 namespace Lykke.Service.HFT.Controllers
 {
@@ -45,9 +46,9 @@ namespace Lykke.Service.HFT.Controllers
         [ProducesResponseType(typeof(ResponseModel), (int)HttpStatusCode.BadRequest)]
         [ProducesResponseType(typeof(void), (int)HttpStatusCode.NotFound)]
         public async Task<IActionResult> GetTrades(
-            [FromQuery] string assetId, 
-            [FromQuery] string assetPairId = null, 
-            [FromQuery] int? skip = 0, 
+            [FromQuery] string assetId,
+            [FromQuery] string assetPairId = null,
+            [FromQuery] int? skip = 0,
             [FromQuery] int? take = 100)
         {
             var toTake = take.ValidateAndGetValue(nameof(take), MaxPageSize, 100);
@@ -79,11 +80,14 @@ namespace Lykke.Service.HFT.Controllers
 
             if (response.Error != null)
             {
-                return BadRequest(ResponseModel.CreateFail(ResponseModel.ErrorCodeType.Runtime, response.Error.Message));
+                return BadRequest(ResponseModel.CreateFail(ErrorCodeType.Runtime, response.Error.Message));
             }
 
-            return Ok(response.Records.Where(x => x.Type == HistoryOperationType.Trade || x.Type == HistoryOperationType.LimitTrade)
-                .Select(x => x.ConvertToApiModel()));
+            var result = response.Records
+                .Where(x => x.Type == HistoryOperationType.Trade || x.Type == HistoryOperationType.LimitTrade)
+                .Select(ToModel);
+
+            return Ok(result);
         }
 
         /// <summary>
@@ -110,7 +114,27 @@ namespace Lykke.Service.HFT.Controllers
                 return NotFound();
             }
 
-            return Ok(response.ConvertToApiModel());
+            return Ok(ToModel(response));
         }
+
+        private static HistoryTradeModel ToModel(HistoryOperation src)
+        {
+            return new HistoryTradeModel
+            {
+                Id = src.Id,
+                DateTime = src.DateTime,
+                State = src.State.ConvertToEnum(TradeStatus.Unknown),
+                Amount = src.Amount,
+                Asset = src.Asset,
+                AssetPair = src.AssetPair,
+                Price = src.Price,
+                Fee = new FeeModel
+                {
+                    Amount = src.FeeSize,
+                    Type = src.FeeType.ConvertToEnum(FeeType.Unknown)
+                }
+            };
+        }
+
     }
 }

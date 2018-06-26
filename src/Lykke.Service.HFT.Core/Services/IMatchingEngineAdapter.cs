@@ -1,8 +1,8 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Threading.Tasks;
 using Lykke.Service.Assets.Client.Models;
-using Lykke.Service.HFT.Core.Domain;
+using OrderAction = Lykke.Service.HFT.Contracts.Orders.OrderAction;
+using Lykke.Service.HFT.Contracts;
 
 namespace Lykke.Service.HFT.Core.Services
 {

@@ -1,4 +1,5 @@
 ﻿using System;
+using Lykke.Service.HFT.Contracts.Orders;
 
 namespace Lykke.Service.HFT.Core.Domain
 {

@@ -8,6 +8,7 @@ using System.Threading.Tasks;
 using Common.Log;
 using Lykke.Service.HFT.Core;
 using Lykke.Service.HFT.Core.Domain;
+using Lykke.Service.HFT.Core.Repositories;
 using MongoDB.Bson;
 using MongoDB.Bson.Serialization;
 using MongoDB.Bson.Serialization.IdGenerators;

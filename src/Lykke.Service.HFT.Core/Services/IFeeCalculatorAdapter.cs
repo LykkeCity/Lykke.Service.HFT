@@ -1,7 +1,7 @@
 ﻿using System.Threading.Tasks;
 using Lykke.MatchingEngine.Connector.Abstractions.Models;
 using Lykke.Service.Assets.Client.Models;
-using OrderAction = Lykke.Service.HFT.Core.Domain.OrderAction;
+using OrderAction = Lykke.Service.HFT.Contracts.Orders.OrderAction;
 
 namespace Lykke.Service.HFT.Core.Services
 {

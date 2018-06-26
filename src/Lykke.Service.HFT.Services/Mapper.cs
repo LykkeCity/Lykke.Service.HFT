@@ -1,5 +1,5 @@
-﻿using Lykke.Service.HFT.Core.Domain;
-using System;
+﻿using System;
+using Lykke.Service.HFT.Contracts.Orders;
 using MeOrderAction = Lykke.MatchingEngine.Connector.Abstractions.Models.OrderAction;
 
 namespace Lykke.Service.HFT.Services
