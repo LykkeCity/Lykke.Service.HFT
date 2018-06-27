@@ -64,7 +64,7 @@ namespace Lykke.Service.HFT.PeriodicalHandlers
                     _log.WriteInfo("OrderStateArchiver", null, $"2. Got {notActiveOrders.Count} orders in {sw.Elapsed.TotalSeconds} sec.");
                     sw.Restart();
 
-                    await _orderStateArchive.AddAsync(notActiveOrders.Where(x => x.CreatedAt > DateTime.UtcNow.AddYears(-1)));
+                    await _orderStateArchive.AddAsync(notActiveOrders);
                     _log.WriteInfo("OrderStateArchiver", null, $"3. Migrated to azure in {sw.Elapsed.TotalMinutes} min.");
                     sw.Restart();
 
