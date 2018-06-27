@@ -90,7 +90,15 @@ namespace Lykke.Service.HFT.Services
         {
             var requestId = GetNextRequestId();
 
-            await _orderStateRepository.Add(new LimitOrderState { Id = requestId, ClientId = clientId, AssetPairId = assetPair.Id, Volume = volume, Price = price });
+            await _orderStateRepository.Add(new LimitOrderState
+            {
+                Id = requestId,
+                ClientId = clientId,
+                AssetPairId = assetPair.Id,
+                Volume = volume,
+                Price = price,
+                CreatedAt = DateTime.UtcNow
+            });
 
             var order = new LimitOrderModel
             {
