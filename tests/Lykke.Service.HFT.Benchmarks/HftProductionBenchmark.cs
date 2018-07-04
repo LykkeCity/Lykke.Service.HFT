@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 using BenchmarkDotNet.Attributes;
@@ -11,6 +12,7 @@ using Lykke.Service.HFT.Client;
 using Lykke.Service.HFT.Contracts.Assets;
 using Lykke.Service.HFT.Contracts.History;
 using Lykke.Service.HFT.Contracts.Orders;
+using Newtonsoft.Json;
 
 namespace Lykke.Service.HFT.Benchmarks
 {
@@ -21,10 +23,6 @@ namespace Lykke.Service.HFT.Benchmarks
     [SimpleJob(launchCount: 1, warmupCount: 1, targetCount: 2, invocationCount: 2, id: "QuickJob")]
     public class HftProductionBenchmark
     {
-        //private const string HftApiUrl = @"http://localhost:5000";
-        private const string HftApiUrl = @"https://hft-service-dev.lykkex.net/";
-        private const string DevApiKey = @"9b93e3ec-f9b0-42ba-b68c-cecb0d1e6dd4";
-
         private AssetPairModel[] _pairs;
         private HistoryTradeModel[] _trades;
         private LimitOrderStateModel[] _orders;
@@ -37,9 +35,12 @@ namespace Lykke.Service.HFT.Benchmarks
         [GlobalSetup]
         public void Setup()
         {
+            var json = File.ReadAllText(@"appsettings.bm.json");
+            var settings = JsonConvert.DeserializeObject<BenchmarkSettings>(json);
+
             _generator = HttpClientGenerator.HttpClientGenerator
-                .BuildForUrl(HftApiUrl)
-                .WithApiKey(DevApiKey)
+                .BuildForUrl(settings.HftUrl)
+                .WithApiKey(settings.ApiKey)
                 .WithoutRetries()
                 .WithoutCaching()
                 .Create();

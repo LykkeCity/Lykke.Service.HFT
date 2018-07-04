@@ -7,6 +7,12 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <Content Include="appsettings.bm.json">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+  </ItemGroup>
+
+  <ItemGroup>
     <PackageReference Include="BenchmarkDotNet" Version="0.10.14" />
     <PackageReference Include="FluentAssertions" Version="5.4.1" />
     <PackageReference Include="Lykke.HttpClientGenerator" Version="2.0.0" />

@@ -1,5 +1,4 @@
-﻿using System.Linq;
-using System.Net;
+﻿using System.Net;
 using Lykke.Service.HFT.Contracts;
 using Lykke.Service.HFT.Contracts.Health;
 using Lykke.Service.HFT.Core.Services;

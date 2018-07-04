@@ -58,11 +58,6 @@ namespace Lykke.Service.HFT.Services
             var response = await _matchingEngineClient.MassCancelLimitOrdersAsync(model);
             await CheckResponseAndThrowIfNull(response);
 
-            if (response.Status == MeStatusCodes.Ok)
-            {
-                return ResponseModel.CreateOk();
-            }
-
             return ConvertToApiModel(response.Status);
         }
 
@@ -83,11 +78,8 @@ namespace Lykke.Service.HFT.Services
 
             var response = await _matchingEngineClient.HandleMarketOrderAsync(order);
             await CheckResponseAndThrowIfNull(response);
-            if (response.Status == MeStatusCodes.Ok)
-            {
-                return ResponseModel<double>.CreateOk(response.Price);
-            }
-            return ConvertToApiModel<double>(response.Status);
+
+            return ConvertToApiModel(response.Status, response.Price);
         }
 
         public async Task<ResponseModel<Guid>> PlaceLimitOrderAsync(string clientId, AssetPair assetPair, OrderAction orderAction, double volume,
@@ -119,20 +111,11 @@ namespace Lykke.Service.HFT.Services
 
             var response = await _matchingEngineClient.PlaceLimitOrderAsync(order);
             await CheckResponseAndThrowIfNull(response);
-            if (response.Status == MeStatusCodes.Ok)
-            {
-                return ResponseModel<Guid>.CreateOk(requestId);
-            }
 
-            var responseModel = ConvertToApiModel<Guid>(response.Status);
-            responseModel.Result = requestId;
-            return responseModel;
+            return ConvertToApiModel(response.Status, requestId);
         }
 
-        private Guid GetNextRequestId()
-        {
-            return Guid.NewGuid();
-        }
+        private static Guid GetNextRequestId() => Guid.NewGuid();
 
         private async Task CheckResponseAndThrowIfNull(object response)
         {
@@ -146,16 +129,27 @@ namespace Lykke.Service.HFT.Services
 
         private ResponseModel ConvertToApiModel(MeStatusCodes status)
         {
-            var errorCode = GetErrorCodeType(status);
             return status == MeStatusCodes.Ok
                 ? ResponseModel.CreateOk()
-                : ResponseModel.CreateFail(errorCode, errorCode.GetErrorMessage());
+                : CreateFail(status, x => ResponseModel.CreateFail(x, x.GetErrorMessage()));
         }
 
-        private ResponseModel<T> ConvertToApiModel<T>(MeStatusCodes status)
+        private ResponseModel<T> ConvertToApiModel<T>(MeStatusCodes status, T result)
+        {
+            if (status == MeStatusCodes.Ok)
+            {
+                return ResponseModel<T>.CreateOk(result);
+            }
+
+            var response = CreateFail(status, x => ResponseModel<T>.CreateFail(x, x.GetErrorMessage()));
+            response.Result = result;
+            return response;
+        }
+
+        private T CreateFail<T>(MeStatusCodes status, Func<ErrorCodeType, T> creator)
         {
             var errorCode = GetErrorCodeType(status);
-            return ResponseModel<T>.CreateFail(errorCode, errorCode.GetErrorMessage());
+            return creator(errorCode);
         }
 
         private ErrorCodeType GetErrorCodeType(MeStatusCodes code)
