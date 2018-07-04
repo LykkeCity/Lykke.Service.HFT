@@ -1,10 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Net;
 using System.Threading.Tasks;
 using Lykke.Service.HFT.Contracts.OrderBook;
-using Lykke.Service.HFT.Core.Domain;
 using Lykke.Service.HFT.Core.Services;
 using Microsoft.AspNetCore.Mvc;
 using Swashbuckle.AspNetCore.SwaggerGen;
@@ -33,8 +31,7 @@ namespace Lykke.Service.HFT.Controllers
         public async Task<IActionResult> GetOrderBooks()
         {
             var orderBooks = await _orderBooksService.GetAllAsync();
-            return Ok(orderBooks.Select(ToModel));
-
+            return Ok(orderBooks);
         }
 
         /// <summary>
@@ -60,24 +57,7 @@ namespace Lykke.Service.HFT.Controllers
             }
 
             var orderBooks = await _orderBooksService.GetAsync(assetPairId);
-            return Ok(orderBooks.Select(ToModel));
-        }
-
-        private static OrderBookModel ToModel(OrderBook orderBook)
-        {
-            return new OrderBookModel
-            {
-                AssetPair = orderBook.AssetPair,
-                IsBuy = orderBook.IsBuy,
-                Timestamp = orderBook.Timestamp,
-                Prices = orderBook.Prices
-                    ?.Select(vp => new VolumePriceModel
-                    {
-                        Price = vp.Price,
-                        Volume = vp.Volume
-                    })
-                    .ToArray()
-            };
+            return Ok(orderBooks);
         }
     }
 }

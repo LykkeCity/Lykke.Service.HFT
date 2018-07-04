@@ -1,5 +1,4 @@
-﻿using System.ComponentModel.DataAnnotations;
-using JetBrains.Annotations;
+﻿using JetBrains.Annotations;
 
 namespace Lykke.Service.HFT.Contracts.History
 {
@@ -12,7 +11,6 @@ namespace Lykke.Service.HFT.Contracts.History
         /// <summary>
         /// The trade asset ID.
         /// </summary>
-        [Required]
         public string AssetId { get; set; }
 
         /// <summary>

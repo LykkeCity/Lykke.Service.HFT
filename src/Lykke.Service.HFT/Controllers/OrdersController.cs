@@ -151,7 +151,7 @@ namespace Lykke.Service.HFT.Controllers
         /// Place a market order.
         /// </summary>
         /// <returns>Average strike price.</returns>
-        // TODO make this method obsolete and introduce a v2 that returns only double instead of ResponseModel{double}</remarks>
+        // TODO make this method obsolete and introduce a v2 that returns a DTO instead of ResponseModel{double}
         [HttpPost("market")]
         [SwaggerOperation(nameof(PlaceMarketOrder))]
         [ProducesResponseType(typeof(ResponseModel<double>), (int)HttpStatusCode.OK)]

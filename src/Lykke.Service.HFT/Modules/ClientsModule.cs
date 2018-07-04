@@ -38,8 +38,7 @@ namespace Lykke.Service.HFT.Modules
             _services.RegisterAssetsClient(AssetServiceSettings.Create(
                 new Uri(_settings.CurrentValue.AssetsServiceClient.ServiceUrl),
                 _settings.CurrentValue.HighFrequencyTradingService.Dictionaries.CacheExpirationPeriod), 
-                _log,
-                autoRefresh: true);
+                _log);
 
             builder.RegisterOperationsHistoryClient(_settings.CurrentValue.OperationsHistoryServiceClient, _log);
 
