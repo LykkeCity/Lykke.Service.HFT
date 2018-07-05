@@ -1,7 +1,7 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using Common.Log;
+using Lykke.Common.Log;
 using Lykke.Service.HFT.Contracts.Orders;
 using Lykke.Service.HFT.Core.Domain;
 using Lykke.Service.HFT.Core.Repositories;
@@ -14,7 +14,7 @@ namespace Lykke.Service.HFT.MongoRepositories
         private readonly FilterDefinitionBuilder<LimitOrderState> _filterBuilder;
         private readonly SortDefinitionBuilder<LimitOrderState> _sortBuilder;
 
-        public LimitOrderStateRepository(IMongoDatabase database, ILog log, int rpsLimit = 100) : base(database, log, rpsLimit)
+        public LimitOrderStateRepository(IMongoDatabase database, ILogFactory logFactory, int rpsLimit = 100) : base(database, logFactory, rpsLimit)
         {
             _filterBuilder = new FilterDefinitionBuilder<LimitOrderState>();
             _sortBuilder = new SortDefinitionBuilder<LimitOrderState>();
@@ -28,7 +28,7 @@ namespace Lykke.Service.HFT.MongoRepositories
             if (inStates.Count != 0)
             {
                 filter = _filterBuilder.And(
-                    filter, 
+                    filter,
                     _filterBuilder.In(x => x.Status, inStates));
             }
 

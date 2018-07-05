@@ -1,8 +1,8 @@
 ﻿using System.Collections.Generic;
 using Autofac;
 using Autofac.Core;
-using Common.Log;
 using Lykke.Common.Chaos;
+using Lykke.Common.Log;
 using Lykke.Cqrs;
 using Lykke.Cqrs.Configuration;
 using Lykke.Messaging;
@@ -18,12 +18,10 @@ namespace Lykke.Service.HFT.Modules
     public class CqrsModule : Module
     {
         private readonly AppSettings.HighFrequencyTradingSettings _settings;
-        private readonly ILog _log;
 
-        public CqrsModule(IReloadingManager<AppSettings.HighFrequencyTradingSettings> settingsManager, ILog log)
+        public CqrsModule(IReloadingManager<AppSettings.HighFrequencyTradingSettings> settingsManager)
         {
             _settings = settingsManager.CurrentValue;
-            _log = log;
         }
 
         protected override void Load(ContainerBuilder builder)
@@ -49,22 +47,6 @@ namespace Lykke.Service.HFT.Modules
             builder.Register(context => new AutofacDependencyResolver(context)).As<IDependencyResolver>().SingleInstance();
 
             var rabbitMqSettings = new RabbitMQ.Client.ConnectionFactory { Uri = _settings.SagasRabbitMqConnStr };
-#if DEBUG
-            var virtualHost = "/debug";
-            var messagingEngine = new MessagingEngine(_log,
-                new TransportResolver(new Dictionary<string, TransportInfo>
-                {
-                    {"RabbitMq", new TransportInfo(rabbitMqSettings.Endpoint + virtualHost, rabbitMqSettings.UserName, rabbitMqSettings.Password, "None", "RabbitMq")}
-                }),
-                new RabbitMqTransportFactory());
-#else
-            var messagingEngine = new MessagingEngine(_log,
-                new TransportResolver(new Dictionary<string, TransportInfo>
-                {
-                    {"RabbitMq", new TransportInfo(rabbitMqSettings.Endpoint.ToString(), rabbitMqSettings.UserName, rabbitMqSettings.Password, "None", "RabbitMq")}
-                }),
-                new RabbitMqTransportFactory());
-#endif
 
             builder.RegisterType<ApiKeyProjection>()
                 .WithParameter(
@@ -74,9 +56,22 @@ namespace Lykke.Service.HFT.Modules
 
             builder.Register(ctx =>
             {
+                var logFactory = ctx.Resolve<ILogFactory>();
+#if DEBUG
+                var broker = rabbitMqSettings.Endpoint + "/debug";
+#else
+                var broker = rabbitMqSettings.Endpoint.ToString();
+#endif
+                var messagingEngine = new MessagingEngine(logFactory,
+                    new TransportResolver(new Dictionary<string, TransportInfo>
+                    {
+                        {"RabbitMq", new TransportInfo(broker, rabbitMqSettings.UserName, rabbitMqSettings.Password, "None", "RabbitMq")}
+                    }),
+                    new RabbitMqTransportFactory(logFactory));
+
                 const string defaultRoute = "self";
 
-                return new CqrsEngine(_log,
+                return new CqrsEngine(logFactory,
                     ctx.Resolve<IDependencyResolver>(),
                     messagingEngine,
                     new DefaultEndpointProvider(),
