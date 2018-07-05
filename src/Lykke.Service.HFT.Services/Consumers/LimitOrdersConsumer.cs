@@ -3,6 +3,7 @@ using System.Collections.Async;
 using System.Threading.Tasks;
 using Common.Log;
 using JetBrains.Annotations;
+using Lykke.Common.Log;
 using Lykke.RabbitMqBroker;
 using Lykke.RabbitMqBroker.Subscriber;
 using Lykke.Service.HFT.Contracts.Orders;
@@ -24,12 +25,15 @@ namespace Lykke.Service.HFT.Services.Consumers
         private const bool QueueDurable = false;
 
         public LimitOrdersConsumer(
-            ILog log,
+            ILogFactory logFactory,
             AppSettings.RabbitMqSettings settings,
             IRepository<LimitOrderState> orderStateRepository,
             [NotNull] IHftClientService hftClientService)
         {
-            _log = log ?? throw new ArgumentNullException(nameof(log));
+            if (logFactory == null)
+                throw new ArgumentNullException(nameof(logFactory));
+
+            _log = logFactory.CreateLog(this);
             if (settings == null)
                 throw new ArgumentNullException(nameof(settings));
             _orderStateRepository = orderStateRepository ?? throw new ArgumentNullException(nameof(orderStateRepository));
@@ -44,20 +48,21 @@ namespace Lykke.Service.HFT.Services.Consumers
                     ExchangeName = settings.ExchangeName,
                     IsDurable = QueueDurable
                 };
-                _subscriber = new RabbitMqSubscriber<LimitOrderMessage>(subscriptionSettings, new ResilientErrorHandlingStrategy(_log, subscriptionSettings,
-                        retryTimeout: TimeSpan.FromSeconds(20),
-                        retryNum: 3,
-                        next: new DefaultErrorHandlingStrategy(_log, subscriptionSettings)))
 
+                var strategy = new ResilientErrorHandlingStrategy(logFactory, subscriptionSettings,
+                    retryTimeout: TimeSpan.FromSeconds(20),
+                    retryNum: 3,
+                    next: new DefaultErrorHandlingStrategy(logFactory, subscriptionSettings));
+
+                _subscriber = new RabbitMqSubscriber<LimitOrderMessage>(logFactory, subscriptionSettings, strategy)
                     .SetMessageDeserializer(new JsonMessageDeserializer<LimitOrderMessage>())
                     .SetMessageReadStrategy(new MessageReadWithTemporaryQueueStrategy())
                     .Subscribe(ProcessLimitOrder)
-                    .SetLogger(_log)
                     .Start();
             }
             catch (Exception ex)
             {
-                _log.WriteErrorAsync(Constants.ComponentName, null, null, ex).Wait();
+                _log.Error(ex);
                 throw;
             }
         }
@@ -74,7 +79,7 @@ namespace Lykke.Service.HFT.Services.Consumers
                     {
                         if (IsFinalStatus(orderState.Status))
                         {
-                            _log.WriteWarning(nameof(ProcessLimitOrder), order, "Got update for order in final state. Ignoring.");
+                            _log.Warning("Got update for order in final state. Ignoring.", context: order);
                             return;
                         }
 

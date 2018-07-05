@@ -5,6 +5,7 @@ using System.Linq.Expressions;
 using System.Threading.Tasks;
 using Common;
 using Common.Log;
+using Lykke.Common.Log;
 using Lykke.Service.HFT.Contracts.Orders;
 using Lykke.Service.HFT.Core.Domain;
 using Lykke.Service.HFT.Core.Repositories;
@@ -23,12 +24,15 @@ namespace Lykke.Service.HFT.PeriodicalHandlers
         public OrderStateArchiver(
             TimeSpan checkInterval,
             TimeSpan activeOrdersWindow,
-            ILog log,
+            ILogFactory logFactory,
             IRepository<LimitOrderState> orderStateCache,
             ILimitOrderStateArchive orderStateArchive)
-            : base(nameof(OrderStateArchiver), (int)checkInterval.TotalMilliseconds, log)
+            : base(checkInterval, logFactory)
         {
-            _log = log.CreateComponentScope(nameof(OrderStateArchiver));
+            if (logFactory == null)
+                throw new ArgumentNullException(nameof(logFactory));
+
+            _log = logFactory.CreateLog(nameof(OrderStateArchiver));
             _activeOrdersWindow = activeOrdersWindow;
             _orderStateCache = orderStateCache ?? throw new ArgumentNullException(nameof(orderStateCache));
             _orderStateArchive = orderStateArchive ?? throw new ArgumentNullException(nameof(orderStateArchive));
@@ -47,34 +51,34 @@ namespace Lykke.Service.HFT.PeriodicalHandlers
             {
                 if (chunkSize < MinimalChunkSize)
                 {
-                    _log.WriteWarning("OrderStateArchiver", null, $"Too small chunk size {chunkSize} ");
+                    _log.Warning($"Too small chunk size {chunkSize} ");
                     break;
                 }
 
                 sw.Restart();
-                _log.WriteInfo("OrderStateArchiver", null, $"1. Getting orders (max {chunkSize}).");
+                _log.Info($"1. Getting orders (max {chunkSize}).");
                 try
                 {
                     var notActiveOrders = (await _orderStateCache.FilterAsync(filter, chunkSize)).ToList();
                     if (notActiveOrders.Count == 0)
                     {
-                        _log.WriteInfo("OrderStateArchiver", null, "Finished");
+                        _log.Info("Finished");
                         break;
                     }
 
-                    _log.WriteInfo("OrderStateArchiver", null, $"2. Got {notActiveOrders.Count} orders in {sw.Elapsed.TotalSeconds} sec.");
+                    _log.Info($"2. Got {notActiveOrders.Count} orders in {sw.Elapsed.TotalSeconds} sec.");
                     sw.Restart();
 
-                    await _orderStateArchive.AddAsync(notActiveOrders);
-                    _log.WriteInfo("OrderStateArchiver", null, $"3. Migrated to azure in {sw.Elapsed.TotalMinutes} min.");
+                    await _orderStateArchive.AddAsync(notActiveOrders.Where(x => x.CreatedAt > DateTime.UtcNow.AddYears(-1)));
+                    _log.Info($"3. Migrated to azure in {sw.Elapsed.TotalMinutes} min.");
                     sw.Restart();
 
                     await _orderStateCache.DeleteAsync(notActiveOrders);
-                    _log.WriteInfo("OrderStateArchiver", null, $"4. Deleted from mongo in {sw.Elapsed.TotalMinutes} min.");
+                    _log.Info($"4. Deleted from mongo in {sw.Elapsed.TotalMinutes} min.");
                 }
                 catch (Exception exception)
                 {
-                    _log.WriteWarning("OrderStateArchiver", null, "", exception);
+                    _log.Warning("Error while archiving limit orders.", exception);
                     chunkSize = (int)(chunkSize * 0.8);
                     await Task.Delay(TimeSpan.FromSeconds(1));
                 }

@@ -2,7 +2,7 @@
 using System.Collections.Async;
 using System.Linq;
 using System.Threading.Tasks;
-using Common.Log;
+using Lykke.Common.Log;
 using Lykke.RabbitMqBroker;
 using Lykke.RabbitMqBroker.Subscriber;
 using Lykke.Service.HFT.Contracts.Events;
@@ -28,7 +28,7 @@ namespace Lykke.Service.HFT.Wamp.Consumers
         private const string TopicUri = "orders.limit";
         private readonly IWampSubject _subject;
 
-        public LimitOrdersConsumer(ILog log,
+        public LimitOrdersConsumer(ILogFactory logFactory,
             AppSettings.RabbitMqSettings settings,
             IRepository<LimitOrderState> orderStateRepository,
             IWampHostedRealm realm,
@@ -38,9 +38,9 @@ namespace Lykke.Service.HFT.Wamp.Consumers
             {
                 throw new ArgumentNullException(nameof(settings));
             }
-            if (log == null)
+            if (logFactory == null)
             {
-                throw new ArgumentNullException(nameof(log));
+                throw new ArgumentNullException(nameof(logFactory));
             }
 
             _sessionRepository = sessionRepository ?? throw new ArgumentNullException(nameof(sessionRepository));
@@ -56,16 +56,17 @@ namespace Lykke.Service.HFT.Wamp.Consumers
                     ExchangeName = settings.ExchangeName,
                     IsDurable = QueueDurable
                 };
-                _subscriber = new RabbitMqSubscriber<LimitOrderMessage>(subscriptionSettings, new DefaultErrorHandlingStrategy(log, subscriptionSettings))
+                var strategy = new DefaultErrorHandlingStrategy(logFactory, subscriptionSettings);
+                _subscriber = new RabbitMqSubscriber<LimitOrderMessage>(logFactory, subscriptionSettings, strategy)
                     .SetMessageDeserializer(new JsonMessageDeserializer<LimitOrderMessage>())
                     .SetMessageReadStrategy(new MessageReadWithTemporaryQueueStrategy())
                     .Subscribe(ProcessLimitOrder)
-                    .SetLogger(log)
                     .Start();
             }
             catch (Exception ex)
             {
-                log.WriteErrorAsync(nameof(LimitOrdersConsumer), null, null, ex).Wait();
+                var log = logFactory.CreateLog(this);
+                log.Error(ex);
                 throw;
             }
         }
