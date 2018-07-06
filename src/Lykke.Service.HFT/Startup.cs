@@ -1,4 +1,5 @@
 ﻿using System;
+using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 using AspNetCoreRateLimit;
@@ -10,6 +11,7 @@ using Lykke.Common.ApiLibrary.Middleware;
 using Lykke.Common.ApiLibrary.Swagger;
 using Lykke.Logs;
 using Lykke.MonitoringServiceApiCaller;
+using Lykke.Service.HFT.Contracts;
 using Lykke.Service.HFT.Core;
 using Lykke.Service.HFT.Core.Services;
 using Lykke.Service.HFT.Infrastructure;
@@ -70,6 +72,10 @@ namespace Lykke.Service.HFT
                     options.DefaultLykkeConfiguration(ApiVersion, ApiTitle);
                     options.OperationFilter<ApiKeyHeaderOperationFilter>();
                     options.DescribeAllEnumsAsStrings();
+
+                    // Include XML comments from contracts.
+                    var baseDirectory = AppDomain.CurrentDomain.BaseDirectory;
+                    options.IncludeXmlComments(Path.Combine(baseDirectory, typeof(ResponseModel).Assembly.GetName().Name + ".xml"));
                 });
 
                 services.AddOptions();
@@ -132,6 +138,7 @@ namespace Lykke.Service.HFT
                 {
                     x.RoutePrefix = "swagger/ui";
                     x.SwaggerEndpoint("/swagger/v1/swagger.json", ApiVersion);
+                    x.DocumentTitle = ApiTitle;
                 });
                 app.UseStaticFiles();
 

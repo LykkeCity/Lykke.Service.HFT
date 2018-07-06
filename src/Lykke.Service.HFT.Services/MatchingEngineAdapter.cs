@@ -1,16 +1,16 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Threading.Tasks;
 using Common.Log;
 using JetBrains.Annotations;
 using Lykke.MatchingEngine.Connector.Abstractions.Models;
 using Lykke.MatchingEngine.Connector.Abstractions.Services;
 using Lykke.Service.Assets.Client.Models;
+using Lykke.Service.HFT.Contracts;
+using Lykke.Service.HFT.Core;
 using Lykke.Service.HFT.Core.Domain;
 using Lykke.Service.HFT.Core.Repositories;
 using Lykke.Service.HFT.Core.Services;
-using OrderAction = Lykke.Service.HFT.Core.Domain.OrderAction;
+using OrderAction = Lykke.Service.HFT.Contracts.Orders.OrderAction;
 
 namespace Lykke.Service.HFT.Services
 {
@@ -53,11 +53,6 @@ namespace Lykke.Service.HFT.Services
             var response = await _matchingEngineClient.MassCancelLimitOrdersAsync(model);
             await CheckResponseAndThrowIfNull(response);
 
-            if (response.Status == MeStatusCodes.Ok)
-            {
-                return ResponseModel.CreateOk();
-            }
-
             return ConvertToApiModel(response.Status);
         }
 
@@ -78,11 +73,8 @@ namespace Lykke.Service.HFT.Services
 
             var response = await _matchingEngineClient.HandleMarketOrderAsync(order);
             await CheckResponseAndThrowIfNull(response);
-            if (response.Status == MeStatusCodes.Ok)
-            {
-                return ResponseModel<double>.CreateOk(response.Price);
-            }
-            return ConvertToApiModel<double>(response.Status);
+
+            return ConvertToApiModel(response.Status, response.Price);
         }
 
         public async Task<ResponseModel<Guid>> PlaceLimitOrderAsync(string clientId, AssetPair assetPair, OrderAction orderAction, double volume,
@@ -114,20 +106,11 @@ namespace Lykke.Service.HFT.Services
 
             var response = await _matchingEngineClient.PlaceLimitOrderAsync(order);
             await CheckResponseAndThrowIfNull(response);
-            if (response.Status == MeStatusCodes.Ok)
-            {
-                return ResponseModel<Guid>.CreateOk(requestId);
-            }
 
-            var responseModel = ConvertToApiModel<Guid>(response.Status);
-            responseModel.Result = requestId;
-            return responseModel;
+            return ConvertToApiModel(response.Status, requestId);
         }
 
-        private Guid GetNextRequestId()
-        {
-            return Guid.NewGuid();
-        }
+        private static Guid GetNextRequestId() => Guid.NewGuid();
 
         private async Task CheckResponseAndThrowIfNull(object response)
         {
@@ -143,59 +126,72 @@ namespace Lykke.Service.HFT.Services
         {
             return status == MeStatusCodes.Ok
                 ? ResponseModel.CreateOk()
-                : ResponseModel.CreateFail(GetErrorCodeType(status));
+                : CreateFail(status, x => ResponseModel.CreateFail(x, x.GetErrorMessage()));
         }
 
-        private ResponseModel<T> ConvertToApiModel<T>(MeStatusCodes status)
+        private ResponseModel<T> ConvertToApiModel<T>(MeStatusCodes status, T result)
         {
-            return ResponseModel<T>.CreateFail(GetErrorCodeType(status));
+            if (status == MeStatusCodes.Ok)
+            {
+                return ResponseModel<T>.CreateOk(result);
+            }
+
+            var response = CreateFail(status, x => ResponseModel<T>.CreateFail(x, x.GetErrorMessage()));
+            response.Result = result;
+            return response;
         }
 
-        private ResponseModel.ErrorCodeType GetErrorCodeType(MeStatusCodes code)
+        private T CreateFail<T>(MeStatusCodes status, Func<ErrorCodeType, T> creator)
+        {
+            var errorCode = GetErrorCodeType(status);
+            return creator(errorCode);
+        }
+
+        private ErrorCodeType GetErrorCodeType(MeStatusCodes code)
         {
             switch (code)
             {
                 case MeStatusCodes.Ok:
                     throw new InvalidOperationException("Ok is not an error.");
                 case MeStatusCodes.LowBalance:
-                    return ResponseModel.ErrorCodeType.LowBalance;
+                    return ErrorCodeType.LowBalance;
                 case MeStatusCodes.AlreadyProcessed:
-                    return ResponseModel.ErrorCodeType.AlreadyProcessed;
+                    return ErrorCodeType.AlreadyProcessed;
                 case MeStatusCodes.UnknownAsset:
-                    return ResponseModel.ErrorCodeType.UnknownAsset;
+                    return ErrorCodeType.UnknownAsset;
                 case MeStatusCodes.NoLiquidity:
-                    return ResponseModel.ErrorCodeType.NoLiquidity;
+                    return ErrorCodeType.NoLiquidity;
                 case MeStatusCodes.NotEnoughFunds:
-                    return ResponseModel.ErrorCodeType.NotEnoughFunds;
+                    return ErrorCodeType.NotEnoughFunds;
                 case MeStatusCodes.Dust:
-                    return ResponseModel.ErrorCodeType.Dust;
+                    return ErrorCodeType.Dust;
                 case MeStatusCodes.ReservedVolumeHigherThanBalance:
-                    return ResponseModel.ErrorCodeType.ReservedVolumeHigherThanBalance;
+                    return ErrorCodeType.ReservedVolumeHigherThanBalance;
                 case MeStatusCodes.NotFound:
-                    return ResponseModel.ErrorCodeType.NotFound;
+                    return ErrorCodeType.NotFound;
                 case MeStatusCodes.BalanceLowerThanReserved:
-                    return ResponseModel.ErrorCodeType.BalanceLowerThanReserved;
+                    return ErrorCodeType.BalanceLowerThanReserved;
                 case MeStatusCodes.LeadToNegativeSpread:
-                    return ResponseModel.ErrorCodeType.LeadToNegativeSpread;
+                    return ErrorCodeType.LeadToNegativeSpread;
                 case MeStatusCodes.TooSmallVolume:
-                    return ResponseModel.ErrorCodeType.Dust;
+                    return ErrorCodeType.Dust;
                 case MeStatusCodes.InvalidFee:
-                    return ResponseModel.ErrorCodeType.InvalidFee;
+                    return ErrorCodeType.InvalidFee;
                 case MeStatusCodes.Duplicate:
-                    return ResponseModel.ErrorCodeType.Duplicate;
+                    return ErrorCodeType.Duplicate;
                 case MeStatusCodes.Runtime:
-                    return ResponseModel.ErrorCodeType.Runtime;
+                    return ErrorCodeType.Runtime;
                 case MeStatusCodes.BadRequest:
-                    return ResponseModel.ErrorCodeType.BadRequest;
+                    return ErrorCodeType.BadRequest;
                 case MeStatusCodes.InvalidPrice:
-                    return ResponseModel.ErrorCodeType.InvalidPrice;
+                    return ErrorCodeType.InvalidPrice;
                 case MeStatusCodes.Replaced:
-                    return ResponseModel.ErrorCodeType.Replaced;
+                    return ErrorCodeType.Replaced;
                 case MeStatusCodes.NotFoundPrevious:
-                    return ResponseModel.ErrorCodeType.NotFoundPrevious;
+                    return ErrorCodeType.NotFoundPrevious;
                 default:
                     _log.WriteWarning(nameof(MatchingEngineAdapter), nameof(GetErrorCodeType), $"Unknown ME status code {code}");
-                    return ResponseModel.ErrorCodeType.Runtime;
+                    return ErrorCodeType.Runtime;
             }
         }
     }

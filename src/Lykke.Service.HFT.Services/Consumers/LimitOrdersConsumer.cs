@@ -5,8 +5,10 @@ using Common.Log;
 using JetBrains.Annotations;
 using Lykke.RabbitMqBroker;
 using Lykke.RabbitMqBroker.Subscriber;
+using Lykke.Service.HFT.Contracts.Orders;
 using Lykke.Service.HFT.Core;
 using Lykke.Service.HFT.Core.Domain;
+using Lykke.Service.HFT.Core.Repositories;
 using Lykke.Service.HFT.Core.Services;
 using Lykke.Service.HFT.Services.Consumers.Messages;
 

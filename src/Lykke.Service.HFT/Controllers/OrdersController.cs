@@ -5,17 +5,16 @@ using System.Net;
 using System.Threading.Tasks;
 using Common;
 using Lykke.Service.Assets.Client.Models;
+using Lykke.Service.HFT.Contracts;
+using Lykke.Service.HFT.Contracts.Orders;
 using Lykke.Service.HFT.Core.Domain;
 using Lykke.Service.HFT.Core.Repositories;
 using Lykke.Service.HFT.Core.Services;
 using Lykke.Service.HFT.Helpers;
-using Lykke.Service.HFT.Models;
-using Lykke.Service.HFT.Models.Requests;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.ModelBinding;
 using Swashbuckle.AspNetCore.SwaggerGen;
-using OrderStatus = Lykke.Service.HFT.Models.Requests.OrderStatus;
 
 namespace Lykke.Service.HFT.Controllers
 {
@@ -52,60 +51,60 @@ namespace Lykke.Service.HFT.Controllers
         /// <returns>Client orders.</returns>
         [HttpGet]
         [SwaggerOperation(nameof(GetOrders))]
-        [ProducesResponseType(typeof(IEnumerable<Models.LimitOrderState>), (int)HttpStatusCode.OK)]
+        [ProducesResponseType(typeof(IEnumerable<LimitOrderStateModel>), (int)HttpStatusCode.OK)]
         [ProducesResponseType((int)HttpStatusCode.BadRequest)]
         public async Task<IActionResult> GetOrders(
-            [FromQuery] OrderStatus? status = null,
+            [FromQuery] OrderStatusQuery? status = null,
             [FromQuery] int? take = 100)
         {
             var toTake = take.ValidateAndGetValue(nameof(take), MaxPageSize, 100);
             if (toTake.Error != null)
             {
-                return BadRequest(new ResponseModel { Error = toTake.Error });
+                return BadRequest(toTake.Error);
             }
 
             if (!status.HasValue)
             {
-                status = OrderStatus.All;
+                status = OrderStatusQuery.All;
             }
 
             var clientId = User.GetUserId();
 
-            var states = new List<Core.Domain.OrderStatus>();
+            var states = new List<OrderStatus>();
             switch (status)
             {
-                case OrderStatus.All:
+                case OrderStatusQuery.All:
                     break;
-                case OrderStatus.Open:
-                    states.AddRange(new[] 
+                case OrderStatusQuery.Open:
+                    states.AddRange(new[]
                     {
-                        Core.Domain.OrderStatus.Pending,
-                        Core.Domain.OrderStatus.InOrderBook,
-                        Core.Domain.OrderStatus.Processing
+                        OrderStatus.Pending,
+                        OrderStatus.InOrderBook,
+                        OrderStatus.Processing
                     });
                     break;
-                case OrderStatus.InOrderBook:
-                    states.Add(Core.Domain.OrderStatus.InOrderBook);
+                case OrderStatusQuery.InOrderBook:
+                    states.Add(OrderStatus.InOrderBook);
                     break;
-                case OrderStatus.Processing:
-                    states.Add(Core.Domain.OrderStatus.Processing);
+                case OrderStatusQuery.Processing:
+                    states.Add(OrderStatus.Processing);
                     break;
-                case OrderStatus.Matched:
-                    states.Add(Core.Domain.OrderStatus.Matched);
+                case OrderStatusQuery.Matched:
+                    states.Add(OrderStatus.Matched);
                     break;
-                case OrderStatus.Cancelled:
-                    states.Add(Core.Domain.OrderStatus.Cancelled);
+                case OrderStatusQuery.Cancelled:
+                    states.Add(OrderStatus.Cancelled);
                     break;
-                case OrderStatus.Rejected:
-                    states = Enum.GetValues(typeof(Core.Domain.OrderStatus))
-                        .Cast<Core.Domain.OrderStatus>()
+                case OrderStatusQuery.Rejected:
+                    states = Enum.GetValues(typeof(OrderStatus))
+                        .Cast<OrderStatus>()
                         .Except(new[]
                         {
-                            Core.Domain.OrderStatus.Pending,
-                            Core.Domain.OrderStatus.InOrderBook,
-                            Core.Domain.OrderStatus.Processing,
-                            Core.Domain.OrderStatus.Matched,
-                            Core.Domain.OrderStatus.Cancelled
+                            OrderStatus.Pending,
+                            OrderStatus.InOrderBook,
+                            OrderStatus.Processing,
+                            OrderStatus.Matched,
+                            OrderStatus.Cancelled
                         })
                         .ToList();
                     break;
@@ -113,7 +112,7 @@ namespace Lykke.Service.HFT.Controllers
 
             var result = await _orderStateCache.GetOrdersByStatus(clientId, states, toTake.Result);
 
-            return Ok(result.Select(x => x.ConvertToApiModel()));
+            return Ok(result.Select(ToModel));
         }
 
 
@@ -124,7 +123,7 @@ namespace Lykke.Service.HFT.Controllers
         /// <returns>Order info.</returns>
         [HttpGet("{id}")]
         [SwaggerOperation(nameof(GetOrder))]
-        [ProducesResponseType(typeof(Models.LimitOrderState), (int)HttpStatusCode.OK)]
+        [ProducesResponseType(typeof(LimitOrderStateModel), (int)HttpStatusCode.OK)]
         [ProducesResponseType((int)HttpStatusCode.NotFound)]
         public async Task<IActionResult> GetOrder(Guid id)
         {
@@ -145,18 +144,19 @@ namespace Lykke.Service.HFT.Controllers
                 }
             }
 
-            return Ok(order.ConvertToApiModel());
+            return Ok(ToModel(order));
         }
 
         /// <summary>
         /// Place a market order.
         /// </summary>
         /// <returns>Average strike price.</returns>
+        // TODO make this method obsolete and introduce a v2 that returns a DTO instead of ResponseModel{double}
         [HttpPost("market")]
         [SwaggerOperation(nameof(PlaceMarketOrder))]
         [ProducesResponseType(typeof(ResponseModel<double>), (int)HttpStatusCode.OK)]
-        [ProducesResponseType(typeof(ResponseModel<double>), (int)HttpStatusCode.BadRequest)]
-        public async Task<IActionResult> PlaceMarketOrder([FromBody] MarketOrderRequest order)
+        [ProducesResponseType(typeof(ResponseModel), (int)HttpStatusCode.BadRequest)]
+        public async Task<IActionResult> PlaceMarketOrder([FromBody] PlaceMarketOrderModel order)
         {
             if (!ModelState.IsValid)
             {
@@ -199,7 +199,7 @@ namespace Lykke.Service.HFT.Controllers
                 return BadRequest(response);
             }
 
-            return Ok(ResponseModel<double>.CreateOk(response.Result));
+            return Ok(response);
         }
 
         /// <summary>
@@ -210,7 +210,7 @@ namespace Lykke.Service.HFT.Controllers
         [SwaggerOperation(nameof(PlaceLimitOrder))]
         [ProducesResponseType(typeof(Guid), (int)HttpStatusCode.OK)]
         [ProducesResponseType(typeof(ResponseModel), (int)HttpStatusCode.BadRequest)]
-        public async Task<IActionResult> PlaceLimitOrder([FromBody] LimitOrderRequest order)
+        public async Task<IActionResult> PlaceLimitOrder([FromBody] PlaceLimitOrderModel order)
         {
             if (!ModelState.IsValid)
             {
@@ -299,7 +299,7 @@ namespace Lykke.Service.HFT.Controllers
                 return Forbid();
             }
 
-            if (order.Status == Core.Domain.OrderStatus.Cancelled)
+            if (order.Status == OrderStatus.Cancelled)
             {
                 return Ok();
             }
@@ -360,6 +360,21 @@ namespace Lykke.Service.HFT.Controllers
             }
 
             return Ok();
+        }
+
+        private static LimitOrderStateModel ToModel(ILimitOrderState order)
+        {
+            return new LimitOrderStateModel
+            {
+                Id = order.Id,
+                AssetPairId = order.AssetPairId,
+                CreatedAt = order.CreatedAt,
+                LastMatchTime = order.LastMatchTime,
+                Price = order.Price,
+                RemainingVolume = order.RemainingVolume,
+                Status = order.Status,
+                Volume = order.Volume
+            };
         }
 
         private static ResponseModel ToResponseModel(ModelStateDictionary modelState)

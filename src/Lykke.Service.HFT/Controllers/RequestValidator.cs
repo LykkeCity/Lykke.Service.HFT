@@ -1,6 +1,6 @@
 ﻿using System;
+using Lykke.Service.HFT.Contracts;
 using Lykke.Service.HFT.Core;
-using Lykke.Service.HFT.Core.Domain;
 
 namespace Lykke.Service.HFT.Controllers
 {
@@ -16,7 +16,7 @@ namespace Lykke.Service.HFT.Controllers
         {
             if (assetPair == null)
             {
-                model = ResponseModel.CreateFail(ResponseModel.ErrorCodeType.UnknownAsset);
+                model = ResponseModel.CreateFail(ErrorCodeType.UnknownAsset, ErrorCodeType.UnknownAsset.GetErrorMessage());
                 return false;
             }
             if (IsAssetPairDisabled(assetPair))
@@ -33,7 +33,7 @@ namespace Lykke.Service.HFT.Controllers
         {
             if (Math.Abs(volume) < double.Epsilon || Math.Abs(volume) < minVolume)
             {
-                model = ResponseModel.CreateFail(ResponseModel.ErrorCodeType.Dust, $"The amount should be higher than minimal order size {minVolume} {asset}");
+                model = ResponseModel.CreateFail(ErrorCodeType.Dust, $"The amount should be higher than minimal order size {minVolume} {asset}");
                 return false;
             }
 

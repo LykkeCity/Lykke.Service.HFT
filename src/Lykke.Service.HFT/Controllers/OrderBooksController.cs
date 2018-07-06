@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Net;
 using System.Threading.Tasks;
-using Lykke.Service.HFT.Core.Domain;
+using Lykke.Service.HFT.Contracts.OrderBook;
 using Lykke.Service.HFT.Core.Services;
 using Microsoft.AspNetCore.Mvc;
 using Swashbuckle.AspNetCore.SwaggerGen;
@@ -27,12 +27,11 @@ namespace Lykke.Service.HFT.Controllers
         /// <returns>All order books.</returns>
         [HttpGet]
         [SwaggerOperation("GetOrderBooks")]
-        [ProducesResponseType(typeof(IEnumerable<OrderBook>), (int)HttpStatusCode.OK)]
+        [ProducesResponseType(typeof(IEnumerable<OrderBookModel>), (int)HttpStatusCode.OK)]
         public async Task<IActionResult> GetOrderBooks()
         {
             var orderBooks = await _orderBooksService.GetAllAsync();
             return Ok(orderBooks);
-
         }
 
         /// <summary>
@@ -42,7 +41,7 @@ namespace Lykke.Service.HFT.Controllers
         /// <returns>Order books for a specified asset pair.</returns>
         [HttpGet("{assetPairId}")]
         [SwaggerOperation("GetOrderBook")]
-        [ProducesResponseType(typeof(IEnumerable<OrderBook>), (int)HttpStatusCode.OK)]
+        [ProducesResponseType(typeof(IEnumerable<OrderBookModel>), (int)HttpStatusCode.OK)]
         [ProducesResponseType((int)HttpStatusCode.NotFound)]
         public async Task<IActionResult> GetOrderBook(string assetPairId)
         {

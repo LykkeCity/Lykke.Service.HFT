@@ -1,5 +1,4 @@
 ﻿using Lykke.Service.HFT.Core;
-using Lykke.Service.HFT.Core.Domain;
 using Lykke.Service.HFT.Core.Services;
 using Microsoft.Extensions.Caching.Distributed;
 using Newtonsoft.Json;
@@ -7,6 +6,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using Lykke.Service.HFT.Contracts.OrderBook;
 
 namespace Lykke.Service.HFT.Services
 {
@@ -40,7 +40,7 @@ namespace Lykke.Service.HFT.Services
             return results.SelectMany(x => x).ToHashSet();
         }
 
-        public async Task<IEnumerable<OrderBook>> GetAllAsync()
+        public async Task<IEnumerable<OrderBookModel>> GetAllAsync()
         {
             var assetPairs = await _assetServiceDecorator.GetAllEnabledAssetPairsAsync();
             var results = await Task.WhenAll(assetPairs.Select(pair => GetAsync(pair.Id)));
@@ -48,7 +48,7 @@ namespace Lykke.Service.HFT.Services
             return results.SelectMany(x => x).Where(x => x != null).ToList();
         }
 
-        public async Task<IEnumerable<OrderBook>> GetAsync(string assetPairId)
+        public async Task<IEnumerable<OrderBookModel>> GetAsync(string assetPairId)
         {
             if (string.IsNullOrWhiteSpace(assetPairId)) throw new ArgumentException(nameof(assetPairId));
 
@@ -58,12 +58,12 @@ namespace Lykke.Service.HFT.Services
             return new[] { sellBook, buyBook };
         }
 
-        private async Task<OrderBook> GetOrderBook(string assetPair, bool buy)
+        private async Task<OrderBookModel> GetOrderBook(string assetPair, bool buy)
         {
             var orderBook = await _distributedCache.GetStringAsync(_settings.GetKeyForOrderBook(assetPair, buy));
             return orderBook != null
-                ? JsonConvert.DeserializeObject<OrderBook>(orderBook)
-                : new OrderBook { AssetPair = assetPair, IsBuy = buy, Timestamp = DateTime.UtcNow };
+                ? JsonConvert.DeserializeObject<OrderBookModel>(orderBook)
+                : new OrderBookModel { AssetPair = assetPair, IsBuy = buy, Timestamp = DateTime.UtcNow };
         }
 
         private async Task<IEnumerable<Guid>> GetOrderIds(string assetPairId, bool buy)
