@@ -4,6 +4,7 @@ using System.Linq.Expressions;
 using System.Threading.Tasks;
 using Common;
 using Common.Log;
+using Lykke.Common.Log;
 using Lykke.Service.HFT.Contracts.Orders;
 using Lykke.Service.HFT.Core.Domain;
 using Lykke.Service.HFT.Core.Repositories;
@@ -21,12 +22,12 @@ namespace Lykke.Service.HFT.PeriodicalHandlers
         public GhostOrdersRemover(
             TimeSpan checkInterval,
             IOrderBooksService orderBooksService,
-            ILog log,
+            ILogFactory logFactory,
             IRepository<LimitOrderState> orderStateRepository)
-            : base(nameof(GhostOrdersRemover), (int)checkInterval.TotalMilliseconds, log)
+            : base(checkInterval, logFactory)
         {
             _orderBooksService = orderBooksService;
-            _log = log.CreateComponentScope(nameof(GhostOrdersRemover));
+            _log = logFactory.CreateLog(this);
             _orderStateRepository = orderStateRepository;
         }
 
@@ -44,7 +45,7 @@ namespace Lykke.Service.HFT.PeriodicalHandlers
             var ordersToCancel = ordersInOrderBookState.Where(order => !orderBook.Contains(order.Id)).ToList();
             if (ordersToCancel.Count > 0)
             {
-                _log.WriteWarning("Ghost orders check", ordersToCancel, $"{ordersToCancel.Count} orders are not in orderbook. Setting status as canceled.");
+                _log.Warning($"{ordersToCancel.Count} orders are not in orderbook. Setting status as canceled.", context: ordersToCancel);
                 foreach (var order in ordersToCancel)
                 {
                     order.Status = OrderStatus.Cancelled;

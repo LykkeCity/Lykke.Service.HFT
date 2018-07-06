@@ -4,6 +4,7 @@ using System.Linq.Expressions;
 using System.Threading.Tasks;
 using Common;
 using Common.Log;
+using Lykke.Common.Log;
 using Lykke.Service.HFT.Contracts.Orders;
 using Lykke.Service.HFT.Core.Domain;
 using Lykke.Service.HFT.Core.Repositories;
@@ -21,12 +22,12 @@ namespace Lykke.Service.HFT.PeriodicalHandlers
         public PendingOrdersChecker(
             TimeSpan checkInterval,
             IOrderBooksService orderBooksService,
-            ILog log,
+            ILogFactory logFactory,
             IRepository<LimitOrderState> orderStateRepository)
-            : base(nameof(GhostOrdersRemover), (int)checkInterval.TotalMilliseconds, log)
+            : base(checkInterval, logFactory)
         {
             _orderBooksService = orderBooksService;
-            _log = log.CreateComponentScope(nameof(GhostOrdersRemover));
+            _log = logFactory.CreateLog(this);
             _orderStateRepository = orderStateRepository;
         }
 
@@ -41,7 +42,7 @@ namespace Lykke.Service.HFT.PeriodicalHandlers
             var ordersInOrderBook = pendingOrders.Where(order => orderBook.Contains(order.Id)).ToList();
             if (ordersInOrderBook.Count > 0)
             {
-                _log.WriteWarning("Pending orders check", ordersInOrderBook, $"{ordersInOrderBook.Count} orders are in orderbook.");
+                _log.Warning($"{ordersInOrderBook.Count} orders are in orderbook.", context: ordersInOrderBook);
                 foreach (var order in ordersInOrderBook)
                 {
                     order.Status = OrderStatus.InOrderBook;

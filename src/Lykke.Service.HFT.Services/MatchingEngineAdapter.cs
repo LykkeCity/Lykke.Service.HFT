@@ -1,9 +1,9 @@
 ﻿using System;
 using System.Threading.Tasks;
 using Common.Log;
-using JetBrains.Annotations;
-using Lykke.MatchingEngine.Connector.Abstractions.Models;
+using Lykke.Common.Log;
 using Lykke.MatchingEngine.Connector.Abstractions.Services;
+using Lykke.MatchingEngine.Connector.Models.Api;
 using Lykke.Service.Assets.Client.Models;
 using Lykke.Service.HFT.Contracts;
 using Lykke.Service.HFT.Core;
@@ -24,18 +24,22 @@ namespace Lykke.Service.HFT.Services
         public MatchingEngineAdapter(IMatchingEngineClient matchingEngineClient,
             ILimitOrderStateRepository orderStateRepository,
             IFeeCalculatorAdapter feeCalculator,
-            [NotNull] ILog log)
+            ILogFactory logFactory)
         {
             _matchingEngineClient = matchingEngineClient ?? throw new ArgumentNullException(nameof(matchingEngineClient));
             _orderStateRepository = orderStateRepository ?? throw new ArgumentNullException(nameof(orderStateRepository));
             _feeCalculator = feeCalculator ?? throw new ArgumentNullException(nameof(feeCalculator));
-            _log = log ?? throw new ArgumentNullException(nameof(log));
+
+            if (logFactory == null)
+                throw new ArgumentNullException(nameof(logFactory));
+
+            _log = logFactory.CreateLog(this);
         }
 
         public async Task<ResponseModel> CancelLimitOrderAsync(Guid limitOrderId)
         {
             var response = await _matchingEngineClient.CancelLimitOrderAsync(limitOrderId.ToString());
-            await CheckResponseAndThrowIfNull(response);
+            CheckResponseAndThrowIfNull(response);
 
             if (response.Status == MeStatusCodes.Ok)
             {
@@ -56,7 +60,7 @@ namespace Lykke.Service.HFT.Services
             };
 
             var response = await _matchingEngineClient.MassCancelLimitOrdersAsync(model);
-            await CheckResponseAndThrowIfNull(response);
+            CheckResponseAndThrowIfNull(response);
 
             return ConvertToApiModel(response.Status);
         }
@@ -77,7 +81,7 @@ namespace Lykke.Service.HFT.Services
             };
 
             var response = await _matchingEngineClient.HandleMarketOrderAsync(order);
-            await CheckResponseAndThrowIfNull(response);
+            CheckResponseAndThrowIfNull(response);
 
             return ConvertToApiModel(response.Status, response.Price);
         }
@@ -110,19 +114,19 @@ namespace Lykke.Service.HFT.Services
             };
 
             var response = await _matchingEngineClient.PlaceLimitOrderAsync(order);
-            await CheckResponseAndThrowIfNull(response);
+            CheckResponseAndThrowIfNull(response);
 
             return ConvertToApiModel(response.Status, requestId);
         }
 
         private static Guid GetNextRequestId() => Guid.NewGuid();
 
-        private async Task CheckResponseAndThrowIfNull(object response)
+        private void CheckResponseAndThrowIfNull(object response)
         {
             if (response == null)
             {
                 var exception = new InvalidOperationException("ME not available");
-                await _log.WriteErrorAsync(nameof(MatchingEngineAdapter), nameof(CancelLimitOrderAsync), exception);
+                _log.Error(exception, process: nameof(CancelLimitOrderAsync));
                 throw exception;
             }
         }
@@ -195,7 +199,7 @@ namespace Lykke.Service.HFT.Services
                 case MeStatusCodes.NotFoundPrevious:
                     return ErrorCodeType.NotFoundPrevious;
                 default:
-                    _log.WriteWarning(nameof(MatchingEngineAdapter), nameof(GetErrorCodeType), $"Unknown ME status code {code}");
+                    _log.Warning($"Unknown ME status code {code}", process: nameof(GetErrorCodeType));
                     return ErrorCodeType.Runtime;
             }
         }
