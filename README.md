@@ -1,6 +1,6 @@
-# Lykke.Service.HftInternalService
+# Lykke.Service.Hft
 
-Lykke internal service for creation and management of high-frequency trading wallets and it's api-keys.
+Lykke service for high frequency trading.
 
 Nuget: https://www.nuget.org/packages/Lykke.Service.HFT.Client/
 
