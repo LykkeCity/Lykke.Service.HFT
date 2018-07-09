@@ -248,6 +248,36 @@ namespace Lykke.Service.HFT.Benchmarks
         }
 
         [Benchmark]
+        public async Task PlaceBulkOrder()
+        {
+            var client = GetClient<IOrdersApi>();
+            var order = new PlaceBulkOrderModel
+            {
+                AssetPairId = "BTCUSD",
+                CancelPreviousOrders = true,
+                Orders = Enumerable.Range(0,10).Select(x => new BulkOrderItemModel
+                {
+                    OrderAction = OrderAction.Buy,
+                    Price = 500 + x,
+                    Volume = 0.001
+                })
+            };
+
+            var result = await client.PlaceBulkOrder(order).TryExecute();
+
+            if (result.Success)
+            {
+                result.Result.Should().NotBeNull();
+                result.Result.Statuses.Should().HaveCount(10);
+                result.Result.Statuses.Should().NotContain(x => x.Id == Guid.Empty);
+            }
+            else
+            {
+                result.Error.Should().NotBeNull();
+            }
+        }
+
+        [Benchmark]
         public async Task CancelAll()
         {
             var client = GetClient<IOrdersApi>();

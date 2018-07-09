@@ -257,6 +257,68 @@ namespace Lykke.Service.HFT.Controllers
         }
 
         /// <summary>
+        /// Place a bulk limit order.
+        /// </summary>
+        /// <returns>Request id.</returns>
+        [HttpPost("bulk")]
+        [SwaggerOperation(nameof(PlaceBulkOrder))]
+        [ProducesResponseType(typeof(BulkOrderResponseModel), (int)HttpStatusCode.OK)]
+        [ProducesResponseType(typeof(ResponseModel), (int)HttpStatusCode.BadRequest)]
+        public async Task<IActionResult> PlaceBulkOrder([FromBody] PlaceBulkOrderModel order)
+        {
+            if (!ModelState.IsValid)
+            {
+                return BadRequest(ToResponseModel(ModelState));
+            }
+
+            var assetPair = await _assetServiceDecorator.GetEnabledAssetPairAsync(order.AssetPairId);
+
+            if (!_requestValidator.ValidateAssetPair(order.AssetPairId, assetPair, out var badRequestModel))
+            {
+                return BadRequest(badRequestModel);
+            }
+
+            var asset = await _assetServiceDecorator.GetEnabledAssetAsync(assetPair.BaseAssetId);
+            if (asset == null)
+                throw new InvalidOperationException($"Base asset '{assetPair.BaseAssetId}' for asset pair '{assetPair.Id}' not found.");
+
+            var items = order.Orders?.ToArray() ?? new BulkOrderItemModel[0];
+            foreach (var item in items)
+            {
+                var price = item.Price.TruncateDecimalPlaces(assetPair.Accuracy);
+                if (!_requestValidator.ValidatePrice(price, out badRequestModel))
+                {
+                    return BadRequest(badRequestModel);
+                }
+
+                var volume = item.Volume.TruncateDecimalPlaces(asset.Accuracy);
+                var minVolume = assetPair.MinVolume;
+                if (!_requestValidator.ValidateVolume(volume, minVolume, asset.DisplayId, out badRequestModel))
+                {
+                    return BadRequest(badRequestModel);
+                }
+
+                item.Price = price;
+                item.Volume = volume;
+            }
+
+            var clientId = User.GetUserId();
+            var response = await _matchingEngineAdapter.PlaceBulkLimitOrderAsync(
+                clientId: clientId,
+                assetPair: assetPair,
+                items: items,
+                cancelPrevious: order.CancelPreviousOrders,
+                cancelMode: order.CancelMode
+                );
+            if (response.Error != null)
+            {
+                return BadRequest(response);
+            }
+
+            return Ok(response.Result);
+        }
+
+        /// <summary>
         /// Cancel the limit order.
         /// </summary>
         /// <param name="id">Limit order id</param>

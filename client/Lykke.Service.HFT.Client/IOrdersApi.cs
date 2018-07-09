@@ -63,6 +63,17 @@ namespace Lykke.Service.HFT.Client
             [Header("api-key")] string apiKey = null);
 
         /// <summary>
+        /// Places a bulk limit order.
+        /// </summary>
+        /// <param name="bulkOrder">The bulk order data.</param>
+        /// <param name="apiKey">The API key header. Can also be send using a custom handler or the Lykke WithApiKey call on the client generator.</param>
+        /// <returns>the limit order ID</returns>
+        [Post("/api/Orders/bulk")]
+        Task<BulkOrderResponseModel> PlaceBulkOrder(
+            [Body] PlaceBulkOrderModel bulkOrder,
+            [Header("api-key")] string apiKey = null);
+
+        /// <summary>
         /// Cancels the specific limit order.
         /// </summary>
         /// <param name="id">The order identifier.</param>
