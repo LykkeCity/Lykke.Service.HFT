@@ -16,8 +16,8 @@ using Lykke.Service.HFT.Core;
 using Lykke.Service.HFT.Core.Domain;
 using Lykke.Service.HFT.Core.Repositories;
 using Lykke.Service.HFT.Core.Services;
-using OrderAction = Lykke.Service.HFT.Contracts.Orders.OrderAction;
 using CancelMode = Lykke.Service.HFT.Contracts.Orders.CancelMode;
+using OrderAction = Lykke.Service.HFT.Contracts.Orders.OrderAction;
 
 namespace Lykke.Service.HFT.Services
 {
@@ -63,7 +63,7 @@ namespace Lykke.Service.HFT.Services
             return ConvertToApiModel(response.Status);
         }
 
-        public async Task<ResponseModel<double>> HandleMarketOrderAsync(string clientId, AssetPair assetPair, OrderAction orderAction, double volume,
+        public async Task<ResponseModel<MarketOrderResponseModel>> PlaceMarketOrderAsync(string clientId, AssetPair assetPair, OrderAction orderAction, double volume,
             bool straight, double? reservedLimitVolume = null)
         {
             var order = new MarketOrderModel
@@ -81,10 +81,15 @@ namespace Lykke.Service.HFT.Services
             var response = await _matchingEngineClient.HandleMarketOrderAsync(order);
             await CheckResponseAndThrowIfNull(response);
 
-            return ConvertToApiModel(response.Status, response.Price);
+            var result = new MarketOrderResponseModel
+            {
+                Price = response.Price
+            };
+
+            return ConvertToApiModel(response.Status, result);
         }
 
-        public async Task<ResponseModel<Guid>> PlaceLimitOrderAsync(string clientId, AssetPair assetPair, OrderAction orderAction, double volume,
+        public async Task<ResponseModel<LimitOrderResponseModel>> PlaceLimitOrderAsync(string clientId, AssetPair assetPair, OrderAction orderAction, double volume,
             double price, bool cancelPreviousOrders = false)
         {
             var requestId = await StoreLimitOrder(clientId, assetPair, volume, price);
@@ -104,7 +109,12 @@ namespace Lykke.Service.HFT.Services
             var response = await _matchingEngineClient.PlaceLimitOrderAsync(order);
             await CheckResponseAndThrowIfNull(response);
 
-            return ConvertToApiModel(response.Status, requestId);
+            var result = new LimitOrderResponseModel
+            {
+                Id = requestId
+            };
+
+            return ConvertToApiModel(response.Status, result);
         }
 
         private async Task<Guid> StoreLimitOrder(string clientId, AssetPair assetPair, double volume, double price)

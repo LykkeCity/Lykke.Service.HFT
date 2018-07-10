@@ -208,9 +208,9 @@ namespace Lykke.Service.HFT.Benchmarks
 
             var result = await client.PlaceMarketOrder(order).TryExecute();
 
-            if (result.Success && result.Result.Error == null)
+            if (result.Success)
             {
-                result.Result.Result.Should().BeGreaterThan(0d);
+                result.Result.Price.Should().BeGreaterThan(0d);
             }
             else
             {
@@ -234,7 +234,7 @@ namespace Lykke.Service.HFT.Benchmarks
 
             if (result.Success)
             {
-                result.Result.Should().NotBe(Guid.Empty);
+                result.Result.Id.Should().NotBe(Guid.Empty);
             }
             else
             {
@@ -243,7 +243,7 @@ namespace Lykke.Service.HFT.Benchmarks
 
             if (result.Success)
             {
-                await client.CancelLimitOrder(result.Result);
+                await client.CancelLimitOrder(result.Result.Id);
             }
         }
 

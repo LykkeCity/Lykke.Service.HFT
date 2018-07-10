@@ -151,10 +151,31 @@ namespace Lykke.Service.HFT.Controllers
         /// Place a market order.
         /// </summary>
         /// <returns>Average strike price.</returns>
-        // TODO make this method obsolete and introduce a v2 that returns a DTO instead of ResponseModel{double}
         [HttpPost("market")]
+        [Obsolete("Use the v2 version for placing market orders")]
         [SwaggerOperation(nameof(PlaceMarketOrder))]
         [ProducesResponseType(typeof(ResponseModel<double>), (int)HttpStatusCode.OK)]
+        [ProducesResponseType(typeof(ResponseModel), (int)HttpStatusCode.BadRequest)]
+        public async Task<IActionResult> PlaceMarketOrderOld([FromBody] PlaceMarketOrderModel order)
+        {
+            var result = await PlaceMarketOrder(order);
+
+            if (!(result is OkObjectResult okResult))
+            {
+                return result;
+            }
+
+            var response = (MarketOrderResponseModel) okResult.Value;
+            return Ok(response.Price);
+        }
+
+        /// <summary>
+        /// Place a market order.
+        /// </summary>
+        /// <returns>Average strike price.</returns>
+        [HttpPost("v2/market")]
+        [SwaggerOperation(nameof(PlaceMarketOrder))]
+        [ProducesResponseType(typeof(MarketOrderResponseModel), (int)HttpStatusCode.OK)]
         [ProducesResponseType(typeof(ResponseModel), (int)HttpStatusCode.BadRequest)]
         public async Task<IActionResult> PlaceMarketOrder([FromBody] PlaceMarketOrderModel order)
         {
@@ -186,7 +207,7 @@ namespace Lykke.Service.HFT.Controllers
             }
 
             var clientId = User.GetUserId();
-            var response = await _matchingEngineAdapter.HandleMarketOrderAsync(
+            var response = await _matchingEngineAdapter.PlaceMarketOrderAsync(
                 clientId: clientId,
                 assetPair: assetPair,
                 orderAction: order.OrderAction,
@@ -199,7 +220,7 @@ namespace Lykke.Service.HFT.Controllers
                 return BadRequest(response);
             }
 
-            return Ok(response);
+            return Ok(response.Result);
         }
 
         /// <summary>
@@ -207,8 +228,30 @@ namespace Lykke.Service.HFT.Controllers
         /// </summary>
         /// <returns>Request id.</returns>
         [HttpPost("limit")]
+        [Obsolete("Use the v2 version for placing limit orders")]
         [SwaggerOperation(nameof(PlaceLimitOrder))]
         [ProducesResponseType(typeof(Guid), (int)HttpStatusCode.OK)]
+        [ProducesResponseType(typeof(ResponseModel), (int)HttpStatusCode.BadRequest)]
+        public async Task<IActionResult> PlaceLimitOrderOld([FromBody] PlaceLimitOrderModel order)
+        {
+            var result = await PlaceLimitOrder(order);
+
+            if (!(result is OkObjectResult okResult))
+            {
+                return result;
+            }
+
+            var response = (LimitOrderResponseModel)okResult.Value;
+            return Ok(response.Id);
+        }
+
+        /// <summary>
+        /// Place a limit order.
+        /// </summary>
+        /// <returns>Request id.</returns>
+        [HttpPost("v2/limit")]
+        [SwaggerOperation(nameof(PlaceLimitOrder))]
+        [ProducesResponseType(typeof(LimitOrderResponseModel), (int)HttpStatusCode.OK)]
         [ProducesResponseType(typeof(ResponseModel), (int)HttpStatusCode.BadRequest)]
         public async Task<IActionResult> PlaceLimitOrder([FromBody] PlaceLimitOrderModel order)
         {
