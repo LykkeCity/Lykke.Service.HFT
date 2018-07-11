@@ -1,4 +1,5 @@
 ﻿using System.Net;
+using Lykke.Sdk;
 using Lykke.Service.HFT.Contracts;
 using Lykke.Service.HFT.Contracts.Health;
 using Lykke.Service.HFT.Core.Services;
@@ -40,7 +41,7 @@ namespace Lykke.Service.HFT.Controllers
             return Ok(new IsAliveModel
             {
                 Version = Microsoft.Extensions.PlatformAbstractions.PlatformServices.Default.Application.ApplicationVersion,
-                Env = Program.EnvInfo,
+                Env = LykkeStarter.EnvInfo,
 #if DEBUG
                 IsDebug = true,
 #else

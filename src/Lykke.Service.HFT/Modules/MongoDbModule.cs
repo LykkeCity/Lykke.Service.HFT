@@ -9,21 +9,25 @@ namespace Lykke.Service.HFT.Modules
 {
     public class MongoDbModule : Module
     {
-        private readonly IReloadingManager<AppSettings.MongoSettings> _settings;
+        private readonly IReloadingManager<AppSettings> _settings;
 
-        public MongoDbModule(IReloadingManager<AppSettings.MongoSettings> settings)
+        public MongoDbModule(IReloadingManager<AppSettings> settings)
         {
             _settings = settings;
         }
 
         protected override void Load(ContainerBuilder builder)
         {
-            ConventionRegistry.Register("Ignore extra", new ConventionPack { new IgnoreExtraElementsConvention(true) }, x => true);
+            builder.Register(x =>
+                {
+                    ConventionRegistry.Register("Ignore extra", new ConventionPack { new IgnoreExtraElementsConvention(true) }, _ => true);
 
-            var mongoUrl = new MongoUrl(_settings.CurrentValue.ConnectionString);
-            MongoDefaults.GuidRepresentation = GuidRepresentation.Standard;
-            var database = new MongoClient(mongoUrl).GetDatabase(mongoUrl.DatabaseName);
-            builder.RegisterInstance(database);
+                    var mongoUrl = new MongoUrl(_settings.CurrentValue.HighFrequencyTradingService.MongoSettings.ConnectionString);
+                    MongoDefaults.GuidRepresentation = GuidRepresentation.Standard;
+                    return new MongoClient(mongoUrl).GetDatabase(mongoUrl.DatabaseName);
+                })
+                .As<IMongoDatabase>()
+                .SingleInstance();
         }
     }
 }

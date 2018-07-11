@@ -1,18 +1,17 @@
-﻿using Lykke.Common.Chaos;
-using Lykke.Service.OperationsHistory.Client;
-using Lykke.SettingsReader.Attributes;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Net;
+using Lykke.Common.Chaos;
+using Lykke.Sdk.Settings;
+using Lykke.Service.OperationsHistory.Client;
+using Lykke.SettingsReader.Attributes;
 
 namespace Lykke.Service.HFT.Core
 {
-    public class AppSettings
+    public class AppSettings : BaseAppSettings
     {
-        public MonitoringServiceClientSettings MonitoringServiceClient { get; set; }
         public HighFrequencyTradingSettings HighFrequencyTradingService { get; set; }
         public MatchingEngineSettings MatchingEngineClient { get; set; }
-        public SlackNotificationsSettings SlackNotifications { get; set; }
         public AssetsServiceClient AssetsServiceClient { get; set; }
         public BalancesServiceClient BalancesServiceClient { get; set; }
         public FeeCalculatorServiceClient FeeCalculatorServiceClient { get; set; }

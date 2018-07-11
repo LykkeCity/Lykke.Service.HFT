@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Dynamic;
 using System.Threading.Tasks;
 using Autofac;
 using Common.Log;
@@ -11,7 +10,6 @@ using Lykke.Service.HFT.Core;
 using Lykke.Service.OperationsHistory.Client;
 using Lykke.SettingsReader;
 using Microsoft.Extensions.Logging;
-using Module = Autofac.Module;
 
 namespace Lykke.Service.HFT.Modules
 {
@@ -43,7 +41,7 @@ namespace Lykke.Service.HFT.Modules
         }
 
         // TODO Remove when all client libraries support new logging framework
-        private class LogWrapper : DynamicObject, ILog
+        private class LogWrapper : ILog
         {
 #pragma warning disable CS0612 // Type or member is obsolete
 #pragma warning disable 618

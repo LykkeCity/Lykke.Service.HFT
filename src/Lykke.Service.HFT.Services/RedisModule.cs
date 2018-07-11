@@ -1,5 +1,6 @@
 ﻿using Autofac;
 using Lykke.Service.HFT.Core;
+using Lykke.SettingsReader;
 using StackExchange.Redis;
 
 namespace Lykke.Service.HFT.Services
@@ -8,9 +9,9 @@ namespace Lykke.Service.HFT.Services
     {
         private readonly CacheSettings _settings;
 
-        public RedisModule(CacheSettings settings)
+        public RedisModule(IReloadingManager<AppSettings> settings)
         {
-            _settings = settings;
+            _settings = settings.CurrentValue.HighFrequencyTradingService.CacheSettings;
         }
 
         protected override void Load(ContainerBuilder builder)
