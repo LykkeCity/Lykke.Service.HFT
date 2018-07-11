@@ -13,7 +13,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="BenchmarkDotNet" Version="0.10.14" />
+    <PackageReference Include="BenchmarkDotNet" Version="0.11.0" />
     <PackageReference Include="FluentAssertions" Version="5.4.1" />
     <PackageReference Include="Lykke.HttpClientGenerator" Version="2.1.0" />
   </ItemGroup>

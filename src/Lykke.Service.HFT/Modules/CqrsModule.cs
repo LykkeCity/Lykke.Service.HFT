@@ -19,9 +19,9 @@ namespace Lykke.Service.HFT.Modules
     {
         private readonly AppSettings.HighFrequencyTradingSettings _settings;
 
-        public CqrsModule(IReloadingManager<AppSettings.HighFrequencyTradingSettings> settingsManager)
+        public CqrsModule(IReloadingManager<AppSettings> settingsManager)
         {
-            _settings = settingsManager.CurrentValue;
+            _settings = settingsManager.CurrentValue.HighFrequencyTradingService;
         }
 
         protected override void Load(ContainerBuilder builder)

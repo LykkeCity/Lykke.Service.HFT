@@ -1,196 +1,100 @@
 ﻿using System;
 using System.IO;
 using System.Linq;
-using System.Threading.Tasks;
 using AspNetCoreRateLimit;
-using Autofac;
-using Autofac.Extensions.DependencyInjection;
-using Common.Log;
-using Lykke.Common.ApiLibrary.Middleware;
-using Lykke.Common.ApiLibrary.Swagger;
-using Lykke.Common.Log;
-using Lykke.Logs;
-using Lykke.MonitoringServiceApiCaller;
+using JetBrains.Annotations;
+using Lykke.Sdk;
+using Lykke.Sdk.Health;
+using Lykke.Sdk.Middleware;
 using Lykke.Service.HFT.Contracts;
 using Lykke.Service.HFT.Core;
-using Lykke.Service.HFT.Core.Services;
 using Lykke.Service.HFT.Infrastructure;
 using Lykke.Service.HFT.Middleware;
-using Lykke.Service.HFT.Modules;
 using Lykke.Service.HFT.Services;
 using Lykke.Service.HFT.Wamp;
 using Lykke.Service.HFT.Wamp.Modules;
-using Lykke.SettingsReader;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
-using Microsoft.AspNetCore.Http;
-using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using WampSharp.V2;
-using WampSharp.V2.MetaApi;
-using WampSharp.V2.Realm;
 
 namespace Lykke.Service.HFT
 {
-    public class Startup
+    internal sealed class Startup
     {
-        private string _monitoringServiceUrl;
-        private const string ApiVersion = "v1";
-        private const string ApiTitle = "High-frequency trading API";
-
-        private ILog _log;
-        private IHealthNotifier _healthNotifier;
+        private readonly LykkeSwaggerOptions _swaggerOptions = new LykkeSwaggerOptions
+        {
+            ApiVersion = "v1",
+            ApiTitle = "High-frequency trading API"
+        };
 
         public IHostingEnvironment Environment { get; }
-        public IContainer ApplicationContainer { get; private set; }
-        public IConfigurationRoot Configuration { get; }
 
         public Startup(IHostingEnvironment env)
         {
-            var builder = new ConfigurationBuilder()
-                .SetBasePath(env.ContentRootPath)
-                .AddEnvironmentVariables();
-            Configuration = builder.Build();
-
             Environment = env;
         }
 
+        [UsedImplicitly]
         public IServiceProvider ConfigureServices(IServiceCollection services)
         {
-            try
+            return services.BuildServiceProvider<AppSettings>(options =>
             {
-                services.AddMvc()
-                        .AddJsonOptions(options =>
-                        {
-                            options.SerializerSettings.ContractResolver = new Newtonsoft.Json.Serialization.DefaultContractResolver();
-                            options.SerializerSettings.Converters.Add(new Newtonsoft.Json.Converters.StringEnumConverter());
-                        });
-                services.AddAuthentication(KeyAuthOptions.AuthenticationScheme)
-                    .AddScheme<KeyAuthOptions, KeyAuthHandler>(KeyAuthOptions.AuthenticationScheme, "", options => { });
-
-                services.AddSwaggerGen(options =>
+                options.Logs = logs =>
                 {
-                    options.DefaultLykkeConfiguration(ApiVersion, ApiTitle);
-                    options.OperationFilter<ApiKeyHeaderOperationFilter>();
-                    options.DescribeAllEnumsAsStrings();
+                    logs.AzureTableName = "HighFrequencyTradingLog";
+                    logs.AzureTableConnectionStringResolver = settings => settings.HighFrequencyTradingService.Db.LogsConnString;
+                };
+
+                options.SwaggerOptions = _swaggerOptions;
+
+                options.Swagger = swagger =>
+                {
+                    swagger.OperationFilter<ApiKeyHeaderOperationFilter>();
+                    swagger.DescribeAllEnumsAsStrings();
 
                     // Include XML comments from contracts.
-                    var baseDirectory = AppDomain.CurrentDomain.BaseDirectory;
-                    options.IncludeXmlComments(Path.Combine(baseDirectory, typeof(ResponseModel).Assembly.GetName().Name + ".xml"));
-                });
+                    swagger.IncludeXmlComments(Path.Combine(Environment.ContentRootPath, typeof(ResponseModel).Assembly.GetName().Name + ".xml"));
+                };
 
-                services.AddOptions();
+                options.RegisterAdditionalModules = x =>
+                {
+                    x.RegisterModule<WampModule>();
+                    x.RegisterModule<RedisModule>();
+                };
 
-                var builder = new ContainerBuilder();
-                var appSettings = Configuration.LoadSettings<AppSettings>();
-                _monitoringServiceUrl = appSettings.CurrentValue.MonitoringServiceClient.MonitoringServiceUrl;
+                options.Extend = (sc, settings) =>
+                {
+                    sc
+                        .AddOptions()
+                        .AddAuthentication(KeyAuthOptions.AuthenticationScheme)
+                        .AddScheme<KeyAuthOptions, KeyAuthHandler>(KeyAuthOptions.AuthenticationScheme, null);
 
-                services.AddLykkeLogging(
-                    appSettings.Nested(x => x.HighFrequencyTradingService.Db.LogsConnString),
-                    "HighFrequencyTradingLog",
-                    appSettings.CurrentValue.SlackNotifications.AzureQueue.ConnectionString,
-                    appSettings.CurrentValue.SlackNotifications.AzureQueue.QueueName
-                );
-                
-                builder.Populate(services);
-
-                builder.RegisterModule(new ServiceModule(appSettings));
-                builder.RegisterModule(new MatchingEngineModule(appSettings));
-                builder.RegisterModule(new MongoDbModule(appSettings.Nested(x => x.HighFrequencyTradingService.MongoSettings)));
-                builder.RegisterModule(new RedisModule(appSettings.CurrentValue.HighFrequencyTradingService.CacheSettings));
-                builder.RegisterModule(new ClientsModule(appSettings));
-                builder.RegisterModule(new WampModule(appSettings.CurrentValue.HighFrequencyTradingService));
-                builder.RegisterModule(new CqrsModule(appSettings.Nested(x => x.HighFrequencyTradingService)));
-
-                ApplicationContainer = builder.Build();
-                _log = ApplicationContainer.Resolve<ILogFactory>().CreateLog(this);
-                _healthNotifier = ApplicationContainer.Resolve<IHealthNotifier>();
-
-                return new AutofacServiceProvider(ApplicationContainer);
-            }
-            catch (Exception ex)
-            {
-                _log?.Critical(ex, process: nameof(ConfigureServices));
-                throw;
-            }
+                };
+            });
         }
 
+        [UsedImplicitly]
         public void Configure(IApplicationBuilder app, IHostingEnvironment env, IApplicationLifetime appLifetime)
         {
-            try
-            {
-                var mode = ApplicationContainer.ResolveOptional<AppSettings.MaintenanceMode>();
-                if (mode != null && mode.Enabled)
+            var provider = app.ApplicationServices;
+
+            app.UseLykkeConfiguration(options =>
                 {
-                    app.Use(async (context, next) =>
+                    options.SwaggerOptions = _swaggerOptions;
+
+                    options.WithMiddleware = x =>
                     {
-                        context.Response.StatusCode = 503;
-                        await context.Response.WriteAsync(mode.Reason ?? "Service on maintenance");
-                    });
-                }
-
-                if (env.IsDevelopment())
-                {
-                    app.UseDeveloperExceptionPage();
-                }
-
-                app.UseLykkeMiddleware(ex => new { Message = "Technical problem" });
-
-                app.UseAuthentication();
-                app.UseMvc();
-                app.UseSwagger();
-                app.UseSwaggerUI(x =>
-                {
-                    x.RoutePrefix = "swagger/ui";
-                    x.SwaggerEndpoint("/swagger/v1/swagger.json", ApiVersion);
-                    x.DocumentTitle = ApiTitle;
+                        x.UseMaintenanceMode<AppSettings>(settings => new MaintenanceMode
+                        {
+                            Enabled = settings.HighFrequencyTradingService.MaintenanceMode?.Enabled ?? false,
+                            Reason = settings.HighFrequencyTradingService.MaintenanceMode?.Reason
+                        });
+                        x.UseAuthentication();
+                    };
                 });
-                app.UseStaticFiles();
 
-                var host = ApplicationContainer.Resolve<IWampHost>();
-                app.UseWampHost(host);
-
-                appLifetime.ApplicationStarted.Register(() => StartApplication().Wait());
-                appLifetime.ApplicationStopped.Register(CleanUp);
-            }
-            catch (Exception ex)
-            {
-                _log?.Critical(ex, process: nameof(Configure));
-                throw;
-            }
-        }
-
-        private async Task StartApplication()
-        {
-            try
-            {
-                await ApplicationContainer.Resolve<IStartupManager>().StartAsync();
-                await Configuration.RegisterInMonitoringServiceAsync(_monitoringServiceUrl, _healthNotifier);
-
-                _healthNotifier.Notify("Started", $"Env: {Program.EnvInfo}");
-            }
-            catch (Exception ex)
-            {
-                _log?.Critical(ex, process: nameof(StartApplication));
-                throw;
-            }
-        }
-
-
-        private void CleanUp()
-        {
-            try
-            {
-                _healthNotifier?.Notify("Terminating", $"Env: {Program.EnvInfo}");
-                ApplicationContainer.Dispose();
-            }
-            catch (Exception ex)
-            {
-                _log?.Critical(ex, process: nameof(CleanUp));
-                ApplicationContainer.Resolve<IWampHostedRealm>()?.HostMetaApiService()?.Dispose();
-
-                throw;
-            }
+            app.UseWampHost(provider.GetService<IWampHost>());
         }
     }
 }

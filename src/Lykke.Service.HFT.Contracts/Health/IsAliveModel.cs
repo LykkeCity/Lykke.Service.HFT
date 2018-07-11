@@ -10,6 +10,11 @@ namespace Lykke.Service.HFT.Contracts.Health
     public class IsAliveModel
     {
         /// <summary>
+        /// The name of the service.
+        /// </summary>
+        public string Name { get; set; }
+
+        /// <summary>
         /// The version of the service.
         /// </summary>
         public string Version { get; set; }
