@@ -72,6 +72,7 @@ namespace Lykke.Service.HFT.PeriodicalHandlers
                     sw.Restart();
 
                     notActiveOrders.Where(x => x.CreatedAt < MinimalTime).ForEach(x => x.CreatedAt = MinimalTime);
+                    notActiveOrders.Where(x => x.Registered < MinimalTime).ForEach(x => x.Registered = MinimalTime);
                     await _orderStateArchive.AddAsync(notActiveOrders);
                     _log.Info($"3. Migrated to azure in {sw.Elapsed.TotalMinutes} min.");
                     sw.Restart();
