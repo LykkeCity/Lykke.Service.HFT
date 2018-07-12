@@ -8,6 +8,7 @@ using Common.Log;
 using Lykke.Service.HFT.Contracts.Orders;
 using Lykke.Service.HFT.Core.Domain;
 using Lykke.Service.HFT.Core.Repositories;
+using MoreLinq;
 
 namespace Lykke.Service.HFT.PeriodicalHandlers
 {
@@ -15,6 +16,7 @@ namespace Lykke.Service.HFT.PeriodicalHandlers
     {
         private const int DefaultChunkSize = 5000;
         private const int MinimalChunkSize = 100;
+        private static readonly DateTime MinimalTime = new DateTime(1601, 1, 1);
         private readonly ILog _log;
         private readonly TimeSpan _activeOrdersWindow;
         private readonly IRepository<LimitOrderState> _orderStateCache;
@@ -65,6 +67,8 @@ namespace Lykke.Service.HFT.PeriodicalHandlers
                     _log.WriteInfo("OrderStateArchiver", null, $"2. Got {notActiveOrders.Count} orders in {sw.Elapsed.TotalSeconds} sec.");
                     sw.Restart();
 
+                    notActiveOrders.Where(x => x.CreatedAt < MinimalTime).ForEach(x => x.CreatedAt = MinimalTime);
+                    notActiveOrders.Where(x => x.Registered < MinimalTime).ForEach(x => x.Registered = MinimalTime);
                     await _orderStateArchive.AddAsync(notActiveOrders);
                     _log.WriteInfo("OrderStateArchiver", null, $"3. Migrated to azure in {sw.Elapsed.TotalMinutes} min.");
                     sw.Restart();
