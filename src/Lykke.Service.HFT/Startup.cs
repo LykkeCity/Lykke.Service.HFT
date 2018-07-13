@@ -11,6 +11,7 @@ using Lykke.Service.HFT.Core;
 using Lykke.Service.HFT.Infrastructure;
 using Lykke.Service.HFT.Middleware;
 using Lykke.Service.HFT.Services;
+using Lykke.Service.HFT.Swagger;
 using Lykke.Service.HFT.Wamp;
 using Lykke.Service.HFT.Wamp.Modules;
 using Microsoft.AspNetCore.Builder;
@@ -43,7 +44,8 @@ namespace Lykke.Service.HFT
                 options.Logs = logs =>
                 {
                     logs.AzureTableName = "HighFrequencyTradingLog";
-                    logs.AzureTableConnectionStringResolver = settings => settings.HighFrequencyTradingService.Db.LogsConnString;
+                    logs.AzureTableConnectionStringResolver =
+                        settings => settings.HighFrequencyTradingService.Db.LogsConnString;
                 };
 
                 options.SwaggerOptions = _swaggerOptions;
@@ -55,6 +57,8 @@ namespace Lykke.Service.HFT
 
                     // Include XML comments from contracts.
                     swagger.IncludeXmlComments(Path.Combine(Environment.ContentRootPath, typeof(ResponseModel).Assembly.GetName().Name + ".xml"));
+
+                    swagger.DocumentFilter<DefaultFilter>();
                 };
 
                 options.RegisterAdditionalModules = x =>

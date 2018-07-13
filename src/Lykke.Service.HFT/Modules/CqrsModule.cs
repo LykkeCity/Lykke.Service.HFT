@@ -15,7 +15,7 @@ using Microsoft.Extensions.Caching.Distributed;
 
 namespace Lykke.Service.HFT.Modules
 {
-    public class CqrsModule : Module
+    internal class CqrsModule : Module
     {
         private readonly AppSettings.HighFrequencyTradingSettings _settings;
 

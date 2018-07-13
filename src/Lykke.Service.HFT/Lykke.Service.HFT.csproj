@@ -3,9 +3,7 @@
   <PropertyGroup>
     <TargetFramework>netcoreapp2.1</TargetFramework>
     <OutputType>Exe</OutputType>
-    <Version>1.0.1</Version>
     <LangVersion>latest</LangVersion>
-    <NoWarn>1701;1702;1705;1591</NoWarn>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
   </PropertyGroup>
 

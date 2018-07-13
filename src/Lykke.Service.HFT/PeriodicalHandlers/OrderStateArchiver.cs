@@ -13,7 +13,7 @@ using MoreLinq;
 
 namespace Lykke.Service.HFT.PeriodicalHandlers
 {
-    public class OrderStateArchiver : TimerPeriod
+    internal class OrderStateArchiver : TimerPeriod
     {
         private const int DefaultChunkSize = 5000;
         private const int MinimalChunkSize = 100;

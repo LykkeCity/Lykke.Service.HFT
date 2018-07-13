@@ -7,21 +7,27 @@ using Swashbuckle.AspNetCore.SwaggerGen;
 
 namespace Lykke.Service.HFT.Controllers
 {
-    // NOTE: See https://lykkex.atlassian.net/wiki/spaces/LKEWALLET/pages/35755585/Add+your+app+to+Monitoring
+    /// <summary>
+    /// Operations to check if HFT service is alive.
+    /// </summary>
     [Route("api/[controller]")]
     public class IsAliveController : Controller
     {
         private readonly IHealthService _healthService;
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="IsAliveController"/> class.
+        /// </summary>
         public IsAliveController(IHealthService healthService)
         {
             _healthService = healthService;
         }
 
         /// <summary>
-        /// Checks service is alive
+        /// Checks if the high frequency trading service is alive.
         /// </summary>
-        /// <returns></returns>
+        /// <response code="200">The service is alive.</response>
+        /// <response code="500">The service is unhealthy.</response>
         [HttpGet]
         [SwaggerOperation("IsAlive")]
         [ProducesResponseType(typeof(IsAliveModel), (int)HttpStatusCode.OK)]

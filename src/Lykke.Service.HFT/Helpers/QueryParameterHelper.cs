@@ -2,7 +2,7 @@
 
 namespace Lykke.Service.HFT.Helpers
 {
-    public static class QueryParameterHelper
+    internal static class QueryParameterHelper
     {
         public static ResponseModel<int> ValidateAndGetValue(this int? paramValue, string parameter, int maxValue, int defaultValue)
         {

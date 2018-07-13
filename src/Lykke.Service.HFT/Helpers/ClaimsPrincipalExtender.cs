@@ -2,7 +2,7 @@
 
 namespace Lykke.Service.HFT.Helpers
 {
-    public static class ClaimsPrincipalExtender
+    internal static class ClaimsPrincipalExtender
     {
         public static string GetUserId(this ClaimsPrincipal user)
         {

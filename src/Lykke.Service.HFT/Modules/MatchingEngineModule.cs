@@ -7,7 +7,7 @@ using System;
 
 namespace Lykke.Service.HFT.Modules
 {
-    public class MatchingEngineModule : Module
+    internal class MatchingEngineModule : Module
     {
         private readonly IReloadingManager<AppSettings> _settings;
 
