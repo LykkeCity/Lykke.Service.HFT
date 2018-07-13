@@ -15,6 +15,9 @@ using FeeType = Lykke.Service.HFT.Contracts.History.FeeType;
 
 namespace Lykke.Service.HFT.Controllers
 {
+    /// <summary>
+    /// Controller for accessing historic trades.
+    /// </summary>
     [Authorize]
     [Route("api/[controller]")]
     public class HistoryController : Controller
@@ -24,6 +27,9 @@ namespace Lykke.Service.HFT.Controllers
         private readonly IOperationsHistoryClient _operationsHistoryClient;
         private readonly IAssetServiceDecorator _assetServiceDecorator;
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="HistoryController"/> class.
+        /// </summary>
         public HistoryController(
             IOperationsHistoryClient operationsHistoryClient,
             IAssetServiceDecorator assetServiceDecorator)
@@ -33,18 +39,18 @@ namespace Lykke.Service.HFT.Controllers
         }
 
         /// <summary>
-        /// Get trades
+        /// Query historic client trades.
         /// </summary>
-        /// <param name="assetId">Asset identifier</param>
-        /// <param name="assetPairId">Asset-pair identifier</param>
-        /// <param name="take">How many maximum items have to be returned</param>
-        /// <param name="skip">How many items skip before returning</param>
-        /// <returns></returns>
+        /// <param name="assetId">The asset identifier, eg BTC</param>
+        /// <param name="assetPairId">The asset pair identifier, eg EOSBTC</param>
+        /// <param name="take">How many maximum items have to be returned, max 1000 default 100.</param>
+        /// <param name="skip">How many items skip before returning, default 0.</param>
+        /// <response code="200">The requested historic client trades.</response>
+        /// <response code="404">Specified asset or asset pair could not be found.</response>
         [HttpGet("trades")]
         [SwaggerOperation("GetTrades")]
         [ProducesResponseType(typeof(IEnumerable<HistoryTradeModel>), (int)HttpStatusCode.OK)]
-        [ProducesResponseType(typeof(ResponseModel), (int)HttpStatusCode.BadRequest)]
-        [ProducesResponseType(typeof(void), (int)HttpStatusCode.NotFound)]
+        [ProducesResponseType((int)HttpStatusCode.NotFound)]
         public async Task<IActionResult> GetTrades(
             [FromQuery] string assetId,
             [FromQuery] string assetPairId = null,
@@ -94,11 +100,12 @@ namespace Lykke.Service.HFT.Controllers
         /// Get trade details by id
         /// </summary>
         /// <param name="tradeId">Trade identifier</param>
-        /// <returns></returns>
+        /// <response code="200">The requested historic client trades.</response>
+        /// <response code="404">Specified asset or asset pair could not be found.</response>
         [HttpGet("trades/{tradeId}")]
         [SwaggerOperation("GetTrade")]
         [ProducesResponseType(typeof(HistoryTradeModel), (int)HttpStatusCode.OK)]
-        [ProducesResponseType(typeof(void), (int)HttpStatusCode.NotFound)]
+        [ProducesResponseType((int)HttpStatusCode.NotFound)]
         public async Task<IActionResult> GetTrade(string tradeId)
         {
             if (tradeId == null)

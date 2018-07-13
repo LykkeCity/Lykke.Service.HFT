@@ -14,6 +14,9 @@ using Swashbuckle.AspNetCore.SwaggerGen;
 
 namespace Lykke.Service.HFT.Controllers
 {
+    /// <summary>
+    /// Controller for wallet functionality.
+    /// </summary>
     [Authorize]
     [Route("api/[controller]")]
     public class WalletsController : Controller
@@ -21,6 +24,9 @@ namespace Lykke.Service.HFT.Controllers
         private readonly IBalancesClient _balancesClient;
         private readonly IAssetServiceDecorator _assetServiceDecorator;
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="WalletsController"/> class.
+        /// </summary>
         public WalletsController(IAssetServiceDecorator assetServiceDecorator, IBalancesClient balancesClient)
         {
             _balancesClient = balancesClient ?? throw new ArgumentNullException(nameof(balancesClient));
@@ -28,9 +34,9 @@ namespace Lykke.Service.HFT.Controllers
         }
 
         /// <summary>
-        /// Get balances.
+        /// Get api wallet balances.
         /// </summary>
-        /// <returns>Account balances.</returns>
+        /// <response code="200">Api wallet balances</response>
         [HttpGet]
         [SwaggerOperation("GetBalances")]
         [ProducesResponseType(typeof(IEnumerable<BalanceModel>), (int)HttpStatusCode.OK)]

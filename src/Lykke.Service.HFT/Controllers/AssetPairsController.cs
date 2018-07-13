@@ -11,20 +11,26 @@ using Swashbuckle.AspNetCore.SwaggerGen;
 
 namespace Lykke.Service.HFT.Controllers
 {
+    /// <summary>
+    /// Controller for asset pair operations.
+    /// </summary>
     [Route("api/[controller]")]
     public class AssetPairsController : Controller
     {
         private readonly IAssetServiceDecorator _assetServiceDecorator;
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="AssetPairsController"/> class.
+        /// </summary>
         public AssetPairsController(IAssetServiceDecorator assetServiceDecorator)
         {
             _assetServiceDecorator = assetServiceDecorator ?? throw new ArgumentNullException(nameof(assetServiceDecorator));
         }
 
         /// <summary>
-        /// Get all asset pairs.
+        /// Get all enabled asset pairs.
         /// </summary>
-        /// <returns>All asset pairs.</returns>
+        /// <response code="200">All enabled asset pairs.</response>
         [HttpGet]
         [SwaggerOperation("GetAssetPairs")]
         [ProducesResponseType(typeof(IEnumerable<AssetPairModel>), (int)HttpStatusCode.OK)]
@@ -38,7 +44,8 @@ namespace Lykke.Service.HFT.Controllers
         /// Get specified asset pair.
         /// </summary>
         /// <param name="id">Asset pair ID. Example: AUDUSD</param>
-        /// <returns>Specified asset pair.</returns>
+        /// <response code="200">Specified asset pair.</response>
+        /// <response code="404">No asset pair with given id found or asset pair is disabled.</response>
         [HttpGet("{id}")]
         [SwaggerOperation("GetAssetPair")]
         [ProducesResponseType(typeof(AssetPairModel), (int)HttpStatusCode.OK)]

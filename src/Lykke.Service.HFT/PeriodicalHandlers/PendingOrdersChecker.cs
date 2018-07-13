@@ -12,7 +12,7 @@ using Lykke.Service.HFT.Core.Services;
 
 namespace Lykke.Service.HFT.PeriodicalHandlers
 {
-    public class PendingOrdersChecker : TimerPeriod
+    internal class PendingOrdersChecker : TimerPeriod
     {
         private const int DefaultChunkSize = 5000;
         private readonly IOrderBooksService _orderBooksService;

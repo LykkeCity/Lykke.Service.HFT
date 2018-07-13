@@ -9,12 +9,18 @@ using Swashbuckle.AspNetCore.SwaggerGen;
 
 namespace Lykke.Service.HFT.Controllers
 {
+    /// <summary>
+    /// Controller for orderbooks functionality.
+    /// </summary>
     [Route("api/[controller]")]
     public class OrderBooksController : Controller
     {
         private readonly IOrderBooksService _orderBooksService;
         private readonly IAssetServiceDecorator _assetServiceDecorator;
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="OrderBooksController"/> class.
+        /// </summary>
         public OrderBooksController(IOrderBooksService orderBooksService, IAssetServiceDecorator assetServiceDecorator)
         {
             _orderBooksService = orderBooksService ?? throw new ArgumentNullException(nameof(orderBooksService));
@@ -24,7 +30,7 @@ namespace Lykke.Service.HFT.Controllers
         /// <summary>
         /// Get all order books.
         /// </summary>
-        /// <returns>All order books.</returns>
+        /// <response code="200">All orderbooks.</response>
         [HttpGet]
         [SwaggerOperation("GetOrderBooks")]
         [ProducesResponseType(typeof(IEnumerable<OrderBookModel>), (int)HttpStatusCode.OK)]
@@ -39,6 +45,8 @@ namespace Lykke.Service.HFT.Controllers
         /// </summary>
         /// <param name="assetPairId">Asset pair ID. Example: AUDUSD</param>
         /// <returns>Order books for a specified asset pair.</returns>
+        /// <response code="200">Order books for a specified asset pair.</response>
+        /// <response code="404">Unknow or disabled asset pair.</response>
         [HttpGet("{assetPairId}")]
         [SwaggerOperation("GetOrderBook")]
         [ProducesResponseType(typeof(IEnumerable<OrderBookModel>), (int)HttpStatusCode.OK)]

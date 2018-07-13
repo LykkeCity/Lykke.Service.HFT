@@ -9,7 +9,7 @@ using WampSharp.V2.Realm;
 namespace Lykke.Service.HFT.Services
 {
     [UsedImplicitly]
-    public class ShutdownManager : IShutdownManager
+    internal class ShutdownManager : IShutdownManager
     {
         private readonly IServiceProvider _provider;
 

@@ -5,6 +5,7 @@ namespace Lykke.Service.HFT.Contracts.Assets
     /// <summary>
     /// Asset pair response model for asset pairs requests.
     /// </summary>
+    /// <remarks>Asset pair can be reverted when placing market orders eg from BTC/USD to USD/BTC in that case inverted accuracy and volumens should be used.</remarks>
     [PublicAPI]
     public class AssetPairModel
     {

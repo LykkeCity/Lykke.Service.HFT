@@ -9,7 +9,7 @@ using Lykke.SettingsReader;
 
 namespace Lykke.Service.HFT.Modules
 {
-    public class ClientsModule : Module
+    internal class ClientsModule : Module
     {
         private readonly IReloadingManager<AppSettings> _settings;
 
