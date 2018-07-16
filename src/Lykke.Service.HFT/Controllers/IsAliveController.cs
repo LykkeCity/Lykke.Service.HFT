@@ -39,8 +39,9 @@ namespace Lykke.Service.HFT.Controllers
             // NOTE: Feel free to extend IsAliveResponse, to display job-specific indicators
             return Ok(new IsAliveModel
             {
-                Version = Microsoft.Extensions.PlatformAbstractions.PlatformServices.Default.Application.ApplicationVersion,
-                Env = Program.EnvInfo,
+                Name = Common.AppEnvironment.Name,
+                Version = Common.AppEnvironment.Version,
+                Env = Common.AppEnvironment.EnvInfo,
 #if DEBUG
                 IsDebug = true,
 #else

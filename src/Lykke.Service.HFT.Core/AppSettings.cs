@@ -1,18 +1,17 @@
-﻿using Lykke.Common.Chaos;
-using Lykke.Service.OperationsHistory.Client;
-using Lykke.SettingsReader.Attributes;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Net;
+using Lykke.Common.Chaos;
+using Lykke.Sdk.Settings;
+using Lykke.Service.OperationsHistory.Client;
+using Lykke.SettingsReader.Attributes;
 
 namespace Lykke.Service.HFT.Core
 {
-    public class AppSettings
+    public class AppSettings : BaseAppSettings
     {
-        public MonitoringServiceClientSettings MonitoringServiceClient { get; set; }
         public HighFrequencyTradingSettings HighFrequencyTradingService { get; set; }
         public MatchingEngineSettings MatchingEngineClient { get; set; }
-        public SlackNotificationsSettings SlackNotifications { get; set; }
         public AssetsServiceClient AssetsServiceClient { get; set; }
         public BalancesServiceClient BalancesServiceClient { get; set; }
         public FeeCalculatorServiceClient FeeCalculatorServiceClient { get; set; }
@@ -31,7 +30,6 @@ namespace Lykke.Service.HFT.Core
             public MongoSettings MongoSettings { get; set; }
             public RateLimitSettings.RateLimitCoreOptions IpRateLimiting { get; set; }
             public string QueuePostfix { get; set; }
-            public TimeSpan RetryDelay { get; set; }
             public string SagasRabbitMqConnStr { get; set; }
             [Optional]
             public ChaosSettings ChaosKitty { get; set; }
@@ -117,18 +115,6 @@ namespace Lykke.Service.HFT.Core
             return string.Format(settings.OrderBooksCacheKeyPattern, assetPairId, isBuy);
         }
 
-    }
-
-    public class SlackNotificationsSettings
-    {
-        public AzureQueueSettings AzureQueue { get; set; }
-    }
-
-    public class AzureQueueSettings
-    {
-        public string ConnectionString { get; set; }
-
-        public string QueueName { get; set; }
     }
 
     public class FeeSettings

@@ -5,6 +5,7 @@ using Common.Log;
 using JetBrains.Annotations;
 using Lykke.Common.Log;
 using Lykke.Cqrs;
+using Lykke.Sdk;
 using Lykke.Service.HFT.Core.Services;
 using Lykke.Service.HFT.Core.Services.ApiKey;
 using WampSharp.V2.Realm;

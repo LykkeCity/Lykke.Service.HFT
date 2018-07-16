@@ -156,7 +156,7 @@ namespace Lykke.Service.HFT.Services
             {
                 Id = requestId.ToString(),
                 ClientId = clientId,
-                AssetId = assetPair.Id,
+                AssetPairId = assetPair.Id,
                 CancelPreviousOrders = cancelPrevious,
                 Orders = orders.ToArray()
             };

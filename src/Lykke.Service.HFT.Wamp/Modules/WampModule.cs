@@ -2,6 +2,7 @@
 using Lykke.Service.HFT.Core;
 using Lykke.Service.HFT.Wamp.Consumers;
 using Lykke.Service.HFT.Wamp.Security;
+using Lykke.SettingsReader;
 using WampSharp.V2;
 using WampSharp.V2.Authentication;
 
@@ -11,9 +12,9 @@ namespace Lykke.Service.HFT.Wamp.Modules
     {
         private readonly AppSettings.HighFrequencyTradingSettings _settings;
 
-        public WampModule(AppSettings.HighFrequencyTradingSettings settings)
+        public WampModule(IReloadingManager<AppSettings> settings)
         {
-            _settings = settings;
+            _settings = settings.CurrentValue.HighFrequencyTradingService;
         }
 
         protected override void Load(ContainerBuilder builder)
