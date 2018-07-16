@@ -5,10 +5,10 @@ using System.Threading.Tasks;
 using AspNetCoreRateLimit;
 using Autofac;
 using Autofac.Extensions.DependencyInjection;
-using AzureStorage.Tables;
 using Common.Log;
 using Lykke.Common.ApiLibrary.Middleware;
 using Lykke.Common.ApiLibrary.Swagger;
+using Lykke.Common.Log;
 using Lykke.Logs;
 using Lykke.MonitoringServiceApiCaller;
 using Lykke.Service.HFT.Contracts;
@@ -21,7 +21,6 @@ using Lykke.Service.HFT.Services;
 using Lykke.Service.HFT.Wamp;
 using Lykke.Service.HFT.Wamp.Modules;
 using Lykke.SettingsReader;
-using Lykke.SlackNotification.AzureQueue;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
@@ -39,10 +38,12 @@ namespace Lykke.Service.HFT
         private const string ApiVersion = "v1";
         private const string ApiTitle = "High-frequency trading API";
 
+        private ILog _log;
+        private IHealthNotifier _healthNotifier;
+
         public IHostingEnvironment Environment { get; }
         public IContainer ApplicationContainer { get; private set; }
         public IConfigurationRoot Configuration { get; }
-        public ILog Log { get; private set; }
 
         public Startup(IHostingEnvironment env)
         {
@@ -83,26 +84,34 @@ namespace Lykke.Service.HFT
                 var builder = new ContainerBuilder();
                 var appSettings = Configuration.LoadSettings<AppSettings>();
                 _monitoringServiceUrl = appSettings.CurrentValue.MonitoringServiceClient.MonitoringServiceUrl;
-                Log = CreateLogWithSlack(services, appSettings);
 
+                services.AddLykkeLogging(
+                    appSettings.Nested(x => x.HighFrequencyTradingService.Db.LogsConnString),
+                    "HighFrequencyTradingLog",
+                    appSettings.CurrentValue.SlackNotifications.AzureQueue.ConnectionString,
+                    appSettings.CurrentValue.SlackNotifications.AzureQueue.QueueName
+                );
+                
                 ConfigureRateLimits(services, appSettings.CurrentValue.HighFrequencyTradingService.IpRateLimiting);
                 builder.Populate(services);
 
-                builder.RegisterModule(new ServiceModule(appSettings, Log));
+                builder.RegisterModule(new ServiceModule(appSettings));
                 builder.RegisterModule(new MatchingEngineModule(appSettings));
                 builder.RegisterModule(new MongoDbModule(appSettings.Nested(x => x.HighFrequencyTradingService.MongoSettings)));
                 builder.RegisterModule(new RedisModule(appSettings.CurrentValue.HighFrequencyTradingService.CacheSettings));
-                builder.RegisterModule(new ClientsModule(appSettings, Log));
+                builder.RegisterModule(new ClientsModule(appSettings));
                 builder.RegisterModule(new WampModule(appSettings.CurrentValue.HighFrequencyTradingService));
-                builder.RegisterModule(new CqrsModule(appSettings.Nested(x => x.HighFrequencyTradingService), Log));
+                builder.RegisterModule(new CqrsModule(appSettings.Nested(x => x.HighFrequencyTradingService)));
 
                 ApplicationContainer = builder.Build();
+                _log = ApplicationContainer.Resolve<ILogFactory>().CreateLog(this);
+                _healthNotifier = ApplicationContainer.Resolve<IHealthNotifier>();
 
                 return new AutofacServiceProvider(ApplicationContainer);
             }
             catch (Exception ex)
             {
-                Log?.WriteFatalErrorAsync(nameof(Startup), nameof(ConfigureServices), "", ex).Wait();
+                _log?.Critical(ex, process: nameof(ConfigureServices));
                 throw;
             }
         }
@@ -126,7 +135,7 @@ namespace Lykke.Service.HFT
                     app.UseDeveloperExceptionPage();
                 }
 
-                app.UseLykkeMiddleware(Constants.ComponentName, ex => new { Message = "Technical problem" });
+                app.UseLykkeMiddleware(ex => new { Message = "Technical problem" });
 
                 app.UseIpRateLimiting();
                 app.UseClientRateLimiting();
@@ -146,11 +155,11 @@ namespace Lykke.Service.HFT
                 app.UseWampHost(host);
 
                 appLifetime.ApplicationStarted.Register(() => StartApplication().Wait());
-                appLifetime.ApplicationStopped.Register(() => CleanUp().Wait());
+                appLifetime.ApplicationStopped.Register(CleanUp);
             }
             catch (Exception ex)
             {
-                Log?.WriteFatalErrorAsync(nameof(Startup), nameof(Configure), "", ex).Wait();
+                _log?.Critical(ex, process: nameof(Configure));
                 throw;
             }
         }
@@ -160,81 +169,32 @@ namespace Lykke.Service.HFT
             try
             {
                 await ApplicationContainer.Resolve<IStartupManager>().StartAsync();
-                await AutoRegistrationInMonitoring.RegisterAsync(Configuration, _monitoringServiceUrl, Log);
+                await Configuration.RegisterInMonitoringServiceAsync(_monitoringServiceUrl, _healthNotifier);
 
-                await Log.WriteMonitorAsync("", $"Env: {Program.EnvInfo}", "Started");
+                _healthNotifier.Notify("Started", $"Env: {Program.EnvInfo}");
             }
             catch (Exception ex)
             {
-                await Log.WriteFatalErrorAsync(nameof(Startup), nameof(StartApplication), "", ex);
+                _log?.Critical(ex, process: nameof(StartApplication));
                 throw;
             }
         }
 
 
-        private async Task CleanUp()
+        private void CleanUp()
         {
             try
             {
-                // NOTE: Service can't receive and process requests here, so you can destroy all resources
-
-                if (Log != null)
-                {
-                    await Log.WriteMonitorAsync("", $"Env: {Program.EnvInfo}", "Terminating");
-                }
-
+                _healthNotifier?.Notify("Terminating", $"Env: {Program.EnvInfo}");
                 ApplicationContainer.Dispose();
             }
             catch (Exception ex)
             {
-                if (Log != null)
-                {
-                    await Log.WriteFatalErrorAsync(nameof(Startup), nameof(CleanUp), "", ex);
-                    (Log as IDisposable)?.Dispose();
+                _log?.Critical(ex, process: nameof(CleanUp));
+                ApplicationContainer.Resolve<IWampHostedRealm>()?.HostMetaApiService()?.Dispose();
 
-                    ApplicationContainer.Resolve<IWampHostedRealm>()?.HostMetaApiService()?.Dispose();
-                }
                 throw;
             }
-        }
-
-        private static ILog CreateLogWithSlack(IServiceCollection services, IReloadingManager<AppSettings> settings)
-        {
-            var consoleLogger = new LogToConsole();
-            var aggregateLogger = new AggregateLogger();
-
-            aggregateLogger.AddLog(consoleLogger);
-
-            // Creating slack notification service, which logs own azure queue processing messages to aggregate log
-            var slackService = services.UseSlackNotificationsSenderViaAzureQueue(new AzureQueueIntegration.AzureQueueSettings
-            {
-                ConnectionString = settings.CurrentValue.SlackNotifications.AzureQueue.ConnectionString,
-                QueueName = settings.CurrentValue.SlackNotifications.AzureQueue.QueueName
-            }, aggregateLogger);
-
-            var dbLogConnectionStringManager = settings.Nested(x => x.HighFrequencyTradingService.Db.LogsConnString);
-            var dbLogConnectionString = dbLogConnectionStringManager.CurrentValue;
-
-            // Creating azure storage logger, which logs own messages to console log
-            if (!string.IsNullOrEmpty(dbLogConnectionString) && !(dbLogConnectionString.StartsWith("${") && dbLogConnectionString.EndsWith("}")))
-            {
-                var persistenceManager = new LykkeLogToAzureStoragePersistenceManager(
-                    AzureTableStorage<LogEntity>.Create(dbLogConnectionStringManager, "HighFrequencyTradingLog", consoleLogger),
-                    consoleLogger);
-
-                var slackNotificationsManager = new LykkeLogToAzureSlackNotificationsManager(slackService, consoleLogger);
-
-                var azureStorageLogger = new LykkeLogToAzureStorage(
-                    persistenceManager,
-                    slackNotificationsManager,
-                    consoleLogger);
-
-                azureStorageLogger.Start();
-
-                aggregateLogger.AddLog(azureStorageLogger);
-            }
-
-            return aggregateLogger;
         }
 
         private void ConfigureRateLimits(IServiceCollection services, RateLimitSettings.RateLimitCoreOptions rateLimitOptions)

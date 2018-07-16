@@ -6,6 +6,7 @@ using System.Linq;
 using System.Linq.Expressions;
 using System.Threading.Tasks;
 using Common.Log;
+using Lykke.Common.Log;
 using Lykke.Service.HFT.Core;
 using Lykke.Service.HFT.Core.Domain;
 using Lykke.Service.HFT.Core.Repositories;
@@ -23,10 +24,15 @@ namespace Lykke.Service.HFT.MongoRepositories
         private int _rpsLimit;
         private readonly string _collectionName = typeof(T).Name;
 
-        public MongoRepository(IMongoDatabase database, ILog log, int rpsLimit = 100)
+        public MongoRepository(IMongoDatabase database, ILogFactory logFactory, int rpsLimit = 100)
         {
+            if (logFactory == null)
+            {
+                throw new ArgumentNullException(nameof(logFactory));
+            }
+
             Database = database ?? throw new ArgumentNullException(nameof(database));
-            _log = log.CreateComponentScope(nameof(MongoRepository<T>));
+            _log = logFactory.CreateLog(this);
             _rpsLimit = rpsLimit;
 
             if (!BsonClassMap.IsClassMapRegistered(typeof(T)))
@@ -106,7 +112,7 @@ namespace Lykke.Service.HFT.MongoRepositories
                     if (exception.Message.Contains("Request rate is large"))
                     {
                         _rpsLimit = (int)(_rpsLimit * 0.8);
-                        _log.WriteWarning(nameof(DeleteAsync), "Request rate is large", $"Decreasing rps: {_rpsLimit}", exception);
+                        _log.Warning("Request rate is large", $"Decreasing rps: {_rpsLimit}", exception, nameof(DeleteAsync));
                     }
                     throw;
                 }

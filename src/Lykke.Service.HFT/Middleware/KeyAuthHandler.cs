@@ -24,7 +24,7 @@ namespace Lykke.Service.HFT.Middleware
         {
             if (!Context.Request.Headers.TryGetValue(KeyAuthOptions.DefaultHeaderName, out var headerValue))
             {
-                return AuthenticateResult.Fail("No api key header.");
+                return AuthenticateResult.NoResult();
             }
 
             var apiKey = headerValue.First();

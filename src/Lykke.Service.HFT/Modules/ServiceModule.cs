@@ -1,8 +1,9 @@
-﻿using Autofac;
+﻿using System;
+using Autofac;
 using Autofac.Core;
 using AzureStorage;
 using AzureStorage.Tables;
-using Common.Log;
+using Lykke.Common.Log;
 using Lykke.Service.HFT.AzureRepositories;
 using Lykke.Service.HFT.Controllers;
 using Lykke.Service.HFT.Core;
@@ -18,9 +19,7 @@ using Lykke.Service.HFT.Services.Fees;
 using Lykke.SettingsReader;
 using Microsoft.Extensions.Caching.Distributed;
 using Microsoft.Extensions.Caching.Redis;
-using Microsoft.WindowsAzure.Storage.Table;
 using MongoDB.Driver;
-using System;
 
 namespace Lykke.Service.HFT.Modules
 {
@@ -29,12 +28,10 @@ namespace Lykke.Service.HFT.Modules
         private const string FinanceDataCache = "financeData";
         private const string ApiKeysCache = "apiKeys";
         private readonly IReloadingManager<AppSettings> _settings;
-        private readonly ILog _log;
 
-        public ServiceModule(IReloadingManager<AppSettings> settings, ILog log)
+        public ServiceModule(IReloadingManager<AppSettings> settings)
         {
             _settings = settings;
-            _log = log;
         }
 
         protected override void Load(ContainerBuilder builder)
@@ -43,10 +40,6 @@ namespace Lykke.Service.HFT.Modules
             builder.RegisterInstance(currentSettings.HighFrequencyTradingService.CacheSettings)
                 .SingleInstance();
             builder.RegisterInstance(currentSettings.HighFrequencyTradingService)
-                .SingleInstance();
-
-            builder.RegisterInstance(_log)
-                .As<ILog>()
                 .SingleInstance();
 
             if (currentSettings.HighFrequencyTradingService.MaintenanceMode != null)
@@ -172,23 +165,23 @@ namespace Lykke.Service.HFT.Modules
         private void RegisterOrderStates(ContainerBuilder builder)
         {
             var mongoUrl = new MongoUrl(_settings.CurrentValue.HighFrequencyTradingService.Db.OrderStateConnString);
-            var database = new MongoClient(mongoUrl).GetDatabase(mongoUrl.DatabaseName);
-            builder.RegisterInstance(new LimitOrderStateRepository(database, _log))
+            builder.RegisterType<LimitOrderStateRepository>()
                 .As<IRepository<LimitOrderState>>()
                 .As<ILimitOrderStateRepository>()
+                .WithParameter(new ResolvedParameter(
+                    (pi, ctx) => pi.ParameterType == typeof(IMongoDatabase),
+                    (pi, ctx) => new MongoClient(mongoUrl).GetDatabase(mongoUrl.DatabaseName)))
                 .SingleInstance();
 
-            var ordersArchiveTable = CreateTable<LimitOrderStateEntity>(
-                _settings.ConnectionString(x => x.HighFrequencyTradingService.Db.OrdersArchiveConnString), "HftOrderStateArchive");
-            builder.RegisterInstance(new LimitOrderStateArchive(ordersArchiveTable))
+            builder.RegisterType<LimitOrderStateArchive>()
                 .As<ILimitOrderStateArchive>()
+                .WithParameter(new ResolvedParameter(
+                    (pi, ctx) => pi.ParameterType == typeof(INoSQLTableStorage<LimitOrderStateEntity>),
+                    (pi, ctx) => AzureTableStorage<LimitOrderStateEntity>.Create(
+                        _settings.ConnectionString(x => x.HighFrequencyTradingService.Db.OrdersArchiveConnString),
+                        "HftOrderStateArchive",
+                        ctx.Resolve<ILogFactory>())))
                 .SingleInstance();
-        }
-
-        private INoSQLTableStorage<T> CreateTable<T>(IReloadingManager<string> connectionString, string name)
-            where T : TableEntity, new()
-        {
-            return AzureTableStorage<T>.Create(connectionString, name, _log);
         }
 
         private void RegisterPeriodicalHandlers(ContainerBuilder builder)

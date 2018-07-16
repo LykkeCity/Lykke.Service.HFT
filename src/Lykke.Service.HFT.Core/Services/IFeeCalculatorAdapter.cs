@@ -1,5 +1,5 @@
 ﻿using System.Threading.Tasks;
-using Lykke.MatchingEngine.Connector.Abstractions.Models;
+using Lykke.MatchingEngine.Connector.Models.Api;
 using Lykke.Service.Assets.Client.Models;
 using OrderAction = Lykke.Service.HFT.Contracts.Orders.OrderAction;
 

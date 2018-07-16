@@ -1,6 +1,6 @@
 ﻿using System;
 using Lykke.Service.HFT.Contracts.Orders;
-using MeOrderAction = Lykke.MatchingEngine.Connector.Abstractions.Models.OrderAction;
+using MeOrderAction = Lykke.MatchingEngine.Connector.Models.Common.OrderAction;
 
 namespace Lykke.Service.HFT.Services
 {
@@ -18,7 +18,7 @@ namespace Lykke.Service.HFT.Services
                     orderAction = MeOrderAction.Sell;
                     break;
                 default:
-                    throw new Exception("Unknown order action");
+                    throw new InvalidOperationException("Unknown order action");
             }
 
             return orderAction;

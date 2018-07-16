@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Threading.Tasks;
 using Common.Log;
 using JetBrains.Annotations;
+using Lykke.Common.Log;
 using Lykke.Cqrs;
 using Lykke.Service.HFT.Core.Services;
 using Lykke.Service.HFT.Core.Services.ApiKey;
@@ -19,13 +20,16 @@ namespace Lykke.Service.HFT.Services
         private readonly IApiKeyCacheInitializer _apiKeyCacheInitializer;
 
         public StartupManager(
-            ILog log,
+            ILogFactory logFactory,
             IEnumerable<IWampHostedRealm> realms,
             ISessionRepository sessionRepository,
             IApiKeyCacheInitializer apiKeyCacheInitializer,
             [NotNull] ICqrsEngine cqrs)
         {
-            _log = log;
+            if (logFactory == null)
+                throw new ArgumentNullException(nameof(logFactory));
+
+            _log = logFactory.CreateLog(this);
             _realms = realms;
             _sessionRepository = sessionRepository;
             _apiKeyCacheInitializer = apiKeyCacheInitializer;
@@ -35,7 +39,7 @@ namespace Lykke.Service.HFT.Services
 
         public async Task StartAsync()
         {
-            _log.WriteInfo(nameof(StartAsync), "", "Subscribing to the realm sessions...");
+            _log.Info("Subscribing to the realm sessions...");
 
             foreach (var realm in _realms)
             {
