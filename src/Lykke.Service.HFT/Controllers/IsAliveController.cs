@@ -1,5 +1,4 @@
 ﻿using System.Net;
-using Lykke.Sdk;
 using Lykke.Service.HFT.Contracts;
 using Lykke.Service.HFT.Contracts.Health;
 using Lykke.Service.HFT.Core.Services;
@@ -40,8 +39,9 @@ namespace Lykke.Service.HFT.Controllers
             // NOTE: Feel free to extend IsAliveResponse, to display job-specific indicators
             return Ok(new IsAliveModel
             {
-                Version = Microsoft.Extensions.PlatformAbstractions.PlatformServices.Default.Application.ApplicationVersion,
-                Env = LykkeStarter.EnvInfo,
+                Name = Common.AppEnvironment.Name,
+                Version = Common.AppEnvironment.Version,
+                Env = Common.AppEnvironment.EnvInfo,
 #if DEBUG
                 IsDebug = true,
 #else

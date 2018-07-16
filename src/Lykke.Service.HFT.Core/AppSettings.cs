@@ -30,7 +30,6 @@ namespace Lykke.Service.HFT.Core
             public MongoSettings MongoSettings { get; set; }
             public RateLimitSettings.RateLimitCoreOptions IpRateLimiting { get; set; }
             public string QueuePostfix { get; set; }
-            public TimeSpan RetryDelay { get; set; }
             public string SagasRabbitMqConnStr { get; set; }
             [Optional]
             public ChaosSettings ChaosKitty { get; set; }
@@ -116,18 +115,6 @@ namespace Lykke.Service.HFT.Core
             return string.Format(settings.OrderBooksCacheKeyPattern, assetPairId, isBuy);
         }
 
-    }
-
-    public class SlackNotificationsSettings
-    {
-        public AzureQueueSettings AzureQueue { get; set; }
-    }
-
-    public class AzureQueueSettings
-    {
-        public string ConnectionString { get; set; }
-
-        public string QueueName { get; set; }
     }
 
     public class FeeSettings
