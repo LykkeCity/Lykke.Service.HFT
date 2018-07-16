@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using JetBrains.Annotations;
-using Lykke.Service.HFT.Contracts;
 using Lykke.Service.HFT.Contracts.Orders;
 using Refit;
 
@@ -46,8 +45,8 @@ namespace Lykke.Service.HFT.Client
         /// <param name="marketOrder">The market order data.</param>
         /// <param name="apiKey">The API key header. Can also be send using a custom handler or the Lykke WithApiKey call on the client generator.</param>
         /// <returns>the average settled price</returns>
-        [Post("/api/Orders/market")]
-        Task<ResponseModel<double>> PlaceMarketOrder(
+        [Post("/api/Orders/v2/market")]
+        Task<MarketOrderResponseModel> PlaceMarketOrder(
             [Body] PlaceMarketOrderModel marketOrder,
             [Header("api-key")] string apiKey = null);
 
@@ -57,8 +56,8 @@ namespace Lykke.Service.HFT.Client
         /// <param name="limitOrder">The limit order data.</param>
         /// <param name="apiKey">The API key header. Can also be send using a custom handler or the Lykke WithApiKey call on the client generator.</param>
         /// <returns>the limit order ID</returns>
-        [Post("/api/Orders/limit")]
-        Task<Guid> PlaceLimitOrder(
+        [Post("/api/Orders/v2/limit")]
+        Task<LimitOrderResponseModel> PlaceLimitOrder(
             [Body] PlaceLimitOrderModel limitOrder,
             [Header("api-key")] string apiKey = null);
 
