@@ -79,7 +79,6 @@ namespace Lykke.Service.HFT
                 _monitoringServiceUrl = appSettings.CurrentValue.MonitoringServiceClient.MonitoringServiceUrl;
                 Log = CreateLogWithSlack(services, appSettings);
 
-                ConfigureRateLimits(services, appSettings.CurrentValue.HighFrequencyTradingService.IpRateLimiting);
                 builder.Populate(services);
 
                 builder.RegisterModule(new ServiceModule(appSettings, Log));
@@ -121,9 +120,6 @@ namespace Lykke.Service.HFT
                 }
 
                 app.UseLykkeMiddleware(Constants.ComponentName, ex => new { Message = "Technical problem" });
-
-                app.UseIpRateLimiting();
-                app.UseClientRateLimiting();
 
                 app.UseAuthentication();
                 app.UseMvc();
@@ -228,37 +224,6 @@ namespace Lykke.Service.HFT
             }
 
             return aggregateLogger;
-        }
-
-        private void ConfigureRateLimits(IServiceCollection services, RateLimitSettings.RateLimitCoreOptions rateLimitOptions)
-        {
-            services.Configure<IpRateLimitOptions>(options =>
-            {
-                options.EnableEndpointRateLimiting = rateLimitOptions.EnableEndpointRateLimiting;
-                options.StackBlockedRequests = rateLimitOptions.StackBlockedRequests;
-                options.GeneralRules = rateLimitOptions.GeneralRules.Select(x => new RateLimitRule
-                {
-                    Endpoint = x.Endpoint,
-                    Limit = x.Limit,
-                    Period = x.Period
-                }).ToList();
-            });
-            services.Configure<ClientRateLimitOptions>(options =>
-            {
-                options.EnableEndpointRateLimiting = rateLimitOptions.EnableEndpointRateLimiting;
-                options.ClientIdHeader = KeyAuthOptions.DefaultHeaderName;
-                options.StackBlockedRequests = rateLimitOptions.StackBlockedRequests;
-                options.GeneralRules = rateLimitOptions.GeneralRules.Select(x => new RateLimitRule
-                {
-                    Endpoint = x.Endpoint,
-                    Limit = x.Limit,
-                    Period = x.Period
-                }).ToList();
-            });
-
-            services.AddSingleton<IIpPolicyStore, MemoryCacheIpPolicyStore>();
-            services.AddSingleton<IClientPolicyStore, MemoryCacheClientPolicyStore>();
-            services.AddSingleton<IRateLimitCounterStore, MemoryCacheRateLimitCounterStore>();
         }
     }
 }
