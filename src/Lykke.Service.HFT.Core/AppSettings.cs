@@ -29,7 +29,6 @@ namespace Lykke.Service.HFT.Core
             public CacheSettings CacheSettings { get; set; }
             public RabbitMqSettings LimitOrdersFeed { get; set; }
             public MongoSettings MongoSettings { get; set; }
-            public RateLimitSettings.RateLimitCoreOptions IpRateLimiting { get; set; }
             public string QueuePostfix { get; set; }
             public TimeSpan RetryDelay { get; set; }
             public string SagasRabbitMqConnStr { get; set; }
