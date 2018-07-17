@@ -21,6 +21,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\..\client\Lykke.Service.HFT.Client\Lykke.Service.HFT.Client.csproj" />
+    <ProjectReference Include="..\..\src\Lykke.Service.HFT.Contracts\Lykke.Service.HFT.Contracts.csproj" />
   </ItemGroup>
 
 </Project>
