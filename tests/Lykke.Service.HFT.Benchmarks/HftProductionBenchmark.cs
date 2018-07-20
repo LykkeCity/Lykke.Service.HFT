@@ -256,7 +256,7 @@ namespace Lykke.Service.HFT.Benchmarks
             {
                 AssetPairId = "BTCUSD",
                 CancelPreviousOrders = true,
-                Orders = Enumerable.Range(0,10).Select(x => new BulkOrderItemModel
+                Orders = Enumerable.Range(0, 10).Select(x => new BulkOrderItemModel
                 {
                     OrderAction = OrderAction.Buy,
                     Price = 500 + x,
@@ -275,6 +275,47 @@ namespace Lykke.Service.HFT.Benchmarks
             else
             {
                 result.Error.Should().NotBeNull();
+            }
+        }
+
+        [Benchmark]
+        public async Task PlaceStopLimitOrder()
+        {
+            var client = GetClient<IOrdersApi>();
+            var order = new PlaceStopLimitOrderModel
+            {
+                AssetPairId = "BTCUSD",
+                OrderAction = GetRandomItem(_actions),
+                LowerLimitPrice = 500,
+                LowerPrice = 550,
+                UpperPrice = 600,
+                UpperLimitPrice = 650,
+                Volume = 0.001
+            };
+
+            var result = await client.PlaceStopLimitOrder(order).TryExecute();
+
+            if (result.Success)
+            {
+                result.Result.Id.Should().NotBe(Guid.Empty);
+            }
+            else
+            {
+                result.Error.Should().NotBeNull();
+            }
+
+            if (result.Success)
+            {
+                var orderId = result.Result.Id;
+                var saved = await client.GetOrder(orderId);
+
+                saved.AssetPairId.Should().Be(order.AssetPairId);
+                saved.Type.Should().Be(LimitOrderType.Stop);
+                saved.LowerLimitPrice.Should().Be(order.LowerLimitPrice);
+                saved.LowerPrice.Should().Be(order.LowerPrice);
+                saved.UpperPrice.Should().Be(order.UpperPrice);
+                saved.UpperLimitPrice.Should().Be(order.UpperLimitPrice);
+                saved.Volume.Should().Be(order.Volume);
             }
         }
 

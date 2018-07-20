@@ -22,5 +22,10 @@ namespace Lykke.Service.HFT.AzureRepositories
             set => Status = Enum.Parse<OrderStatus>(value);
         }
         public double Volume { get; set; }
+        public int Type { get; set; }
+        public double? LowerLimitPrice { get; set; }
+        public double? LowerPrice { get; set; }
+        public double? UpperLimitPrice { get; set; }
+        public double? UpperPrice { get; set; }
     }
 }
