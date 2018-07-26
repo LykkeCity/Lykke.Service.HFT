@@ -7,7 +7,7 @@
 
   <ItemGroup>
     <PackageReference Include="AsyncEnumerator" Version="2.2.1" />
-    <PackageReference Include="Lykke.AzureStorage" Version="8.8.0" />
+    <PackageReference Include="Lykke.AzureStorage" Version="8.10.0" />
   </ItemGroup>
 
   <ItemGroup>

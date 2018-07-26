@@ -4,6 +4,7 @@ using Autofac.Core;
 using AzureStorage;
 using AzureStorage.Tables;
 using Lykke.Common.Log;
+using Lykke.Sdk;
 using Lykke.Service.HFT.AzureRepositories;
 using Lykke.Service.HFT.Controllers;
 using Lykke.Service.HFT.Core;
@@ -47,6 +48,14 @@ namespace Lykke.Service.HFT.Modules
                 builder.RegisterInstance(currentSettings.HighFrequencyTradingService.MaintenanceMode)
                     .AsSelf();
             }
+
+            builder.RegisterType<StartupManager>()
+                .As<IStartupManager>()
+                .SingleInstance();
+
+            builder.RegisterType<ShutdownManager>()
+                .As<IShutdownManager>()
+                .SingleInstance();
 
             builder.RegisterType<RequestValidator>()
                 .SingleInstance();
@@ -92,14 +101,6 @@ namespace Lykke.Service.HFT.Modules
 
         private void RegisterApiKeyService(ContainerBuilder builder)
         {
-            builder.RegisterType<HealthService>()
-                .As<IHealthService>()
-                .SingleInstance();
-
-            builder.RegisterType<StartupManager>()
-                .As<IStartupManager>()
-                .SingleInstance();
-
             builder.RegisterType<HftClientService>()
                 .WithParameter(
                     new ResolvedParameter(

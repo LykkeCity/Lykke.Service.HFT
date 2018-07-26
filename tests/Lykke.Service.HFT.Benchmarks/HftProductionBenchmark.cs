@@ -4,8 +4,6 @@ using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 using BenchmarkDotNet.Attributes;
-using BenchmarkDotNet.Attributes.Columns;
-using BenchmarkDotNet.Attributes.Jobs;
 using FluentAssertions;
 using Lykke.HttpClientGenerator;
 using Lykke.Service.HFT.Client;

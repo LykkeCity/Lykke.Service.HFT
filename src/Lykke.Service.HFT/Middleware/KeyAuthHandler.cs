@@ -3,6 +3,7 @@ using System.Linq;
 using System.Security.Claims;
 using System.Text.Encodings.Web;
 using System.Threading.Tasks;
+using JetBrains.Annotations;
 using Lykke.Service.HFT.Core.Services;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.Extensions.Logging;
@@ -10,7 +11,8 @@ using Microsoft.Extensions.Options;
 
 namespace Lykke.Service.HFT.Middleware
 {
-    public class KeyAuthHandler : AuthenticationHandler<KeyAuthOptions>
+    [UsedImplicitly]
+    internal class KeyAuthHandler : AuthenticationHandler<KeyAuthOptions>
     {
         private readonly IHftClientService _hftClientService;
 
