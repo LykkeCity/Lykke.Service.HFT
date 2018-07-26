@@ -101,10 +101,6 @@ namespace Lykke.Service.HFT.Modules
 
         private void RegisterApiKeyService(ContainerBuilder builder)
         {
-            builder.RegisterType<HealthService>()
-                .As<IHealthService>()
-                .SingleInstance();
-
             builder.RegisterType<HftClientService>()
                 .WithParameter(
                     new ResolvedParameter(
