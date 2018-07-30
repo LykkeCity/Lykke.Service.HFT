@@ -35,6 +35,10 @@ namespace Lykke.Service.HFT.Contracts.Orders
         /// <summary>
         /// Rejected
         /// </summary>
-        Rejected
+        Rejected,
+        /// <summary>
+        /// Replaced orders
+        /// </summary>
+        Replaced
     }
 }

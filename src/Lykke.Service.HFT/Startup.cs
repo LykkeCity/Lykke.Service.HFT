@@ -12,6 +12,7 @@ using Lykke.Service.HFT.Services;
 using Lykke.Service.HFT.Swagger;
 using Lykke.Service.HFT.Wamp;
 using Lykke.Service.HFT.Wamp.Modules;
+using Microsoft.ApplicationInsights.Extensibility;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.DependencyInjection;
@@ -37,6 +38,11 @@ namespace Lykke.Service.HFT
         [UsedImplicitly]
         public IServiceProvider ConfigureServices(IServiceCollection services)
         {
+
+#if DEBUG
+            TelemetryConfiguration.Active.DisableTelemetry = true;
+#endif
+
             return services.BuildServiceProvider<AppSettings>(options =>
             {
                 options.Logs = logs =>

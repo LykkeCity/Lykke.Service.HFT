@@ -172,3 +172,29 @@ await client.CancelLimitOrder(orderId);
 // Cancel all open limit orders
 await client.CancelAll();
 ```
+
+#### Bulk limit orders
+```csharp
+var order = new PlaceBulkOrderModel
+{
+    AssetPairId = "BTCUSD",
+    CancelPreviousOrders = true,
+    Orders = Enumerable.Range(0,10).Select(x => new BulkOrderItemModel
+    {
+        OrderAction = OrderAction.Buy,
+        Price = 500 + x,
+        Volume = 0.001
+    })
+};
+
+var result = await client.PlaceBulkOrder(order).TryExecute();
+
+if (!result.Success) {
+    Console.WriteLine(result.Error);
+} else {
+    foreach(var status in result.Statuses) {
+        // Handle the specific order status
+        // Order progress can be retrieved by Id or cancelled by like regular limit orders
+    }
+}
+```

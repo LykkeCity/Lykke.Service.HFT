@@ -69,6 +69,11 @@ namespace Lykke.Service.HFT.Contracts.Orders
         TooSmallVolume = 418,
 
         /// <summary>
+        /// Order was replaced
+        /// </summary>
+        Replaced = 422,
+
+        /// <summary>
         /// Unexpected status code
         /// </summary>
         Runtime = 500
@@ -103,6 +108,7 @@ namespace Lykke.Service.HFT.Contracts.Orders
                 case OrderStatus.Processing:
                 case OrderStatus.Matched:
                 case OrderStatus.Cancelled:
+                case OrderStatus.Replaced:
                     return false;
                 default:
                     return true;
