@@ -7,7 +7,7 @@ using Swashbuckle.AspNetCore.SwaggerGen;
 
 namespace Lykke.Service.HFT.Infrastructure
 {
-    public class ApiKeyHeaderOperationFilter : IOperationFilter
+    internal class ApiKeyHeaderOperationFilter : IOperationFilter
     {
         public void Apply(Operation operation, OperationFilterContext context)
         {
@@ -25,6 +25,11 @@ namespace Lykke.Service.HFT.Infrastructure
                     Description = "access token",
                     Required = true,
                     Type = "string"
+                });
+
+                operation.Responses.Add("401", new Response
+                {
+                    Description = "Not authorized or invalid api-key"
                 });
             }
         }

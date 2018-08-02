@@ -4,14 +4,25 @@ using Lykke.Service.HFT.Core;
 
 namespace Lykke.Service.HFT.Controllers
 {
+    /// <summary>
+    /// Request parameter validation logic.
+    /// </summary>
     public class RequestValidator
     {
         private readonly AppSettings.HighFrequencyTradingSettings _appSettings;
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="RequestValidator"/> class.
+        /// </summary>
+        /// <param name="appSettings">The application settings.</param>
         public RequestValidator(AppSettings.HighFrequencyTradingSettings appSettings)
         {
             _appSettings = appSettings;
         }
 
+        /// <summary>
+        /// Validate requested asset pair.
+        /// </summary>
         public bool ValidateAssetPair(string assetPairId, Assets.Client.Models.AssetPair assetPair, out ResponseModel model)
         {
             if (assetPair == null)
@@ -29,6 +40,9 @@ namespace Lykke.Service.HFT.Controllers
             return true;
         }
 
+        /// <summary>
+        /// Validate requested volume.
+        /// </summary>
         public bool ValidateVolume(double volume, double minVolume, string asset, out ResponseModel model)
         {
             if (Math.Abs(volume) < double.Epsilon || Math.Abs(volume) < minVolume)
@@ -41,6 +55,9 @@ namespace Lykke.Service.HFT.Controllers
             return true;
         }
 
+        /// <summary>
+        /// Validate requested price.
+        /// </summary>
         public bool ValidatePrice(double price, out ResponseModel model)
         {
             if (Math.Abs(price) < double.Epsilon)
@@ -53,6 +70,9 @@ namespace Lykke.Service.HFT.Controllers
             return true;
         }
 
+        /// <summary>
+        /// Validate requested asset.
+        /// </summary>
         public bool ValidateAsset(Assets.Client.Models.AssetPair assetPair, string assetId,
             Assets.Client.Models.Asset baseAsset, Assets.Client.Models.Asset quotingAsset, out ResponseModel model)
         {

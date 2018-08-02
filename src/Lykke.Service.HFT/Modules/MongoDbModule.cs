@@ -7,7 +7,7 @@ using MongoDB.Driver;
 
 namespace Lykke.Service.HFT.Modules
 {
-    public class MongoDbModule : Module
+    internal class MongoDbModule : Module
     {
         private readonly IReloadingManager<AppSettings> _settings;
 

@@ -13,7 +13,7 @@ using WampSharp.V2.Realm;
 namespace Lykke.Service.HFT.Services
 {
     [UsedImplicitly]
-    public class StartupManager : IStartupManager
+    internal class StartupManager : IStartupManager
     {
         private readonly ILog _log;
         private readonly IEnumerable<IWampHostedRealm> _realms;

@@ -18,6 +18,9 @@ using Swashbuckle.AspNetCore.SwaggerGen;
 
 namespace Lykke.Service.HFT.Controllers
 {
+    /// <summary>
+    /// Controller for order functionality.
+    /// </summary>
     [Authorize]
     [Route("api/[controller]")]
     public class OrdersController : Controller
@@ -29,6 +32,9 @@ namespace Lykke.Service.HFT.Controllers
         private readonly ILimitOrderStateRepository _orderStateCache;
         private readonly ILimitOrderStateArchive _orderStateArchive;
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="OrdersController"/> class.
+        /// </summary>
         public OrdersController(
             IMatchingEngineAdapter frequencyTradingService,
             IAssetServiceDecorator assetServiceDecorator,
@@ -48,7 +54,7 @@ namespace Lykke.Service.HFT.Controllers
         /// </summary>
         /// <param name="status">Order status</param>
         /// <param name="take">The amount of orders to take, default 100; max 500.</param>
-        /// <returns>Client orders.</returns>
+        /// <response code="200">The latest client orders.</response>
         [HttpGet]
         [SwaggerOperation(nameof(GetOrders))]
         [ProducesResponseType(typeof(IEnumerable<LimitOrderStateModel>), (int)HttpStatusCode.OK)]
@@ -117,10 +123,11 @@ namespace Lykke.Service.HFT.Controllers
 
 
         /// <summary>
-        /// Get the order info.
+        /// Get the order details.
         /// </summary>
         /// <param name="id">Limit order id</param>
-        /// <returns>Order info.</returns>
+        /// <response code="200">The order details.</response>
+        /// <response code="404">Order could not be found</response>
         [HttpGet("{id}")]
         [SwaggerOperation(nameof(GetOrder))]
         [ProducesResponseType(typeof(LimitOrderStateModel), (int)HttpStatusCode.OK)]
@@ -148,9 +155,10 @@ namespace Lykke.Service.HFT.Controllers
         }
 
         /// <summary>
-        /// Place a market order.
+        /// Place a new market order.
         /// </summary>
-        /// <returns>Average strike price.</returns>
+        /// <response code="200">The average strike price for the settled market order.</response>
+        /// <response code="404">Requested asset pair could not be found or is disabled.</response>
         [HttpPost("market")]
         [Obsolete("Use the v2 version for placing market orders")]
         [SwaggerOperation(nameof(PlaceMarketOrder))]
@@ -170,9 +178,10 @@ namespace Lykke.Service.HFT.Controllers
         }
 
         /// <summary>
-        /// Place a market order.
+        /// Place a new market order.
         /// </summary>
-        /// <returns>Average strike price.</returns>
+        /// <response code="200">The placed market order results.</response>
+        /// <response code="404">Requested asset pair could not be found or is disabled.</response>
         [HttpPost("v2/market")]
         [SwaggerOperation(nameof(PlaceMarketOrder))]
         [ProducesResponseType(typeof(MarketOrderResponseModel), (int)HttpStatusCode.OK)]
@@ -185,6 +194,11 @@ namespace Lykke.Service.HFT.Controllers
             }
 
             var assetPair = await _assetServiceDecorator.GetEnabledAssetPairAsync(order.AssetPairId);
+            if (assetPair == null)
+            {
+                return NotFound($"Assetpair {order.AssetPairId} could not be found or is disabled.");
+            }
+
             if (!_requestValidator.ValidateAssetPair(order.AssetPairId, assetPair, out var badRequestModel))
             {
                 return BadRequest(badRequestModel);
@@ -224,9 +238,10 @@ namespace Lykke.Service.HFT.Controllers
         }
 
         /// <summary>
-        /// Place a limit order.
+        /// Place a new limit order.
         /// </summary>
-        /// <returns>Request id.</returns>
+        /// <response code="200">The id of the placed limit order.</response>
+        /// <response code="404">Requested asset pair could not be found or is disabled.</response>
         [HttpPost("limit")]
         [Obsolete("Use the v2 version for placing limit orders")]
         [SwaggerOperation(nameof(PlaceLimitOrder))]
@@ -246,9 +261,10 @@ namespace Lykke.Service.HFT.Controllers
         }
 
         /// <summary>
-        /// Place a limit order.
+        /// Place a new limit order.
         /// </summary>
-        /// <returns>Request id.</returns>
+        /// <response code="200">The placed limit order results.</response>
+        /// <response code="404">Requested asset pair could not be found or is disabled.</response>
         [HttpPost("v2/limit")]
         [SwaggerOperation(nameof(PlaceLimitOrder))]
         [ProducesResponseType(typeof(LimitOrderResponseModel), (int)HttpStatusCode.OK)]
@@ -261,6 +277,10 @@ namespace Lykke.Service.HFT.Controllers
             }
 
             var assetPair = await _assetServiceDecorator.GetEnabledAssetPairAsync(order.AssetPairId);
+            if (assetPair == null)
+            {
+                return NotFound($"Assetpair {order.AssetPairId} could not be found or is disabled.");
+            }
 
             if (!_requestValidator.ValidateAssetPair(order.AssetPairId, assetPair, out var badRequestModel))
             {
@@ -303,6 +323,9 @@ namespace Lykke.Service.HFT.Controllers
         /// Cancel the limit order.
         /// </summary>
         /// <param name="id">Limit order id</param>
+        /// <response code="200">Limit order has been cancelled.</response>
+        /// <response code="403">You don't have permission to cancel that limit order.</response>
+        /// <response code="404">Limit order could not be found.</response>
         [HttpPost("{id}/Cancel")]
         [SwaggerOperation(nameof(CancelLimitOrderOld))]
         [Obsolete("Use http delete {id} instead.")]
@@ -310,15 +333,17 @@ namespace Lykke.Service.HFT.Controllers
             => CancelLimitOrder(id);
 
         /// <summary>
-        /// Cancel the limit order.
+        /// Cancel a limit order.
         /// </summary>
         /// <param name="id">Limit order id</param>
+        /// <response code="200">Limit order has been cancelled.</response>
+        /// <response code="403">You don't have permission to cancel that limit order.</response>
+        /// <response code="404">Limit order could not be found.</response>
         [HttpDelete("{id}")]
         [SwaggerOperation(nameof(CancelLimitOrder))]
         [ProducesResponseType((int)HttpStatusCode.OK)]
         [ProducesResponseType((int)HttpStatusCode.NotFound)]
         [ProducesResponseType((int)HttpStatusCode.Forbidden)]
-        [ProducesResponseType(typeof(ResponseModel), (int)HttpStatusCode.BadRequest)]
         public async Task<IActionResult> CancelLimitOrder(Guid id)
         {
             if (id == Guid.Empty)
@@ -361,12 +386,15 @@ namespace Lykke.Service.HFT.Controllers
         }
 
         /// <summary>
-        /// Cancels all open limit orders.
+        /// Cancel all open limit orders.
         /// </summary>
+        /// <param name="assetPairId">[Optional] Cancel the orders of a specific asset pair</param>
+        /// <param name="side">[Optional] Cancel the orders of a specific side (Buy or Sell)</param>
+        /// <response code="200">All open limit orders have been cancelled</response>
+        /// <response code="404">Requested asset pair could not be found or is disabled.</response>
         [HttpDelete]
         [SwaggerOperation(nameof(CancelAll))]
         [ProducesResponseType(typeof(IEnumerable<Guid>), (int)HttpStatusCode.OK)]
-        [ProducesResponseType(typeof(ResponseModel), (int)HttpStatusCode.BadRequest)]
         [ProducesResponseType((int)HttpStatusCode.NotFound)]
         public async Task<IActionResult> CancelAll(
             [FromQuery] string assetPairId = null,

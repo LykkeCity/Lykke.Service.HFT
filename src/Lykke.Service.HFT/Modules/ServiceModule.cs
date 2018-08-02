@@ -24,7 +24,7 @@ using MongoDB.Driver;
 
 namespace Lykke.Service.HFT.Modules
 {
-    public class ServiceModule : Module
+    internal class ServiceModule : Module
     {
         private const string FinanceDataCache = "financeData";
         private const string ApiKeysCache = "apiKeys";
