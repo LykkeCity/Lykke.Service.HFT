@@ -1,0 +1,129 @@
+HighFrequencyTradingService:
+    Db:
+        LogsConnString:
+            settings-key: HFT-LogsConnString
+            types:
+                - AzureBlobStorage
+                - Tag
+        OrderStateConnString:
+            settings-key: HFT-OrderStateConnString
+            types:
+                - MongoDB
+        OrdersArchiveConnString:
+            settings-key: HFT-OrdersArchiveConnString
+            types:
+                - AzureTableStorage
+    
+    MaintenanceMode:
+        Enabled: 
+            settings-key: HFT-MaintenanceMode
+        Reason:
+            settings-key: HFT-MaintenanceReason
+
+    DisabledAssets:
+        settings-key: HFT-DisabledAssets
+        types:
+            - JsonArray
+
+    Dictionaries:
+        CacheExpirationPeriod:
+            settings-key: HFT-DictionaryCacheExpirationPeriod
+
+    Cache:
+        RedisConfiguration:
+            settings-key: HFT-RedisConfiguration
+            types:
+                - Redis
+        ApiKeyCacheInstance:
+            settings-key: HFT-ApiKeyCache
+        ApiKeyCacheKeyPattern:
+            settings-key: HFT-ApiKeyCacheKeyPattern
+        WalletCacheKeyPattern:
+            settings-key: HFT-WalletCacheKeyPattern
+        FinanceDataCacheInstance:
+            settings-key: HFT-FinanceDataCache
+        OrderBooksCacheKeyPattern:
+            settings-key: HFT-OrderBooksCacheKeyPattern
+        FeeCacheInstance: 
+            settings-key: HFT-FeeCache
+        FeeCacheDuration:
+            settings-key: HFT-FeeCacheDuration
+        FeeCacheLimitOrderPattern:
+            settings-key: HFT-FeeCacheLimitOrderPattern
+
+    LimitOrdersFeed:
+        ConnectionString:
+            settings-key: HFT-LimitOrdersFeed
+            types:
+                - RabbitMq
+        ExchangeName:
+            settings-key: HFT-LimitOrdersExchange
+
+    ApiKeysFeed:
+        ConnectionString:
+            settings-key: HFT-ApiKeysFeed
+            types:
+                - RabbitMq
+        ExchangeName:
+            settings-key: HFT-ApiKeysExchange
+
+    QueuePostfix:
+        settings-key: HFT-QueuePostfix
+
+    ChaosKitty:
+        StateOfChaos:
+            settings-key: HFT-ChaosKittyState
+
+    SagasRabbitMqConnStr:
+        settings-key: HFT-SagasRabbitMqConnStr
+        types:
+            - RabbitMq
+
+    MongoSettings:
+        ConnectionString:
+            settings-key: HFT-MongoSettings
+            types:
+                - MongoDB
+
+MatchingEngineClient:
+    IpEndpoint:
+        Port: 
+            settings-key: MatchingEngine-Port
+        Host:
+            settings-key: MatchingEngine-Host
+
+AssetsServiceClient:
+    ServiceUrl: 
+        settings-key: AssetsServiceUrl
+    ExpirationPeriod:
+        settings-key: AssetsServiceExpirationPeriod
+        
+BalancesServiceClient:
+    ServiceUrl:
+        settings-key: BalancesServiceUrl
+
+FeeCalculatorServiceClient:
+    ServiceUrl:
+        settings-key: FeeCalculatorServiceUrl
+
+FeeSettings:
+    TargetClientId:
+        HFT:
+            settings-key: FeeSettings-TargetClientId-HFT
+    
+MonitoringServiceClient:
+    MonitoringServiceUrl:
+        settings-key: MonitoringServiceUrl       
+
+OperationsHistoryServiceClient:
+    ServiceUrl:
+        settings-key: OperationsHistoryServiceUrl
+
+SlackNotifications:
+    AzureQueue:
+        ConnectionString:
+            settings-key: SlackNotificationsConnString
+            types:
+                - AzureTableStorage
+        QueueName: 
+            settings-key: SlackQueueName

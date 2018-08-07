@@ -11,7 +11,7 @@ namespace Lykke.Service.HFT.Services
 
         public RedisModule(IReloadingManager<AppSettings> settings)
         {
-            _settings = settings.CurrentValue.HighFrequencyTradingService.CacheSettings;
+            _settings = settings.CurrentValue.HighFrequencyTradingService.Cache;
         }
 
         protected override void Load(ContainerBuilder builder)

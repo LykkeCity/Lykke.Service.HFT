@@ -25,7 +25,7 @@ namespace Lykke.Service.HFT.Core
             public List<string> DisabledAssets { get; set; }
             public DbSettings Db { get; set; }
             public DictionariesSettings Dictionaries { get; set; }
-            public CacheSettings CacheSettings { get; set; }
+            public CacheSettings Cache { get; set; }
             public RabbitMqSettings LimitOrdersFeed { get; set; }
             public MongoSettings MongoSettings { get; set; }
             public string QueuePostfix { get; set; }
@@ -46,6 +46,7 @@ namespace Lykke.Service.HFT.Core
         }
         public class RabbitMqSettings
         {
+            [AmqpCheck]
             public string ConnectionString { get; set; }
             public string ExchangeName { get; set; }
         }
@@ -56,26 +57,26 @@ namespace Lykke.Service.HFT.Core
 
         public class IpEndpointSettings
         {
-            public string InternalHost { get; set; }
+            [TcpCheck("Port")]
             public string Host { get; set; }
             public int Port { get; set; }
 
-            public IPEndPoint GetClientIpEndPoint(bool useInternal = false)
+            public IPEndPoint GetClientIpEndPoint()
             {
-                string host = useInternal ? InternalHost : Host;
-
-                if (IPAddress.TryParse(host, out var ipAddress))
+                if (IPAddress.TryParse(Host, out var ipAddress))
                     return new IPEndPoint(ipAddress, Port);
 
-                var addresses = Dns.GetHostAddressesAsync(host).Result;
+                var addresses = Dns.GetHostAddressesAsync(Host).Result;
                 return new IPEndPoint(addresses[0], Port);
             }
         }
 
         public class DbSettings
         {
+            [AzureBlobCheck]
             public string LogsConnString { get; set; }
             public string OrderStateConnString { get; set; }
+            [AzureTableCheck]
             public string OrdersArchiveConnString { get; set; }
         }
 
@@ -113,7 +114,6 @@ namespace Lykke.Service.HFT.Core
         {
             return string.Format(settings.OrderBooksCacheKeyPattern, assetPairId, isBuy);
         }
-
     }
 
     public class FeeSettings
@@ -128,14 +128,19 @@ namespace Lykke.Service.HFT.Core
 
     public class AssetsServiceClient
     {
+        [HttpCheck("api/IsAlive")]
         public string ServiceUrl { get; set; }
     }
+
     public class BalancesServiceClient
     {
+        [HttpCheck("api/IsAlive")]
         public string ServiceUrl { get; set; }
     }
+
     public class FeeCalculatorServiceClient
     {
+        [HttpCheck("api/IsAlive")]
         public string ServiceUrl { get; set; }
     }
 }

@@ -38,7 +38,7 @@ namespace Lykke.Service.HFT.Modules
         protected override void Load(ContainerBuilder builder)
         {
             var currentSettings = _settings.CurrentValue;
-            builder.RegisterInstance(currentSettings.HighFrequencyTradingService.CacheSettings)
+            builder.RegisterInstance(currentSettings.HighFrequencyTradingService.Cache)
                 .SingleInstance();
             builder.RegisterInstance(currentSettings.HighFrequencyTradingService)
                 .SingleInstance();
@@ -70,7 +70,7 @@ namespace Lykke.Service.HFT.Modules
 
             RegisterOrderStates(builder);
 
-            BindRedis(builder, currentSettings.HighFrequencyTradingService.CacheSettings);
+            BindRedis(builder, currentSettings.HighFrequencyTradingService.Cache);
             BindRabbitMq(builder, currentSettings.HighFrequencyTradingService);
 
             RegisterPeriodicalHandlers(builder);
