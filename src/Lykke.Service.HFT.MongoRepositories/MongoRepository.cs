@@ -139,9 +139,9 @@ namespace Lykke.Service.HFT.MongoRepositories
             return GetCollection().Find(expression).ToList().AsQueryable();
         }
 
-        public async Task<IEnumerable<T>> FilterAsync(Expression<Func<T, bool>> expression, int? take = null)
+        public async Task<IEnumerable<T>> FilterAsync(Expression<Func<T, bool>> expression, int? batchSize = null, int? limit = null)
         {
-            var result = await GetCollection().FindAsync(expression, new FindOptions<T> { Limit = take, BatchSize = take });
+            var result = await GetCollection().FindAsync(expression, new FindOptions<T> { BatchSize = batchSize, Limit = limit });
             return result.ToEnumerable();
         }
     }

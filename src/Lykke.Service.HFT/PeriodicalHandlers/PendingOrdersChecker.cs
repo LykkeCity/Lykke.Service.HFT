@@ -34,7 +34,7 @@ namespace Lykke.Service.HFT.PeriodicalHandlers
         public override async Task Execute()
         {
             Expression<Func<LimitOrderState, bool>> filter = x => x.Status == OrderStatus.Pending;
-            var pendingOrders = (await _orderStateRepository.FilterAsync(filter, DefaultChunkSize)).ToList();
+            var pendingOrders = (await _orderStateRepository.FilterAsync(filter, DefaultChunkSize, DefaultChunkSize)).ToList();
 
             var assetPairs = pendingOrders.Select(x => x.AssetPairId).Distinct();
             var orderBook = await _orderBooksService.GetOrderIdsAsync(assetPairs);
