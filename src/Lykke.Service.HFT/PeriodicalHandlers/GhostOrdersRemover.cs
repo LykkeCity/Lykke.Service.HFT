@@ -37,7 +37,9 @@ namespace Lykke.Service.HFT.PeriodicalHandlers
             Expression<Func<LimitOrderState, bool>> filter = x =>
                 x.Status == OrderStatus.InOrderBook || x.Status == OrderStatus.Processing || x.Status == OrderStatus.Pending
                 && (x.LastMatchTime == null && x.CreatedAt < minimalDate || x.LastMatchTime < minimalDate);
-            var ordersInOrderBookState = (await _orderStateRepository.FilterAsync(filter, DefaultChunkSize)).ToList();
+            var ordersInOrderBookState = (await _orderStateRepository.FilterAsync(filter, 
+                batchSize: DefaultChunkSize,
+                limit: null)).ToList();
 
             var assetPairs = ordersInOrderBookState.Select(x => x.AssetPairId).Distinct();
             var orderBook = await _orderBooksService.GetOrderIdsAsync(assetPairs);

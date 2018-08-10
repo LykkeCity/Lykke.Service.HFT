@@ -61,7 +61,7 @@ namespace Lykke.Service.HFT.PeriodicalHandlers
                 _log.Info($"1. Getting orders (max {chunkSize}).");
                 try
                 {
-                    var notActiveOrders = (await _orderStateCache.FilterAsync(filter, chunkSize)).ToList();
+                    var notActiveOrders = (await _orderStateCache.FilterAsync(filter, chunkSize, chunkSize)).ToList();
                     if (notActiveOrders.Count == 0)
                     {
                         _log.Info("Finished");
