@@ -7,6 +7,7 @@ using Lykke.Cqrs;
 using Lykke.Cqrs.Configuration;
 using Lykke.Messaging;
 using Lykke.Messaging.RabbitMq;
+using Lykke.Messaging.Serialization;
 using Lykke.Service.HFT.Core;
 using Lykke.Service.HFT.Services.Events;
 using Lykke.Service.HFT.Services.Projections;
@@ -78,7 +79,7 @@ namespace Lykke.Service.HFT.Modules
                     true,
                     Register.DefaultEndpointResolver(new RabbitMqConventionEndpointResolver(
                         "RabbitMq",
-                        "messagepack",
+                        SerializationFormat.MessagePack,
                         environment: "lykke",
                         exclusiveQueuePostfix: _settings.QueuePostfix)),
 
