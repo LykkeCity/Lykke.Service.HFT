@@ -59,6 +59,11 @@ namespace Lykke.Service.HFT.Contracts.Orders
         InvalidPriceAccuracy = 9,
 
         /// <summary>
+        /// Order has been rejected
+        /// </summary>
+        Rejected = 10,
+
+        /// <summary>
         /// Reserved volume greater than balance
         /// </summary>
         ReservedVolumeGreaterThanBalance = 414,
@@ -102,6 +107,7 @@ namespace Lykke.Service.HFT.Contracts.Orders
                 case OrderStatus.TooSmallVolume:
                 case OrderStatus.InvalidPriceAccuracy:
                 case OrderStatus.Runtime:
+                case OrderStatus.Rejected:
                     return true;
                 case OrderStatus.Pending:
                 case OrderStatus.InOrderBook:
