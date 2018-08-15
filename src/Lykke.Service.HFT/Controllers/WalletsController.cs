@@ -19,6 +19,7 @@ namespace Lykke.Service.HFT.Controllers
     /// </summary>
     [Authorize]
     [Route("api/[controller]")]
+    [ApiController]
     public class WalletsController : Controller
     {
         private readonly IBalancesClient _balancesClient;
@@ -38,7 +39,7 @@ namespace Lykke.Service.HFT.Controllers
         /// </summary>
         /// <response code="200">Api wallet balances</response>
         [HttpGet]
-        [SwaggerOperation("GetBalances")]
+        [SwaggerOperation(nameof(GetBalances))]
         [ProducesResponseType(typeof(IEnumerable<BalanceModel>), (int)HttpStatusCode.OK)]
         public async Task<IActionResult> GetBalances()
         {
