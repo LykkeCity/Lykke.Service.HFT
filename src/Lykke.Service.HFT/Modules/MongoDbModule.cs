@@ -22,7 +22,7 @@ namespace Lykke.Service.HFT.Modules
                 {
                     ConventionRegistry.Register("Ignore extra", new ConventionPack { new IgnoreExtraElementsConvention(true) }, _ => true);
 
-                    var mongoUrl = new MongoUrl(_settings.CurrentValue.HighFrequencyTradingService.MongoSettings.ConnectionString);
+                    var mongoUrl = new MongoUrl(_settings.CurrentValue.HighFrequencyTradingService.Db.OrderStateConnString);
                     MongoDefaults.GuidRepresentation = GuidRepresentation.Standard;
                     return new MongoClient(mongoUrl).GetDatabase(mongoUrl.DatabaseName);
                 })

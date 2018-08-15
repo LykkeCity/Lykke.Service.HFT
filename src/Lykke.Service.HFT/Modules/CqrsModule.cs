@@ -47,7 +47,7 @@ namespace Lykke.Service.HFT.Modules
 
             builder.Register(context => new AutofacDependencyResolver(context)).As<IDependencyResolver>().SingleInstance();
 
-            var rabbitMqSettings = new RabbitMQ.Client.ConnectionFactory { Uri = _settings.SagasRabbitMqConnStr };
+            var rabbitMqSettings = new RabbitMQ.Client.ConnectionFactory { Uri = _settings.CqrsRabbitConnString };
 
             builder.RegisterType<ApiKeyProjection>()
                 .WithParameter(

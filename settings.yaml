@@ -1,7 +1,7 @@
 HighFrequencyTradingService:
     Db:
         LogsConnString:
-            settings-key: HFT-LogsConnString
+            settings-key: LogsConnString
             types:
                 - AzureBlobStorage
                 - Tag
@@ -74,16 +74,10 @@ HighFrequencyTradingService:
         StateOfChaos:
             settings-key: HFT-ChaosKittyState
 
-    SagasRabbitMqConnStr:
-        settings-key: HFT-SagasRabbitMqConnStr
+    CqrsRabbitConnString:
+        settings-key: CqrsRabbitConnString
         types:
             - RabbitMq
-
-    MongoSettings:
-        ConnectionString:
-            settings-key: HFT-MongoSettings
-            types:
-                - MongoDB
 
 MatchingEngineClient:
     IpEndpoint:

@@ -27,9 +27,9 @@ namespace Lykke.Service.HFT.Core
             public DictionariesSettings Dictionaries { get; set; }
             public CacheSettings Cache { get; set; }
             public RabbitMqSettings LimitOrdersFeed { get; set; }
-            public MongoSettings MongoSettings { get; set; }
             public string QueuePostfix { get; set; }
-            public string SagasRabbitMqConnStr { get; set; }
+            [AmqpCheck]
+            public string CqrsRabbitConnString { get; set; }
             [Optional]
             public ChaosSettings ChaosKitty { get; set; }
         }
@@ -40,16 +40,13 @@ namespace Lykke.Service.HFT.Core
             public string Reason { get; set; }
         }
 
-        public class MongoSettings
-        {
-            public string ConnectionString { get; set; }
-        }
         public class RabbitMqSettings
         {
             [AmqpCheck]
             public string ConnectionString { get; set; }
             public string ExchangeName { get; set; }
         }
+
         public class MatchingEngineSettings
         {
             public IpEndpointSettings IpEndpoint { get; set; }
