@@ -13,18 +13,15 @@ namespace Lykke.Service.HFT.Services.Projections
     {
         private readonly ILog _log;
         private readonly IDistributedCache _distributedCache;
-        private readonly CacheSettings _cacheSettings;
 
         public ApiKeyProjection(
             [NotNull] ILogFactory logFactory,
-            [NotNull] IDistributedCache distributedCache,
-            [NotNull] CacheSettings cacheSettings)
+            [NotNull] IDistributedCache distributedCache)
         {
             if (logFactory == null)
                 throw new ArgumentNullException(nameof(logFactory));
 
             _log = logFactory.CreateLog(this);
-            _cacheSettings = cacheSettings ?? throw new ArgumentNullException(nameof(cacheSettings));
             _distributedCache = distributedCache ?? throw new ArgumentNullException(nameof(distributedCache));
         }
 
@@ -33,13 +30,13 @@ namespace Lykke.Service.HFT.Services.Projections
             _log.Info($"enabled: {evt.Enabled}", context: evt.ApiKey.Substring(0, 4));
             if (evt.Enabled)
             {
-                await _distributedCache.SetStringAsync(_cacheSettings.GetKeyForApiKey(evt.ApiKey), evt.WalletId);
-                await _distributedCache.SetAsync(_cacheSettings.GetKeyForWalletId(evt.WalletId), new byte[] { 1 });
+                await _distributedCache.SetStringAsync(Constants.GetKeyForApiKey(evt.ApiKey), evt.WalletId);
+                await _distributedCache.SetAsync(Constants.GetKeyForWalletId(evt.WalletId), new byte[] { 1 });
             }
             else
             {
-                await _distributedCache.RemoveAsync(_cacheSettings.GetKeyForApiKey(evt.ApiKey));
-                await _distributedCache.RemoveAsync(_cacheSettings.GetKeyForWalletId(evt.WalletId));
+                await _distributedCache.RemoveAsync(Constants.GetKeyForApiKey(evt.ApiKey));
+                await _distributedCache.RemoveAsync(Constants.GetKeyForWalletId(evt.WalletId));
             }
         }
 

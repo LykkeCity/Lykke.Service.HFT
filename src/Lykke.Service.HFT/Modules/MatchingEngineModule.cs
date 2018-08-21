@@ -1,9 +1,9 @@
 ﻿using Autofac;
-using Lykke.Service.HFT.Core;
 using Lykke.Service.HFT.Core.Services;
 using Lykke.Service.HFT.Services;
 using Lykke.SettingsReader;
 using System;
+using Lykke.Service.HFT.Core.Settings;
 
 namespace Lykke.Service.HFT.Modules
 {

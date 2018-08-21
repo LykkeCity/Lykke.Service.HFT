@@ -25,31 +25,13 @@ HighFrequencyTradingService:
         types:
             - JsonArray
 
-    Dictionaries:
-        CacheExpirationPeriod:
-            settings-key: HFT-DictionaryCacheExpirationPeriod
-
     Cache:
         RedisConfiguration:
             settings-key: HFT-RedisConfiguration
             types:
                 - Redis
-        ApiKeyCacheInstance:
-            settings-key: HFT-ApiKeyCache
-        ApiKeyCacheKeyPattern:
-            settings-key: HFT-ApiKeyCacheKeyPattern
-        WalletCacheKeyPattern:
-            settings-key: HFT-WalletCacheKeyPattern
-        FinanceDataCacheInstance:
-            settings-key: HFT-FinanceDataCache
-        OrderBooksCacheKeyPattern:
-            settings-key: HFT-OrderBooksCacheKeyPattern
-        FeeCacheInstance: 
-            settings-key: HFT-FeeCache
-        FeeCacheDuration:
-            settings-key: HFT-FeeCacheDuration
-        FeeCacheLimitOrderPattern:
-            settings-key: HFT-FeeCacheLimitOrderPattern
+        CacheExpirationPeriod:
+            settings-key: HFT-DictionaryCacheExpirationPeriod
 
     LimitOrdersFeed:
         ConnectionString:
@@ -58,14 +40,6 @@ HighFrequencyTradingService:
                 - RabbitMq
         ExchangeName:
             settings-key: HFT-LimitOrdersExchange
-
-    ApiKeysFeed:
-        ConnectionString:
-            settings-key: HFT-ApiKeysFeed
-            types:
-                - RabbitMq
-        ExchangeName:
-            settings-key: HFT-ApiKeysExchange
 
     QueuePostfix:
         settings-key: HFT-QueuePostfix
@@ -89,8 +63,6 @@ MatchingEngineClient:
 AssetsServiceClient:
     ServiceUrl: 
         settings-key: AssetsServiceUrl
-    ExpirationPeriod:
-        settings-key: AssetsServiceExpirationPeriod
         
 BalancesServiceClient:
     ServiceUrl:

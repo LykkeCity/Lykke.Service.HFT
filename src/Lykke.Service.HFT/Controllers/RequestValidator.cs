@@ -1,6 +1,7 @@
 ﻿using System;
 using Lykke.Service.HFT.Contracts;
 using Lykke.Service.HFT.Core;
+using Lykke.Service.HFT.Core.Settings;
 
 namespace Lykke.Service.HFT.Controllers
 {
@@ -9,13 +10,13 @@ namespace Lykke.Service.HFT.Controllers
     /// </summary>
     public class RequestValidator
     {
-        private readonly AppSettings.HighFrequencyTradingSettings _appSettings;
+        private readonly HighFrequencyTradingSettings _appSettings;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="RequestValidator"/> class.
         /// </summary>
         /// <param name="appSettings">The application settings.</param>
-        public RequestValidator(AppSettings.HighFrequencyTradingSettings appSettings)
+        public RequestValidator(HighFrequencyTradingSettings appSettings)
         {
             _appSettings = appSettings;
         }

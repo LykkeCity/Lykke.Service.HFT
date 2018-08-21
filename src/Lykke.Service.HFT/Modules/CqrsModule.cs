@@ -9,6 +9,7 @@ using Lykke.Messaging;
 using Lykke.Messaging.RabbitMq;
 using Lykke.Messaging.Serialization;
 using Lykke.Service.HFT.Core;
+using Lykke.Service.HFT.Core.Settings;
 using Lykke.Service.HFT.Services.Events;
 using Lykke.Service.HFT.Services.Projections;
 using Lykke.SettingsReader;
@@ -18,7 +19,7 @@ namespace Lykke.Service.HFT.Modules
 {
     internal class CqrsModule : Module
     {
-        private readonly AppSettings.HighFrequencyTradingSettings _settings;
+        private readonly HighFrequencyTradingSettings _settings;
 
         public CqrsModule(IReloadingManager<AppSettings> settingsManager)
         {
@@ -53,7 +54,7 @@ namespace Lykke.Service.HFT.Modules
                 .WithParameter(
                     new ResolvedParameter(
                         (pi, ctx) => pi.ParameterType == typeof(IDistributedCache),
-                        (pi, ctx) => ctx.ResolveKeyed<IDistributedCache>("apiKeys")));
+                        (pi, ctx) => ctx.ResolveKeyed<IDistributedCache>(Constants.ApiKeyCacheInstance)));
 
             builder.Register(ctx =>
             {

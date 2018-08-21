@@ -1,5 +1,5 @@
 ﻿using Autofac;
-using Lykke.Service.HFT.Core;
+using Lykke.Service.HFT.Core.Settings;
 using Lykke.SettingsReader;
 using StackExchange.Redis;
 

@@ -1,13 +1,11 @@
 ﻿using System;
 using System.IO;
-using System.Linq;
-using AspNetCoreRateLimit;
 using JetBrains.Annotations;
 using Lykke.Sdk;
 using Lykke.Sdk.Health;
 using Lykke.Sdk.Middleware;
 using Lykke.Service.HFT.Contracts;
-using Lykke.Service.HFT.Core;
+using Lykke.Service.HFT.Core.Settings;
 using Lykke.Service.HFT.Infrastructure;
 using Lykke.Service.HFT.Middleware;
 using Lykke.Service.HFT.Services;

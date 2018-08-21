@@ -12,14 +12,12 @@ namespace Lykke.Service.HFT.Services
 {
     public class ApiKeyCacheInitializer : IApiKeyCacheInitializer
     {
-        private readonly CacheSettings _settings;
         private readonly IRepository<ApiKey> _apiKeyRepository;
         private readonly IServer _redisServer;
         private readonly IDatabase _redisDatabase;
 
-        public ApiKeyCacheInitializer(CacheSettings settings, IRepository<ApiKey> orderStateRepository, IServer redisServer, IDatabase redisDatabase)
+        public ApiKeyCacheInitializer(IRepository<ApiKey> orderStateRepository, IServer redisServer, IDatabase redisDatabase)
         {
-            _settings = settings ?? throw new ArgumentNullException(nameof(settings));
             _apiKeyRepository = orderStateRepository ?? throw new ArgumentNullException(nameof(orderStateRepository));
             _redisServer = redisServer ?? throw new ArgumentNullException(nameof(redisServer));
             _redisDatabase = redisDatabase ?? throw new ArgumentNullException(nameof(redisDatabase));
@@ -34,7 +32,7 @@ namespace Lykke.Service.HFT.Services
 
         private async Task ClearExistingRecords()
         {
-            var keys = _redisServer.Keys(pattern: _settings.ApiKeyCacheInstance + "*", pageSize: 1000).ToArray();
+            var keys = _redisServer.Keys(pattern: Constants.ApiKeyCacheInstance + "*", pageSize: 1000).ToArray();
             await _redisDatabase.KeyDeleteAsync(keys);
         }
 
@@ -49,8 +47,8 @@ namespace Lykke.Service.HFT.Services
             var batch = _redisDatabase.CreateBatch();
             foreach (var key in keys)
             {
-                tasks.Add(batch.HashSetAsync(_settings.ApiKeyCacheInstance + _settings.GetKeyForApiKey(key.Id.ToString()), "data", key.WalletId));
-                tasks.Add(batch.HashSetAsync(_settings.ApiKeyCacheInstance + _settings.GetKeyForWalletId(key.WalletId), "data", new byte[] { 1 }));
+                tasks.Add(batch.HashSetAsync(Constants.ApiKeyCacheInstance + Constants.GetKeyForApiKey(key.Id.ToString()), "data", key.WalletId));
+                tasks.Add(batch.HashSetAsync(Constants.ApiKeyCacheInstance + Constants.GetKeyForWalletId(key.WalletId), "data", new byte[] { 1 }));
             }
             batch.Execute();
             await Task.WhenAll(tasks);
