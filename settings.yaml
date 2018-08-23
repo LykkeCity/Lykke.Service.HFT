@@ -1,7 +1,7 @@
 HighFrequencyTradingService:
     Db:
         LogsConnString:
-            settings-key: LogsConnString
+            settings-key: HFT-LogsConnString
             types:
                 - AzureBlobStorage
                 - Tag
