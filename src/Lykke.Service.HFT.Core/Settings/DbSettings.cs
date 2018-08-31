@@ -6,7 +6,10 @@ namespace Lykke.Service.HFT.Core.Settings
     {
         [AzureBlobCheck]
         public string LogsConnString { get; set; }
+
+        [MongoCheck]
         public string OrderStateConnString { get; set; }
+
         [AzureTableCheck]
         public string OrdersArchiveConnString { get; set; }
     }
