@@ -8,7 +8,6 @@ using Common.Log;
 using Lykke.Common.Log;
 using Lykke.MatchingEngine.Connector.Abstractions.Services;
 using Lykke.MatchingEngine.Connector.Models.Api;
-using Lykke.Service.Assets.Client.Models;
 using Lykke.Service.HFT.Contracts;
 using Lykke.Service.HFT.Contracts.Orders;
 using Lykke.Service.HFT.Core;

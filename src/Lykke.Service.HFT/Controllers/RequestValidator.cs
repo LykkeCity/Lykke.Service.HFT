@@ -1,6 +1,7 @@
 ﻿using System;
 using Lykke.Service.HFT.Contracts;
 using Lykke.Service.HFT.Core;
+using Lykke.Service.HFT.Core.Domain;
 using Lykke.Service.HFT.Core.Settings;
 
 namespace Lykke.Service.HFT.Controllers
@@ -24,7 +25,7 @@ namespace Lykke.Service.HFT.Controllers
         /// <summary>
         /// Validate requested asset pair.
         /// </summary>
-        public bool ValidateAssetPair(string assetPairId, Assets.Client.Models.AssetPair assetPair, out ResponseModel model)
+        public bool ValidateAssetPair(string assetPairId, AssetPair assetPair, out ResponseModel model)
         {
             if (assetPair == null)
             {
@@ -74,8 +75,8 @@ namespace Lykke.Service.HFT.Controllers
         /// <summary>
         /// Validate requested asset.
         /// </summary>
-        public bool ValidateAsset(Assets.Client.Models.AssetPair assetPair, string assetId,
-            Assets.Client.Models.Asset baseAsset, Assets.Client.Models.Asset quotingAsset, out ResponseModel model)
+        public bool ValidateAsset(AssetPair assetPair, string assetId,
+            Asset baseAsset, Asset quotingAsset, out ResponseModel model)
         {
             if (assetId != baseAsset.Id && assetId != baseAsset.DisplayId && assetId != quotingAsset.Id && assetId != quotingAsset.DisplayId)
             {
@@ -87,7 +88,7 @@ namespace Lykke.Service.HFT.Controllers
             return true;
         }
 
-        private bool IsAssetPairDisabled(Assets.Client.Models.AssetPair assetPair)
+        private bool IsAssetPairDisabled(AssetPair assetPair)
         {
             return IsAssetDisabled(assetPair.BaseAssetId) || IsAssetDisabled(assetPair.QuotingAssetId);
         }

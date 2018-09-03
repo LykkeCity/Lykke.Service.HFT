@@ -1,7 +1,7 @@
-﻿using System;
-using Lykke.Service.Assets.Client;
-using Lykke.Service.Assets.Client.Models;
+﻿using Lykke.Service.Assets.Client;
+using Lykke.Service.HFT.Core.Domain;
 using Lykke.Service.HFT.Core.Services;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
@@ -20,16 +20,16 @@ namespace Lykke.Service.HFT.Services
         public async Task<AssetPair> GetEnabledAssetPairAsync(string assetPairId)
         {
             var pair = await _apiService.TryGetAssetPairAsync(assetPairId);
-            return pair == null || pair.IsDisabled ? null : pair;
+            return pair == null || pair.IsDisabled ? null : AutoMapper.Mapper.Map<AssetPair>(pair);
         }
 
         public async Task<IEnumerable<AssetPair>> GetAllEnabledAssetPairsAsync()
         {
-            return (await _apiService.GetAllAssetPairsAsync()).Where(a => !a.IsDisabled);
+            return AutoMapper.Mapper.Map<List<AssetPair>>((await _apiService.GetAllAssetPairsAsync()).Where(a => !a.IsDisabled));
         }
 
         public async Task<Asset> GetAssetAsync(string assetId)
-            => await _apiService.TryGetAssetAsync(assetId);
+            => AutoMapper.Mapper.Map<Asset>(await _apiService.TryGetAssetAsync(assetId));
 
 
         public async Task<Asset> GetEnabledAssetAsync(string assetId)

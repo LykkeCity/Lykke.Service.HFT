@@ -2,8 +2,8 @@
 using System.Threading.Tasks;
 using Lykke.MatchingEngine.Connector.Models.Api;
 using Lykke.MatchingEngine.Connector.Models.Common;
-using Lykke.Service.Assets.Client.Models;
 using Lykke.Service.FeeCalculator.Client;
+using Lykke.Service.HFT.Core.Domain;
 using Lykke.Service.HFT.Core.Services;
 using Lykke.Service.HFT.Core.Settings;
 using FeeOrderAction = Lykke.Service.FeeCalculator.AutorestClient.Models.OrderAction;

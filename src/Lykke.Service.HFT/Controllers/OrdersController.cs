@@ -4,7 +4,6 @@ using System.Linq;
 using System.Net;
 using System.Threading.Tasks;
 using Common;
-using Lykke.Service.Assets.Client.Models;
 using Lykke.Service.HFT.Contracts;
 using Lykke.Service.HFT.Contracts.Orders;
 using Lykke.Service.HFT.Core.Domain;
