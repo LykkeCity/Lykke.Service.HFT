@@ -1,5 +1,6 @@
 ﻿using System;
 using Lykke.Service.HFT.Contracts.Orders;
+using MeCancelMode = Lykke.MatchingEngine.Connector.Models.Api.CancelMode;
 using MeOrderAction = Lykke.MatchingEngine.Connector.Models.Common.OrderAction;
 
 namespace Lykke.Service.HFT.Services
@@ -18,10 +19,27 @@ namespace Lykke.Service.HFT.Services
                     orderAction = MeOrderAction.Sell;
                     break;
                 default:
-                    throw new InvalidOperationException("Unknown order action");
+                    throw new ArgumentException($"Unknown order action: {action}");
             }
 
             return orderAction;
+        }
+
+        public static MeCancelMode ToMeCancelModel(this CancelMode cancelMode)
+        {
+            switch (cancelMode)
+            {
+                case CancelMode.NotEmptySide:
+                    return MeCancelMode.NotEmptySide;
+                case CancelMode.BothSides:
+                    return MeCancelMode.BothSides;
+                case CancelMode.SellSide:
+                    return MeCancelMode.SellSide;
+                case CancelMode.BuySide:
+                    return MeCancelMode.BuySide;
+                default:
+                    throw new ArgumentException($"Unknown cancel model: {cancelMode}");
+            }
         }
     }
 }

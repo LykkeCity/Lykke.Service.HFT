@@ -1,4 +1,8 @@
 ﻿using System;
+using System.Collections.Async;
+using System.Collections.Concurrent;
+using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 using Common.Log;
 using Lykke.Common.Log;
@@ -12,6 +16,7 @@ using Lykke.Service.HFT.Core.Domain;
 using Lykke.Service.HFT.Core.Repositories;
 using Lykke.Service.HFT.Core.Services;
 using OrderAction = Lykke.Service.HFT.Contracts.Orders.OrderAction;
+using CancelMode = Lykke.Service.HFT.Contracts.Orders.CancelMode;
 
 namespace Lykke.Service.HFT.Services
 {
@@ -126,10 +131,83 @@ namespace Lykke.Service.HFT.Services
                 AssetPairId = assetPair.Id,
                 Volume = volume,
                 Price = price,
+                Status = OrderStatus.Pending,
                 CreatedAt = DateTime.UtcNow
             });
-
             return requestId;
+        }
+
+        public async Task<ResponseModel<BulkOrderResponseModel>> PlaceBulkLimitOrderAsync(string clientId, AssetPair assetPair, IEnumerable<BulkOrderItemModel> items, bool cancelPrevious, CancelMode? cancelMode)
+        {
+            var requestId = GetNextRequestId();
+
+            var orders = new ConcurrentBag<MultiOrderItemModel>();
+            await items.ParallelForEachAsync(async item =>
+            {
+                var subOrder = await ToMultiOrderItemModel(clientId, assetPair, item);
+                orders.Add(subOrder);
+            });
+
+            var order = new MultiLimitOrderModel
+            {
+                Id = requestId.ToString(),
+                ClientId = clientId,
+                AssetPairId = assetPair.Id,
+                CancelPreviousOrders = cancelPrevious,
+                Orders = orders.ToArray()
+            };
+
+            if (cancelMode.HasValue)
+            {
+                order.CancelMode = cancelMode.Value.ToMeCancelModel();
+            }
+
+            var response = await _matchingEngineClient.PlaceMultiLimitOrderAsync(order);
+            CheckResponseAndThrowIfNull(response);
+
+            var result = new BulkOrderResponseModel
+            {
+                AssetPairId = assetPair.Id,
+                Error = response.Status != MeStatusCodes.Ok ? GetErrorCodeType(response.Status) : default(ErrorCodeType?),
+                Statuses = response.Statuses?.Select(ToBulkOrderItemStatusModel).ToArray()
+            };
+
+            return ConvertToApiModel(response.Status, result);
+        }
+
+        private BulkOrderItemStatusModel ToBulkOrderItemStatusModel(LimitOrderStatusModel status)
+        {
+            Guid.TryParse(status.Id, out var id);
+
+            return new BulkOrderItemStatusModel
+            {
+                Id = id,
+                Error = status.Status != MeStatusCodes.Ok ? GetErrorCodeType(status.Status) : default(ErrorCodeType?),
+                Price = status.Price,
+                Volume = status.Volume
+            };
+        }
+
+        private async Task<MultiOrderItemModel> ToMultiOrderItemModel(string clientId, AssetPair assetPair, BulkOrderItemModel item)
+        {
+            var itemId = await StoreLimitOrder(clientId, assetPair, item.Volume, item.Price);
+            var fees = await _feeCalculator.GetLimitOrderFees(clientId, assetPair, item.OrderAction);
+
+            var model = new MultiOrderItemModel
+            {
+                Id = itemId.ToString(),
+                Price = item.Price,
+                Volume = item.Volume,
+                OrderAction = item.OrderAction.ToMeOrderAction(),
+                Fee = fees.FirstOrDefault()
+            };
+
+            if (!string.IsNullOrWhiteSpace(item.OldId))
+            {
+                model.OldId = item.OldId;
+            }
+
+            return model;
         }
 
         private static Guid GetNextRequestId() => Guid.NewGuid();

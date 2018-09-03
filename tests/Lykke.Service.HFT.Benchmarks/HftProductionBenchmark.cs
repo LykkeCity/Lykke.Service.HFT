@@ -69,6 +69,9 @@ namespace Lykke.Service.HFT.Benchmarks
             _random = new Random();
         }
 
+        [GlobalCleanup]
+        public void Cleanup() => CancelAll().Wait();
+
         private T GetClient<T>()
         {
             var client = _clients.OfType<T>().FirstOrDefault();
@@ -246,10 +249,92 @@ namespace Lykke.Service.HFT.Benchmarks
         }
 
         [Benchmark]
+        public async Task PlaceBulkOrder()
+        {
+            var client = GetClient<IOrdersApi>();
+            var order = new PlaceBulkOrderModel
+            {
+                AssetPairId = "BTCUSD",
+                CancelPreviousOrders = true,
+                Orders = Enumerable.Range(0,10).Select(x => new BulkOrderItemModel
+                {
+                    OrderAction = OrderAction.Buy,
+                    Price = 500 + x,
+                    Volume = 0.001
+                })
+            };
+
+            var result = await client.PlaceBulkOrder(order).TryExecute();
+
+            if (result.Success)
+            {
+                result.Result.Should().NotBeNull();
+                result.Result.Statuses.Should().HaveCount(10);
+                result.Result.Statuses.Should().NotContain(x => x.Id == Guid.Empty);
+            }
+            else
+            {
+                result.Error.Should().NotBeNull();
+            }
+        }
+
+        [Benchmark]
         public async Task CancelAll()
         {
             var client = GetClient<IOrdersApi>();
             await client.CancelAll();
+        }
+
+        [Benchmark]
+        public async Task ReplaceBulkOrder()
+        {
+            var assetPair = "BTCUSD";
+            var client = GetClient<IOrdersApi>();
+
+            await client.CancelAll();
+
+            var order = new PlaceBulkOrderModel
+            {
+                AssetPairId = assetPair,
+                Orders = Enumerable.Range(0, 2).Select(x => new BulkOrderItemModel
+                {
+                    OrderAction = OrderAction.Buy,
+                    Price = 500 + x,
+                    Volume = 0.0001
+                })
+            };
+
+            var first = await client.PlaceBulkOrder(order);
+            await Task.Delay(TimeSpan.FromSeconds(1));
+
+            order = new PlaceBulkOrderModel
+            {
+                AssetPairId = assetPair,
+                Orders = first.Statuses
+                    .Where(x => x.Error == null)
+                    .Select(x => new BulkOrderItemModel
+                    {
+                        OrderAction = OrderAction.Buy,
+                        OldId = x.Id.ToString(),
+                        Price = 1d + x.Price,
+                        Volume = 0.0001
+                    })
+            };
+
+            var result = await client.PlaceBulkOrder(order);
+            await Task.Delay(TimeSpan.FromSeconds(1));
+
+            foreach (var old in first.Statuses)
+            {
+                var current = await client.GetOrder(old.Id);
+                current.Status.Should().Be(OrderStatus.Replaced);
+            }
+
+            foreach (var item in result.Statuses)
+            {
+                var current = await client.GetOrder(item.Id);
+                current.Status.Should().Be(OrderStatus.InOrderBook);
+            }
         }
     }
 }
