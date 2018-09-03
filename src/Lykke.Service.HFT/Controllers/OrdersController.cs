@@ -320,11 +320,6 @@ namespace Lykke.Service.HFT.Controllers
         [ProducesResponseType(typeof(ResponseModel), (int)HttpStatusCode.BadRequest)]
         public async Task<IActionResult> PlaceBulkOrder([FromBody] PlaceBulkOrderModel order)
         {
-            if (!ModelState.IsValid)
-            {
-                return BadRequest(ToResponseModel(ModelState));
-            }
-
             var assetPair = await _assetServiceDecorator.GetEnabledAssetPairAsync(order.AssetPairId);
 
             if (!_requestValidator.ValidateAssetPair(order.AssetPairId, assetPair, out var badRequestModel))
