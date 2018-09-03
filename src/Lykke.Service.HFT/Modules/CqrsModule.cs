@@ -9,6 +9,7 @@ using Lykke.Messaging;
 using Lykke.Messaging.RabbitMq;
 using Lykke.Messaging.Serialization;
 using Lykke.Service.HFT.Core;
+using Lykke.Service.HFT.Core.Settings;
 using Lykke.Service.HFT.Services.Events;
 using Lykke.Service.HFT.Services.Projections;
 using Lykke.SettingsReader;
@@ -18,7 +19,7 @@ namespace Lykke.Service.HFT.Modules
 {
     internal class CqrsModule : Module
     {
-        private readonly AppSettings.HighFrequencyTradingSettings _settings;
+        private readonly HighFrequencyTradingSettings _settings;
 
         public CqrsModule(IReloadingManager<AppSettings> settingsManager)
         {
@@ -43,17 +44,17 @@ namespace Lykke.Service.HFT.Modules
                     .SingleInstance();
             }
 
-            Messaging.Serialization.MessagePackSerializerFactory.Defaults.FormatterResolver = MessagePack.Resolvers.ContractlessStandardResolver.Instance;
+            MessagePackSerializerFactory.Defaults.FormatterResolver = MessagePack.Resolvers.ContractlessStandardResolver.Instance;
 
             builder.Register(context => new AutofacDependencyResolver(context)).As<IDependencyResolver>().SingleInstance();
 
-            var rabbitMqSettings = new RabbitMQ.Client.ConnectionFactory { Uri = _settings.SagasRabbitMqConnStr };
+            var rabbitMqSettings = new RabbitMQ.Client.ConnectionFactory { Uri = _settings.CqrsRabbitConnString };
 
             builder.RegisterType<ApiKeyProjection>()
                 .WithParameter(
                     new ResolvedParameter(
                         (pi, ctx) => pi.ParameterType == typeof(IDistributedCache),
-                        (pi, ctx) => ctx.ResolveKeyed<IDistributedCache>("apiKeys")));
+                        (pi, ctx) => ctx.ResolveKeyed<IDistributedCache>(Constants.ApiKeyCacheInstance)));
 
             builder.Register(ctx =>
             {

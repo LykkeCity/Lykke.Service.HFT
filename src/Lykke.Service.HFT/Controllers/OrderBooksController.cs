@@ -13,6 +13,7 @@ namespace Lykke.Service.HFT.Controllers
     /// Controller for orderbooks functionality.
     /// </summary>
     [Route("api/[controller]")]
+    [ApiController]
     public class OrderBooksController : Controller
     {
         private readonly IOrderBooksService _orderBooksService;
@@ -32,7 +33,7 @@ namespace Lykke.Service.HFT.Controllers
         /// </summary>
         /// <response code="200">All orderbooks.</response>
         [HttpGet]
-        [SwaggerOperation("GetOrderBooks")]
+        [SwaggerOperation(nameof(GetOrderBooks))]
         [ProducesResponseType(typeof(IEnumerable<OrderBookModel>), (int)HttpStatusCode.OK)]
         public async Task<IActionResult> GetOrderBooks()
         {
@@ -48,7 +49,7 @@ namespace Lykke.Service.HFT.Controllers
         /// <response code="200">Order books for a specified asset pair.</response>
         /// <response code="404">Unknow or disabled asset pair.</response>
         [HttpGet("{assetPairId}")]
-        [SwaggerOperation("GetOrderBook")]
+        [SwaggerOperation(nameof(GetOrderBook))]
         [ProducesResponseType(typeof(IEnumerable<OrderBookModel>), (int)HttpStatusCode.OK)]
         [ProducesResponseType((int)HttpStatusCode.NotFound)]
         public async Task<IActionResult> GetOrderBook(string assetPairId)

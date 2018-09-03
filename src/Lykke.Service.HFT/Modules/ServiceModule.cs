@@ -12,6 +12,7 @@ using Lykke.Service.HFT.Core.Domain;
 using Lykke.Service.HFT.Core.Repositories;
 using Lykke.Service.HFT.Core.Services;
 using Lykke.Service.HFT.Core.Services.ApiKey;
+using Lykke.Service.HFT.Core.Settings;
 using Lykke.Service.HFT.MongoRepositories;
 using Lykke.Service.HFT.PeriodicalHandlers;
 using Lykke.Service.HFT.Services;
@@ -26,8 +27,6 @@ namespace Lykke.Service.HFT.Modules
 {
     internal class ServiceModule : Module
     {
-        private const string FinanceDataCache = "financeData";
-        private const string ApiKeysCache = "apiKeys";
         private readonly IReloadingManager<AppSettings> _settings;
 
         public ServiceModule(IReloadingManager<AppSettings> settings)
@@ -38,7 +37,7 @@ namespace Lykke.Service.HFT.Modules
         protected override void Load(ContainerBuilder builder)
         {
             var currentSettings = _settings.CurrentValue;
-            builder.RegisterInstance(currentSettings.HighFrequencyTradingService.CacheSettings)
+            builder.RegisterInstance(currentSettings.HighFrequencyTradingService.Cache)
                 .SingleInstance();
             builder.RegisterInstance(currentSettings.HighFrequencyTradingService)
                 .SingleInstance();
@@ -70,42 +69,20 @@ namespace Lykke.Service.HFT.Modules
 
             RegisterOrderStates(builder);
 
-            BindRedis(builder, currentSettings.HighFrequencyTradingService.CacheSettings);
             BindRabbitMq(builder, currentSettings.HighFrequencyTradingService);
 
             RegisterPeriodicalHandlers(builder);
         }
 
-        private void BindRedis(ContainerBuilder builder, CacheSettings settings)
-        {
-            var financeDataRedisCache = new RedisCache(new RedisCacheOptions
-            {
-                Configuration = settings.RedisConfiguration,
-                InstanceName = settings.FinanceDataCacheInstance
-            });
-            builder.RegisterInstance(financeDataRedisCache)
-                .As<IDistributedCache>()
-                .Keyed<IDistributedCache>(FinanceDataCache)
-                .SingleInstance();
-
-            var apiKeysRedisCache = new RedisCache(new RedisCacheOptions
-            {
-                Configuration = settings.RedisConfiguration,
-                InstanceName = settings.ApiKeyCacheInstance
-            });
-            builder.RegisterInstance(apiKeysRedisCache)
-                .As<IDistributedCache>()
-                .Keyed<IDistributedCache>(ApiKeysCache)
-                .SingleInstance();
-        }
-
         private void RegisterApiKeyService(ContainerBuilder builder)
         {
+            RegisterRedisCache(builder, Constants.ApiKeyCacheInstance);
+
             builder.RegisterType<HftClientService>()
                 .WithParameter(
                     new ResolvedParameter(
                         (pi, ctx) => pi.ParameterType == typeof(IDistributedCache),
-                        (pi, ctx) => ctx.ResolveKeyed<IDistributedCache>(ApiKeysCache)))
+                        (pi, ctx) => ctx.ResolveKeyed<IDistributedCache>(Constants.ApiKeyCacheInstance)))
                 .As<IHftClientService>()
                 .SingleInstance();
 
@@ -121,7 +98,7 @@ namespace Lykke.Service.HFT.Modules
                 .WithParameter(
                     new ResolvedParameter(
                         (pi, ctx) => pi.ParameterType == typeof(IDistributedCache),
-                        (pi, ctx) => ctx.ResolveKeyed<IDistributedCache>(ApiKeysCache)))
+                        (pi, ctx) => ctx.ResolveKeyed<IDistributedCache>(Constants.ApiKeyCacheInstance)))
                 .As<IApiKeyCacheInitializer>()
                 .SingleInstance();
 
@@ -140,12 +117,14 @@ namespace Lykke.Service.HFT.Modules
 
         private void RegisterOrderBooks(ContainerBuilder builder)
         {
+            RegisterRedisCache(builder, Constants.FinanceDataCacheInstance);
+
             builder.RegisterType<OrderBookService>()
                 .As<IOrderBooksService>()
                 .WithParameter(
                     new ResolvedParameter(
                         (pi, ctx) => pi.ParameterType == typeof(IDistributedCache),
-                        (pi, ctx) => ctx.ResolveKeyed<IDistributedCache>(FinanceDataCache)))
+                        (pi, ctx) => ctx.ResolveKeyed<IDistributedCache>(Constants.FinanceDataCacheInstance)))
                 .SingleInstance();
         }
 
@@ -156,7 +135,7 @@ namespace Lykke.Service.HFT.Modules
                 .SingleInstance();
         }
 
-        private void BindRabbitMq(ContainerBuilder builder, AppSettings.HighFrequencyTradingSettings settings)
+        private void BindRabbitMq(ContainerBuilder builder, HighFrequencyTradingSettings settings)
         {
             builder.RegisterType<LimitOrdersConsumer>()
                 .WithParameter(TypedParameter.From(settings.LimitOrdersFeed))
@@ -204,6 +183,20 @@ namespace Lykke.Service.HFT.Modules
                 .WithParameter(TypedParameter.From(TimeSpan.FromMinutes(5)))
                 .As<IStartable>()
                 .AutoActivate()
+                .SingleInstance();
+        }
+
+        private void RegisterRedisCache(ContainerBuilder builder, string name)
+        {
+            var settings = _settings.CurrentValue.HighFrequencyTradingService.Cache;
+            var cache = new RedisCache(new RedisCacheOptions
+            {
+                Configuration = settings.RedisConfiguration,
+                InstanceName = name
+            });
+            builder.RegisterInstance(cache)
+                .As<IDistributedCache>()
+                .Keyed<IDistributedCache>(name)
                 .SingleInstance();
         }
     }

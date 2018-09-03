@@ -15,6 +15,7 @@ namespace Lykke.Service.HFT.Controllers
     /// Controller for asset pair operations.
     /// </summary>
     [Route("api/[controller]")]
+    [ApiController]
     public class AssetPairsController : Controller
     {
         private readonly IAssetServiceDecorator _assetServiceDecorator;
@@ -32,7 +33,7 @@ namespace Lykke.Service.HFT.Controllers
         /// </summary>
         /// <response code="200">All enabled asset pairs.</response>
         [HttpGet]
-        [SwaggerOperation("GetAssetPairs")]
+        [SwaggerOperation(nameof(GetAssetPairs))]
         [ProducesResponseType(typeof(IEnumerable<AssetPairModel>), (int)HttpStatusCode.OK)]
         public async Task<IActionResult> GetAssetPairs()
         {
@@ -47,7 +48,7 @@ namespace Lykke.Service.HFT.Controllers
         /// <response code="200">Specified asset pair.</response>
         /// <response code="404">No asset pair with given id found or asset pair is disabled.</response>
         [HttpGet("{id}")]
-        [SwaggerOperation("GetAssetPair")]
+        [SwaggerOperation(nameof(GetAssetPair))]
         [ProducesResponseType(typeof(AssetPairModel), (int)HttpStatusCode.OK)]
         [ProducesResponseType((int)HttpStatusCode.NotFound)]
         public async Task<IActionResult> GetAssetPair(string id)

@@ -1,5 +1,5 @@
 ﻿using Autofac;
-using Lykke.Service.HFT.Core;
+using Lykke.Service.HFT.Core.Settings;
 using Lykke.Service.HFT.Wamp.Consumers;
 using Lykke.Service.HFT.Wamp.Security;
 using Lykke.SettingsReader;
@@ -10,7 +10,7 @@ namespace Lykke.Service.HFT.Wamp.Modules
 {
     public class WampModule : Module
     {
-        private readonly AppSettings.HighFrequencyTradingSettings _settings;
+        private readonly HighFrequencyTradingSettings _settings;
 
         public WampModule(IReloadingManager<AppSettings> settings)
         {

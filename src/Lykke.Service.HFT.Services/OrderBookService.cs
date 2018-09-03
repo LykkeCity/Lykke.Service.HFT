@@ -1,12 +1,12 @@
-﻿using Lykke.Service.HFT.Core;
-using Lykke.Service.HFT.Core.Services;
-using Microsoft.Extensions.Caching.Distributed;
-using Newtonsoft.Json;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Lykke.Service.HFT.Contracts.OrderBook;
+using Lykke.Service.HFT.Core;
+using Lykke.Service.HFT.Core.Services;
+using Microsoft.Extensions.Caching.Distributed;
+using Newtonsoft.Json;
 
 namespace Lykke.Service.HFT.Services
 {
@@ -14,16 +14,13 @@ namespace Lykke.Service.HFT.Services
     {
         private readonly IDistributedCache _distributedCache;
         private readonly IAssetServiceDecorator _assetServiceDecorator;
-        private readonly CacheSettings _settings;
 
         public OrderBookService(
             IDistributedCache distributedCache,
-            IAssetServiceDecorator assetServiceDecorator,
-            CacheSettings settings)
+            IAssetServiceDecorator assetServiceDecorator)
         {
             _distributedCache = distributedCache;
             _assetServiceDecorator = assetServiceDecorator ?? throw new ArgumentNullException(nameof(assetServiceDecorator));
-            _settings = settings;
         }
 
         public async Task<ICollection<Guid>> GetOrderIdsAsync(IEnumerable<string> assetPairs)
@@ -60,7 +57,7 @@ namespace Lykke.Service.HFT.Services
 
         private async Task<OrderBookModel> GetOrderBook(string assetPair, bool buy)
         {
-            var orderBook = await _distributedCache.GetStringAsync(_settings.GetKeyForOrderBook(assetPair, buy));
+            var orderBook = await _distributedCache.GetStringAsync(Constants.GetKeyForOrderBook(assetPair, buy));
             return orderBook != null
                 ? JsonConvert.DeserializeObject<OrderBookModel>(orderBook)
                 : new OrderBookModel { AssetPair = assetPair, IsBuy = buy, Timestamp = DateTime.UtcNow };
@@ -68,7 +65,7 @@ namespace Lykke.Service.HFT.Services
 
         private async Task<IEnumerable<Guid>> GetOrderIds(string assetPairId, bool buy)
         {
-            var orderBook = await _distributedCache.GetStringAsync(_settings.GetKeyForOrderBook(assetPairId, buy));
+            var orderBook = await _distributedCache.GetStringAsync(Constants.GetKeyForOrderBook(assetPairId, buy));
             if (orderBook == null)
             {
                 return Enumerable.Empty<Guid>();

@@ -13,7 +13,6 @@ using Lykke.Service.HFT.Core.Services;
 using Lykke.Service.HFT.Helpers;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.Mvc.ModelBinding;
 using Swashbuckle.AspNetCore.SwaggerGen;
 
 namespace Lykke.Service.HFT.Controllers
@@ -23,6 +22,7 @@ namespace Lykke.Service.HFT.Controllers
     /// </summary>
     [Authorize]
     [Route("api/[controller]")]
+    [ApiController]
     public class OrdersController : Controller
     {
         private const int MaxPageSize = 500;
@@ -59,9 +59,7 @@ namespace Lykke.Service.HFT.Controllers
         [SwaggerOperation(nameof(GetOrders))]
         [ProducesResponseType(typeof(IEnumerable<LimitOrderStateModel>), (int)HttpStatusCode.OK)]
         [ProducesResponseType((int)HttpStatusCode.BadRequest)]
-        public async Task<IActionResult> GetOrders(
-            [FromQuery] OrderStatusQuery? status = null,
-            [FromQuery] int? take = 100)
+        public async Task<IActionResult> GetOrders(OrderStatusQuery? status = null, int? take = 100)
         {
             var toTake = take.ValidateAndGetValue(nameof(take), MaxPageSize, 100);
             if (toTake.Error != null)
@@ -164,7 +162,7 @@ namespace Lykke.Service.HFT.Controllers
         [SwaggerOperation(nameof(PlaceMarketOrder))]
         [ProducesResponseType(typeof(ResponseModel<double>), (int)HttpStatusCode.OK)]
         [ProducesResponseType(typeof(ResponseModel), (int)HttpStatusCode.BadRequest)]
-        public async Task<IActionResult> PlaceMarketOrderOld([FromBody] PlaceMarketOrderModel order)
+        public async Task<IActionResult> PlaceMarketOrderOld(PlaceMarketOrderModel order)
         {
             var result = await PlaceMarketOrder(order);
 
@@ -173,7 +171,7 @@ namespace Lykke.Service.HFT.Controllers
                 return result;
             }
 
-            var response = (MarketOrderResponseModel) okResult.Value;
+            var response = (MarketOrderResponseModel)okResult.Value;
             return Ok(response.Price);
         }
 
@@ -186,13 +184,8 @@ namespace Lykke.Service.HFT.Controllers
         [SwaggerOperation(nameof(PlaceMarketOrder))]
         [ProducesResponseType(typeof(MarketOrderResponseModel), (int)HttpStatusCode.OK)]
         [ProducesResponseType(typeof(ResponseModel), (int)HttpStatusCode.BadRequest)]
-        public async Task<IActionResult> PlaceMarketOrder([FromBody] PlaceMarketOrderModel order)
+        public async Task<IActionResult> PlaceMarketOrder(PlaceMarketOrderModel order)
         {
-            if (!ModelState.IsValid)
-            {
-                return BadRequest(ToResponseModel(ModelState));
-            }
-
             var assetPair = await _assetServiceDecorator.GetEnabledAssetPairAsync(order.AssetPairId);
             if (assetPair == null)
             {
@@ -247,7 +240,7 @@ namespace Lykke.Service.HFT.Controllers
         [SwaggerOperation(nameof(PlaceLimitOrder))]
         [ProducesResponseType(typeof(Guid), (int)HttpStatusCode.OK)]
         [ProducesResponseType(typeof(ResponseModel), (int)HttpStatusCode.BadRequest)]
-        public async Task<IActionResult> PlaceLimitOrderOld([FromBody] PlaceLimitOrderModel order)
+        public async Task<IActionResult> PlaceLimitOrderOld(PlaceLimitOrderModel order)
         {
             var result = await PlaceLimitOrder(order);
 
@@ -269,13 +262,8 @@ namespace Lykke.Service.HFT.Controllers
         [SwaggerOperation(nameof(PlaceLimitOrder))]
         [ProducesResponseType(typeof(LimitOrderResponseModel), (int)HttpStatusCode.OK)]
         [ProducesResponseType(typeof(ResponseModel), (int)HttpStatusCode.BadRequest)]
-        public async Task<IActionResult> PlaceLimitOrder([FromBody] PlaceLimitOrderModel order)
+        public async Task<IActionResult> PlaceLimitOrder(PlaceLimitOrderModel order)
         {
-            if (!ModelState.IsValid)
-            {
-                return BadRequest(ToResponseModel(ModelState));
-            }
-
             var assetPair = await _assetServiceDecorator.GetEnabledAssetPairAsync(order.AssetPairId);
             if (assetPair == null)
             {
@@ -396,9 +384,7 @@ namespace Lykke.Service.HFT.Controllers
         [SwaggerOperation(nameof(CancelAll))]
         [ProducesResponseType(typeof(IEnumerable<Guid>), (int)HttpStatusCode.OK)]
         [ProducesResponseType((int)HttpStatusCode.NotFound)]
-        public async Task<IActionResult> CancelAll(
-            [FromQuery] string assetPairId = null,
-            [FromQuery] Side? side = null)
+        public async Task<IActionResult> CancelAll(string assetPairId = null, Side? side = null)
         {
             AssetPair assetPair = null;
             if (!string.IsNullOrWhiteSpace(assetPairId))
@@ -446,13 +432,6 @@ namespace Lykke.Service.HFT.Controllers
                 Status = order.Status,
                 Volume = order.Volume
             };
-        }
-
-        private static ResponseModel ToResponseModel(ModelStateDictionary modelState)
-        {
-            var field = modelState.Keys.First();
-            var message = modelState[field].Errors.First().ErrorMessage;
-            return ResponseModel.CreateInvalidFieldError(field, message);
         }
     }
 }

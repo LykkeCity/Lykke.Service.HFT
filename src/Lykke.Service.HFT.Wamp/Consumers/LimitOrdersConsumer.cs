@@ -7,10 +7,10 @@ using Lykke.RabbitMqBroker;
 using Lykke.RabbitMqBroker.Subscriber;
 using Lykke.Service.HFT.Contracts.Events;
 using Lykke.Service.HFT.Contracts.Orders;
-using Lykke.Service.HFT.Core;
 using Lykke.Service.HFT.Core.Domain;
 using Lykke.Service.HFT.Core.Repositories;
 using Lykke.Service.HFT.Core.Services;
+using Lykke.Service.HFT.Core.Settings;
 using Lykke.Service.HFT.Wamp.Consumers.Messages;
 using WampSharp.V2;
 using WampSharp.V2.Core.Contracts;
@@ -29,7 +29,7 @@ namespace Lykke.Service.HFT.Wamp.Consumers
         private readonly IWampSubject _subject;
 
         public LimitOrdersConsumer(ILogFactory logFactory,
-            AppSettings.RabbitMqSettings settings,
+            RabbitMqSettings settings,
             IRepository<LimitOrderState> orderStateRepository,
             IWampHostedRealm realm,
             ISessionRepository sessionRepository)

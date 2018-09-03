@@ -1,0 +1,95 @@
+HighFrequencyTradingService:
+    Db:
+        LogsConnString:
+            settings-key: HFT-LogsConnString
+            types:
+                - AzureBlobStorage
+                - Tag
+        OrderStateConnString:
+            settings-key: HFT-OrderStateConnString
+            types:
+                - MongoDB
+        OrdersArchiveConnString:
+            settings-key: HFT-OrdersArchiveConnString
+            types:
+                - AzureTableStorage
+    
+    MaintenanceMode:
+        Enabled: 
+            settings-key: HFT-MaintenanceMode
+        Reason:
+            settings-key: HFT-MaintenanceReason
+
+    DisabledAssets:
+        settings-key: HFT-DisabledAssets
+        types:
+            - JsonArray
+
+    Cache:
+        RedisConfiguration:
+            settings-key: HFT-RedisConfiguration
+            types:
+                - Redis
+        CacheExpirationPeriod:
+            settings-key: HFT-DictionaryCacheExpirationPeriod
+
+    LimitOrdersFeed:
+        ConnectionString:
+            settings-key: HFT-LimitOrdersFeed
+            types:
+                - RabbitMq
+        ExchangeName:
+            settings-key: HFT-LimitOrdersExchange
+
+    QueuePostfix:
+        settings-key: HFT-QueuePostfix
+
+    ChaosKitty:
+        StateOfChaos:
+            settings-key: HFT-ChaosKittyState
+
+    CqrsRabbitConnString:
+        settings-key: CqrsRabbitConnString
+        types:
+            - RabbitMq
+
+MatchingEngineClient:
+    IpEndpoint:
+        Port: 
+            settings-key: MatchingEngine-Port
+        Host:
+            settings-key: MatchingEngine-Host
+
+AssetsServiceClient:
+    ServiceUrl: 
+        settings-key: AssetsServiceUrl
+        
+BalancesServiceClient:
+    ServiceUrl:
+        settings-key: BalancesServiceUrl
+
+FeeCalculatorServiceClient:
+    ServiceUrl:
+        settings-key: FeeCalculatorServiceUrl
+
+FeeSettings:
+    TargetClientId:
+        HFT:
+            settings-key: FeeSettings-TargetClientId-HFT
+    
+MonitoringServiceClient:
+    MonitoringServiceUrl:
+        settings-key: MonitoringServiceUrl       
+
+OperationsHistoryServiceClient:
+    ServiceUrl:
+        settings-key: OperationsHistoryServiceUrl
+
+SlackNotifications:
+    AzureQueue:
+        ConnectionString:
+            settings-key: SlackNotificationsConnString
+            types:
+                - AzureTableStorage
+        QueueName: 
+            settings-key: SlackQueueName
