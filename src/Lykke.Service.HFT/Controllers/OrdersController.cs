@@ -321,11 +321,6 @@ namespace Lykke.Service.HFT.Controllers
         [ProducesResponseType(typeof(ResponseModel), (int)HttpStatusCode.BadRequest)]
         public async Task<IActionResult> PlaceStopLimitOrder([FromBody] PlaceStopLimitOrderModel order)
         {
-            if (!ModelState.IsValid)
-            {
-                return BadRequest(ToResponseModel(ModelState));
-            }
-
             var assetPair = await _assetServiceDecorator.GetEnabledAssetPairAsync(order.AssetPairId);
             if (assetPair == null)
             {
