@@ -40,6 +40,8 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Lykke.Service.HFT.AzureRepo
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Lykke.Service.HFT.Benchmarks", "tests\Lykke.Service.HFT.Benchmarks\Lykke.Service.HFT.Benchmarks.csproj", "{3C05E8CC-8118-4220-8C9A-158BE648B893}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AssetsCache", "client\AssetsCache\AssetsCache.csproj", "{490DDA36-959A-4B7F-8DB1-5084CB6AA516}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -90,6 +92,10 @@ Global
 		{3C05E8CC-8118-4220-8C9A-158BE648B893}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{3C05E8CC-8118-4220-8C9A-158BE648B893}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{3C05E8CC-8118-4220-8C9A-158BE648B893}.Release|Any CPU.Build.0 = Release|Any CPU
+		{490DDA36-959A-4B7F-8DB1-5084CB6AA516}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{490DDA36-959A-4B7F-8DB1-5084CB6AA516}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{490DDA36-959A-4B7F-8DB1-5084CB6AA516}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{490DDA36-959A-4B7F-8DB1-5084CB6AA516}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -104,6 +110,7 @@ Global
 		{C36462AE-8ADB-428C-8695-D4CA9F82DEB4} = {CC2067D7-1971-47BB-B491-5649EA3C18B2}
 		{EEF9F67E-0840-4D11-B9D1-97DC7035C684} = {BF745453-B940-470E-81BC-43FB67703D4E}
 		{3C05E8CC-8118-4220-8C9A-158BE648B893} = {8F9036B1-5106-4C69-B2D2-B78EE52687A0}
+		{490DDA36-959A-4B7F-8DB1-5084CB6AA516} = {C9A2CFDE-EA32-4946-B679-7CE6EFA816B8}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {B4EF6613-0DD1-42AE-B52D-CD122AD00DFE}

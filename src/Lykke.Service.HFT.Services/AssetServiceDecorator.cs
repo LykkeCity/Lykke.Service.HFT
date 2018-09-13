@@ -5,36 +5,40 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using Microsoft.Extensions.Caching.Memory;
 
 namespace Lykke.Service.HFT.Services
 {
     public class AssetServiceDecorator : IAssetServiceDecorator
     {
-        private readonly IAssetsServiceWithCache _apiService;
+        private readonly IAssetsService _apiService;
+        private readonly IMemoryCache _cache;
 
-        public AssetServiceDecorator(IAssetsServiceWithCache apiService)
+        public AssetServiceDecorator(IAssetsService apiService, IMemoryCache cache)
         {
             _apiService = apiService ?? throw new ArgumentNullException(nameof(apiService));
+            _cache = cache;
         }
 
         public async Task<AssetPair> GetEnabledAssetPairAsync(string assetPairId)
         {
-            var pair = await _apiService.TryGetAssetPairAsync(assetPairId);
-            return pair == null || pair.IsDisabled ? null : AutoMapper.Mapper.Map<AssetPair>(pair);
+            var pair = _cache.Get<AssetPair>(assetPairId);
+            return pair == null || pair.IsDisabled ? null : pair;
         }
 
         public async Task<IEnumerable<AssetPair>> GetAllEnabledAssetPairsAsync()
         {
-            return AutoMapper.Mapper.Map<List<AssetPair>>((await _apiService.GetAllAssetPairsAsync()).Where(a => !a.IsDisabled));
+            //return AutoMapper.Mapper.Map<List<AssetPair>>((await _apiService.GetAllAssetPairsAsync()).Where(a => !a.IsDisabled));
+            return null;
         }
 
         public async Task<Asset> GetAssetAsync(string assetId)
-            => AutoMapper.Mapper.Map<Asset>(await _apiService.TryGetAssetAsync(assetId));
+            => _cache.Get<Asset>(assetId);
 
 
         public async Task<Asset> GetEnabledAssetAsync(string assetId)
         {
-            var asset = await GetAssetAsync(assetId);
+            var asset = _cache.Get<Asset>(assetId);
             return asset == null || asset.IsDisabled ? null : asset;
         }
     }

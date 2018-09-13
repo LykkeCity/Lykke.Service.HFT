@@ -23,6 +23,7 @@ namespace Lykke.Service.HFT.Modules
             builder.RegisterAssetsClient(AssetServiceSettings.Create(
                 new Uri(_settings.CurrentValue.AssetsServiceClient.ServiceUrl),
                 _settings.CurrentValue.HighFrequencyTradingService.Cache.CacheExpirationPeriod));
+            //builder.RegisterAssetsClient(_settings.CurrentValue.AssetsServiceClient.ServiceUrl);
 
             builder.RegisterBalancesClient(_settings.CurrentValue.BalancesServiceClient.ServiceUrl);
 

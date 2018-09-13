@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using AssetsCache;
 using Autofac;
 using Autofac.Core;
 using Lykke.Common.Chaos;
@@ -9,11 +10,13 @@ using Lykke.Messaging;
 using Lykke.Messaging.RabbitMq;
 using Lykke.Messaging.Serialization;
 using Lykke.Service.HFT.Core;
+using Lykke.Service.HFT.Core.Domain;
 using Lykke.Service.HFT.Core.Settings;
 using Lykke.Service.HFT.Services.Events;
 using Lykke.Service.HFT.Services.Projections;
 using Lykke.SettingsReader;
 using Microsoft.Extensions.Caching.Distributed;
+using Microsoft.Extensions.Caching.Memory;
 
 namespace Lykke.Service.HFT.Modules
 {
@@ -49,6 +52,15 @@ namespace Lykke.Service.HFT.Modules
             builder.Register(context => new AutofacDependencyResolver(context)).As<IDependencyResolver>().SingleInstance();
 
             var rabbitMqSettings = new RabbitMQ.Client.ConnectionFactory { Uri = _settings.CqrsRabbitConnString };
+
+            var cache = new MemoryCache(new MemoryCacheOptions());
+            builder.Register(ctx => cache).As<IMemoryCache>().SingleInstance();
+            builder.RegisterAssetsReadModel(
+                created => cache.Set(created.Id, AutoMapper.Mapper.Map<Asset>(created)),
+                updated => cache.Set(updated.Id, AutoMapper.Mapper.Map<Asset>(updated)));
+            builder.RegisterAssetPairsReadModel(
+                created => cache.Set(created.Id, AutoMapper.Mapper.Map<AssetPair>(created)),
+                updated => cache.Set(updated.Id, AutoMapper.Mapper.Map<AssetPair>(updated)));
 
             builder.RegisterType<ApiKeyProjection>()
                 .WithParameter(

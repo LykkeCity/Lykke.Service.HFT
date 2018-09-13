@@ -85,6 +85,7 @@ namespace Lykke.Service.HFT
         [UsedImplicitly]
         public void Configure(IApplicationBuilder app, IHostingEnvironment env, IApplicationLifetime appLifetime)
         {
+            ConfigureAutoMapper();
             var provider = app.ApplicationServices;
 
             app.UseLykkeConfiguration(options =>
@@ -104,5 +105,16 @@ namespace Lykke.Service.HFT
 
             app.UseWampHost(provider.GetService<IWampHost>());
         }
+
+        private void ConfigureAutoMapper()
+        {
+            AutoMapper.Mapper.Initialize(cfg =>
+            {
+                cfg.AddProfiles(typeof(AutoMapperProfile));
+            });
+
+            AutoMapper.Mapper.AssertConfigurationIsValid();
+        }
+
     }
 }
