@@ -1,13 +1,13 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Threading.Tasks;
-using Common.Log;
+﻿using Common.Log;
 using JetBrains.Annotations;
 using Lykke.Common.Log;
 using Lykke.Cqrs;
 using Lykke.Sdk;
 using Lykke.Service.HFT.Core.Services;
 using Lykke.Service.HFT.Core.Services.ApiKey;
+using System;
+using System.Collections.Generic;
+using System.Threading.Tasks;
 using WampSharp.V2.Realm;
 
 namespace Lykke.Service.HFT.Services
@@ -47,7 +47,9 @@ namespace Lykke.Service.HFT.Services
                 realm.SessionClosed += (sender, args) => { _sessionRepository.TryRemoveSessionId(args.SessionId); };
             }
 
+#if !DEBUG
             await _apiKeyCacheInitializer.InitApiKeyCache();
+#endif
         }
     }
 }

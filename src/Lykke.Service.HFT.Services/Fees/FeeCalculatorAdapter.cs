@@ -1,15 +1,15 @@
-﻿using System;
-using System.Threading.Tasks;
+﻿using AssetsCache;
 using Lykke.MatchingEngine.Connector.Models.Api;
 using Lykke.MatchingEngine.Connector.Models.Common;
 using Lykke.Service.FeeCalculator.Client;
-using Lykke.Service.HFT.Core.Domain;
 using Lykke.Service.HFT.Core.Services;
 using Lykke.Service.HFT.Core.Settings;
+using System;
+using System.Threading.Tasks;
 using FeeOrderAction = Lykke.Service.FeeCalculator.AutorestClient.Models.OrderAction;
 using FeeType = Lykke.Service.FeeCalculator.AutorestClient.Models.FeeType;
-using OrderAction = Lykke.Service.HFT.Contracts.Orders.OrderAction;
 using MeFeeType = Lykke.MatchingEngine.Connector.Models.Common.FeeType;
+using OrderAction = Lykke.Service.HFT.Contracts.Orders.OrderAction;
 
 namespace Lykke.Service.HFT.Services.Fees
 {
@@ -32,7 +32,7 @@ namespace Lykke.Service.HFT.Services.Fees
 
             var model = new MarketOrderFeeModel
             {
-                Size = (double) fee.Amount,
+                Size = (double)fee.Amount,
                 SizeType = GetFeeSizeType(fee.Type),
                 SourceClientId = clientId,
                 TargetClientId = fee.TargetWalletId ?? _feeSettings.TargetClientId.Hft,
@@ -41,10 +41,10 @@ namespace Lykke.Service.HFT.Services.Fees
                     : MeFeeType.CLIENT_FEE,
                 AssetId = string.IsNullOrEmpty(fee.TargetAssetId)
                     ? Array.Empty<string>()
-                    : new[] {fee.TargetAssetId}
+                    : new[] { fee.TargetAssetId }
             };
 
-            return new[] {model};
+            return new[] { model };
         }
 
         public async Task<LimitOrderFeeModel[]> GetLimitOrderFees(string clientId, AssetPair assetPair, OrderAction orderAction)

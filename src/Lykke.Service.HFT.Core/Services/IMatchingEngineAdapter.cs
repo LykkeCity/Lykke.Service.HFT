@@ -1,9 +1,9 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Threading.Tasks;
+﻿using AssetsCache;
 using Lykke.Service.HFT.Contracts;
 using Lykke.Service.HFT.Contracts.Orders;
-using Lykke.Service.HFT.Core.Domain;
+using System;
+using System.Collections.Generic;
+using System.Threading.Tasks;
 
 namespace Lykke.Service.HFT.Core.Services
 {

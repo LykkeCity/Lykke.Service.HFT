@@ -1,6 +1,7 @@
-﻿using Autofac;
+﻿using AssetsCache.Projections;
+using AssetsCache.ReadModels;
+using Autofac;
 using JetBrains.Annotations;
-using Lykke.Service.Assets.Contract.Events;
 using System;
 
 namespace AssetsCache
@@ -12,39 +13,26 @@ namespace AssetsCache
     public static class ContainerBuilderExtenions
     {
         /// <summary>
-        /// Register the assets read model.
+        /// Register the default in-memory assets and asset-pairs read model.
         /// </summary>
         /// <param name="builder">The container builder for adding the services to.</param>
-        /// <param name="onCreated">Action for updating read model when Asset is created</param>
-        /// <param name="onUpdated">Action for updating read model when Asset is updated</param>
         [UsedImplicitly]
-        public static void RegisterAssetsReadModel(this ContainerBuilder builder,
-            Action<AssetCreatedEvent> onCreated, Action<AssetUpdatedEvent> onUpdated)
+        public static void RegisterDefaultAssetsReadModel(this ContainerBuilder builder)
         {
             if (builder == null)
                 throw new ArgumentNullException(nameof(builder));
 
-            builder.RegisterType<AssetsProjection>()
-                .WithParameter(TypedParameter.From(onCreated))
-                .WithParameter(TypedParameter.From(onUpdated));
-        }
+            builder.RegisterType<AssetsReadModel>()
+                .As<IAssetsReadModel>()
+                .As<IStartable>()
+                .AutoActivate();
+            builder.RegisterType<AssetPairsReadModel>()
+                .As<IAssetPairsReadModel>()
+                .As<IStartable>()
+                .AutoActivate();
 
-        /// <summary>
-        /// Register the asset-pairs read model.
-        /// </summary>
-        /// <param name="builder">The container builder for adding the services to.</param>
-        /// <param name="onCreated">Action for updating read model when Asset-pair is created</param>
-        /// <param name="onUpdated">Action for updating read model when Asset-pair is updated</param>
-        [UsedImplicitly]
-        public static void RegisterAssetPairsReadModel(this ContainerBuilder builder,
-            Action<AssetPairCreatedEvent> onCreated, Action<AssetPairUpdatedEvent> onUpdated)
-        {
-            if (builder == null)
-                throw new ArgumentNullException(nameof(builder));
-
-            builder.RegisterType<AssetPairsProjection>()
-                .WithParameter(TypedParameter.From(onCreated))
-                .WithParameter(TypedParameter.From(onUpdated));
+            builder.RegisterType<AssetsProjection>();
+            builder.RegisterType<AssetPairsProjection>();
         }
     }
 }

@@ -1,8 +1,8 @@
-﻿using System;
+﻿using AssetsCache;
 using Lykke.Service.HFT.Contracts;
 using Lykke.Service.HFT.Core;
-using Lykke.Service.HFT.Core.Domain;
 using Lykke.Service.HFT.Core.Settings;
+using System;
 
 namespace Lykke.Service.HFT.Controllers
 {

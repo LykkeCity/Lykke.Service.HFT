@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Net;
 using System.Threading.Tasks;
+using AssetsCache.ReadModels;
 using Lykke.Service.HFT.Contracts.OrderBook;
 using Lykke.Service.HFT.Core.Services;
 using Microsoft.AspNetCore.Mvc;
@@ -17,15 +18,15 @@ namespace Lykke.Service.HFT.Controllers
     public class OrderBooksController : Controller
     {
         private readonly IOrderBooksService _orderBooksService;
-        private readonly IAssetServiceDecorator _assetServiceDecorator;
+        private readonly IAssetPairsReadModel _assetPairsReadModel;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="OrderBooksController"/> class.
         /// </summary>
-        public OrderBooksController(IOrderBooksService orderBooksService, IAssetServiceDecorator assetServiceDecorator)
+        public OrderBooksController(IOrderBooksService orderBooksService, IAssetPairsReadModel assetPairsReadModel)
         {
             _orderBooksService = orderBooksService ?? throw new ArgumentNullException(nameof(orderBooksService));
-            _assetServiceDecorator = assetServiceDecorator ?? throw new ArgumentNullException(nameof(assetServiceDecorator));
+            _assetPairsReadModel = assetPairsReadModel;
         }
 
         /// <summary>
@@ -59,7 +60,7 @@ namespace Lykke.Service.HFT.Controllers
                 return BadRequest(ModelState);
             }
 
-            var assetPair = await _assetServiceDecorator.GetEnabledAssetPairAsync(assetPairId);
+            var assetPair = _assetPairsReadModel.GetIfEnabled(assetPairId);
             if (assetPair == null)
             {
                 return NotFound();

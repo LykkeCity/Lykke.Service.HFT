@@ -1,4 +1,5 @@
-﻿namespace Lykke.Service.HFT.Core.Domain
+﻿
+namespace AssetsCache
 {
     public class Asset
     {

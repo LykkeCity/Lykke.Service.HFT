@@ -38,6 +38,7 @@ namespace Lykke.Service.HFT
         [UsedImplicitly]
         public IServiceProvider ConfigureServices(IServiceCollection services)
         {
+            ConfigureAutoMapper();
 
 #if DEBUG
             TelemetryConfiguration.Active.DisableTelemetry = true;
@@ -85,7 +86,6 @@ namespace Lykke.Service.HFT
         [UsedImplicitly]
         public void Configure(IApplicationBuilder app, IHostingEnvironment env, IApplicationLifetime appLifetime)
         {
-            ConfigureAutoMapper();
             var provider = app.ApplicationServices;
 
             app.UseLykkeConfiguration(options =>
@@ -110,7 +110,8 @@ namespace Lykke.Service.HFT
         {
             AutoMapper.Mapper.Initialize(cfg =>
             {
-                cfg.AddProfiles(typeof(AutoMapperProfile));
+                //cfg.AddProfiles(typeof(AutoMapperProfile));
+                cfg.AddProfiles(typeof(AssetsCache.AutoMapperProfile));
             });
 
             AutoMapper.Mapper.AssertConfigurationIsValid();

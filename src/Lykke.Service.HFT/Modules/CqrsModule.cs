@@ -1,5 +1,4 @@
-﻿using System.Collections.Generic;
-using AssetsCache;
+﻿using AssetsCache;
 using Autofac;
 using Autofac.Core;
 using Lykke.Common.Chaos;
@@ -10,13 +9,12 @@ using Lykke.Messaging;
 using Lykke.Messaging.RabbitMq;
 using Lykke.Messaging.Serialization;
 using Lykke.Service.HFT.Core;
-using Lykke.Service.HFT.Core.Domain;
 using Lykke.Service.HFT.Core.Settings;
 using Lykke.Service.HFT.Services.Events;
 using Lykke.Service.HFT.Services.Projections;
 using Lykke.SettingsReader;
 using Microsoft.Extensions.Caching.Distributed;
-using Microsoft.Extensions.Caching.Memory;
+using System.Collections.Generic;
 
 namespace Lykke.Service.HFT.Modules
 {
@@ -53,14 +51,7 @@ namespace Lykke.Service.HFT.Modules
 
             var rabbitMqSettings = new RabbitMQ.Client.ConnectionFactory { Uri = _settings.CqrsRabbitConnString };
 
-            var cache = new MemoryCache(new MemoryCacheOptions());
-            builder.Register(ctx => cache).As<IMemoryCache>().SingleInstance();
-            builder.RegisterAssetsReadModel(
-                created => cache.Set(created.Id, AutoMapper.Mapper.Map<Asset>(created)),
-                updated => cache.Set(updated.Id, AutoMapper.Mapper.Map<Asset>(updated)));
-            builder.RegisterAssetPairsReadModel(
-                created => cache.Set(created.Id, AutoMapper.Mapper.Map<AssetPair>(created)),
-                updated => cache.Set(updated.Id, AutoMapper.Mapper.Map<AssetPair>(updated)));
+            builder.RegisterDefaultAssetsReadModel();
 
             builder.RegisterType<ApiKeyProjection>()
                 .WithParameter(
@@ -71,11 +62,7 @@ namespace Lykke.Service.HFT.Modules
             builder.Register(ctx =>
             {
                 var logFactory = ctx.Resolve<ILogFactory>();
-#if DEBUG
-                var broker = rabbitMqSettings.Endpoint + "/debug";
-#else
                 var broker = rabbitMqSettings.Endpoint.ToString();
-#endif
                 var messagingEngine = new MessagingEngine(logFactory,
                     new TransportResolver(new Dictionary<string, TransportInfo>
                     {
@@ -99,8 +86,9 @@ namespace Lykke.Service.HFT.Modules
                 Register.BoundedContext("hft-api")
                     .ListeningEvents(
                         typeof(ApiKeyUpdatedEvent))
-                    .From("api-key").On(defaultRoute)
-                    .WithProjection(typeof(ApiKeyProjection), "api-key")
+                        .From("api-key").On(defaultRoute)
+                        .WithProjection(typeof(ApiKeyProjection), "api-key")
+                    .WithAssetsReadModel()
                 );
             })
             .As<ICqrsEngine>().SingleInstance();

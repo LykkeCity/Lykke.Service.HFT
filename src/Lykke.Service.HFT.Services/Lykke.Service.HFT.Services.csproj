@@ -16,10 +16,12 @@
     <PackageReference Include="Lykke.Service.FeeCalculator.Client" Version="2.2.0" />
     <PackageReference Include="Lykke.WampSharp" Version="1.0.2" />
     <PackageReference Include="Newtonsoft.Json" Version="11.0.2" />
+    <PackageReference Include="protobuf-net" Version="2.4.0" />
     <PackageReference Include="StackExchange.Redis" Version="1.2.6" />
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\..\client\AssetsCache\AssetsCache.csproj" />
     <ProjectReference Include="..\Lykke.Service.HFT.Core\Lykke.Service.HFT.Core.csproj" />
   </ItemGroup>
 

@@ -1,8 +1,7 @@
 ﻿using AutoMapper;
 using Lykke.Service.Assets.Contract.Events;
-using Lykke.Service.HFT.Core.Domain;
 
-namespace Lykke.Service.HFT
+namespace AssetsCache
 {
     public class AutoMapperProfile : Profile
     {
@@ -12,6 +11,9 @@ namespace Lykke.Service.HFT
             CreateMap<AssetUpdatedEvent, Asset>();
             CreateMap<AssetPairCreatedEvent, AssetPair>();
             CreateMap<AssetPairUpdatedEvent, AssetPair>();
+
+            CreateMap<Lykke.Service.Assets.Client.Models.Asset, Asset>();
+            CreateMap<Lykke.Service.Assets.Client.Models.AssetPair, AssetPair>();
         }
     }
 }

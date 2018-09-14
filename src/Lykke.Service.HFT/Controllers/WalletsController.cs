@@ -1,16 +1,16 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Net;
-using System.Threading.Tasks;
+﻿using AssetsCache.ReadModels;
 using Common;
 using Lykke.Service.Balances.Client;
 using Lykke.Service.HFT.Contracts.Wallets;
-using Lykke.Service.HFT.Core.Services;
 using Lykke.Service.HFT.Helpers;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Swashbuckle.AspNetCore.SwaggerGen;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Net;
+using System.Threading.Tasks;
 
 namespace Lykke.Service.HFT.Controllers
 {
@@ -23,15 +23,15 @@ namespace Lykke.Service.HFT.Controllers
     public class WalletsController : Controller
     {
         private readonly IBalancesClient _balancesClient;
-        private readonly IAssetServiceDecorator _assetServiceDecorator;
+        private readonly IAssetsReadModel _assetsReadModel;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="WalletsController"/> class.
         /// </summary>
-        public WalletsController(IAssetServiceDecorator assetServiceDecorator, IBalancesClient balancesClient)
+        public WalletsController(IBalancesClient balancesClient, IAssetsReadModel assetsReadModel)
         {
             _balancesClient = balancesClient ?? throw new ArgumentNullException(nameof(balancesClient));
-            _assetServiceDecorator = assetServiceDecorator ?? throw new ArgumentNullException(nameof(assetServiceDecorator));
+            _assetsReadModel = assetsReadModel;
         }
 
         /// <summary>
@@ -54,7 +54,7 @@ namespace Lykke.Service.HFT.Controllers
 
             foreach (var wallet in walletBalances)
             {
-                var asset = await _assetServiceDecorator.GetEnabledAssetAsync(wallet.AssetId);
+                var asset = _assetsReadModel.GetIfEnabled(wallet.AssetId);
                 if (asset != null)
                 {
                     wallet.Balance = wallet.Balance.TruncateDecimalPlaces(asset.Accuracy);

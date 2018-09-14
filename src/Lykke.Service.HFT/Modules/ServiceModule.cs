@@ -65,13 +65,13 @@ namespace Lykke.Service.HFT.Modules
 
             RegisterOrderBooks(builder);
 
-            RegisterAssets(builder);
-
             RegisterOrderStates(builder);
 
+#if !DEBUG
             BindRabbitMq(builder, currentSettings.HighFrequencyTradingService);
 
-            RegisterPeriodicalHandlers(builder);
+            RegisterPeriodicalHandlers(builder); 
+#endif
         }
 
         private void RegisterApiKeyService(ContainerBuilder builder)
@@ -127,14 +127,7 @@ namespace Lykke.Service.HFT.Modules
                         (pi, ctx) => ctx.ResolveKeyed<IDistributedCache>(Constants.FinanceDataCacheInstance)))
                 .SingleInstance();
         }
-
-        private void RegisterAssets(ContainerBuilder builder)
-        {
-            builder.RegisterType<AssetServiceDecorator>()
-                .As<IAssetServiceDecorator>()
-                .SingleInstance();
-        }
-
+        
         private void BindRabbitMq(ContainerBuilder builder, HighFrequencyTradingSettings settings)
         {
             builder.RegisterType<LimitOrdersConsumer>()

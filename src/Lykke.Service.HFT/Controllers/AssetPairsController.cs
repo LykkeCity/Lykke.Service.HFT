@@ -1,13 +1,12 @@
-﻿using System;
+﻿using AssetsCache;
+using AssetsCache.ReadModels;
+using Lykke.Service.HFT.Contracts.Assets;
+using Microsoft.AspNetCore.Mvc;
+using Swashbuckle.AspNetCore.SwaggerGen;
 using System.Collections.Generic;
 using System.Linq;
 using System.Net;
 using System.Threading.Tasks;
-using Lykke.Service.HFT.Contracts.Assets;
-using Lykke.Service.HFT.Core.Domain;
-using Lykke.Service.HFT.Core.Services;
-using Microsoft.AspNetCore.Mvc;
-using Swashbuckle.AspNetCore.SwaggerGen;
 
 namespace Lykke.Service.HFT.Controllers
 {
@@ -18,14 +17,14 @@ namespace Lykke.Service.HFT.Controllers
     [ApiController]
     public class AssetPairsController : Controller
     {
-        private readonly IAssetServiceDecorator _assetServiceDecorator;
+        private readonly IAssetPairsReadModel _assetPairsReadModel;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="AssetPairsController"/> class.
         /// </summary>
-        public AssetPairsController(IAssetServiceDecorator assetServiceDecorator)
+        public AssetPairsController(IAssetPairsReadModel assetPairsReadModel)
         {
-            _assetServiceDecorator = assetServiceDecorator ?? throw new ArgumentNullException(nameof(assetServiceDecorator));
+            _assetPairsReadModel = assetPairsReadModel;
         }
 
         /// <summary>
@@ -37,7 +36,7 @@ namespace Lykke.Service.HFT.Controllers
         [ProducesResponseType(typeof(IEnumerable<AssetPairModel>), (int)HttpStatusCode.OK)]
         public async Task<IActionResult> GetAssetPairs()
         {
-            var assetPairs = await _assetServiceDecorator.GetAllEnabledAssetPairsAsync();
+            var assetPairs = _assetPairsReadModel.GetAll();
             return Ok(assetPairs.Select(ToModel));
         }
 
@@ -53,7 +52,7 @@ namespace Lykke.Service.HFT.Controllers
         [ProducesResponseType((int)HttpStatusCode.NotFound)]
         public async Task<IActionResult> GetAssetPair(string id)
         {
-            var assetPair = await _assetServiceDecorator.GetEnabledAssetPairAsync(id);
+            var assetPair = _assetPairsReadModel.GetIfEnabled(id);
             if (assetPair == null)
             {
                 return NotFound();

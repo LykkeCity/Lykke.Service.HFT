@@ -1,6 +1,6 @@
-﻿using System.Threading.Tasks;
+﻿using AssetsCache;
 using Lykke.MatchingEngine.Connector.Models.Api;
-using Lykke.Service.HFT.Core.Domain;
+using System.Threading.Tasks;
 using OrderAction = Lykke.Service.HFT.Contracts.Orders.OrderAction;
 
 namespace Lykke.Service.HFT.Core.Services
