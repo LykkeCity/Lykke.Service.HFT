@@ -1,4 +1,5 @@
-﻿using AssetsCache;
+﻿using System;
+using AssetsCache;
 using AssetsCache.ReadModels;
 using Lykke.Service.HFT.Contracts.Assets;
 using Microsoft.AspNetCore.Mvc;
@@ -15,6 +16,7 @@ namespace Lykke.Service.HFT.Controllers
     /// </summary>
     [Route("api/[controller]")]
     [ApiController]
+    [Obsolete("Use Lykke Wallet API v2 instead.")]
     public class AssetPairsController : Controller
     {
         private readonly IAssetPairsReadModel _assetPairsReadModel;

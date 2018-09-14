@@ -15,13 +15,13 @@ namespace AssetsCache.Projections
 
         private Task Handle(AssetPairCreatedEvent evt)
         {
-            _cache.Set(evt.Id, AutoMapper.Mapper.Map<AssetPair>(evt));
+            _cache.Set(evt.Id, Mapper.ToAssetPair(evt));
             return Task.CompletedTask;
         }
 
         public Task Handle(AssetPairUpdatedEvent evt)
         {
-            _cache.Set(evt.Id, AutoMapper.Mapper.Map<AssetPair>(evt));
+            _cache.Set(evt.Id, Mapper.ToAssetPair(evt));
             return Task.CompletedTask;
         }
     }

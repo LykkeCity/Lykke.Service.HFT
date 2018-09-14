@@ -1,6 +1,4 @@
-﻿using System;
-using System.IO;
-using JetBrains.Annotations;
+﻿using JetBrains.Annotations;
 using Lykke.Sdk;
 using Lykke.Sdk.Health;
 using Lykke.Sdk.Middleware;
@@ -16,6 +14,8 @@ using Microsoft.ApplicationInsights.Extensibility;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.DependencyInjection;
+using System;
+using System.IO;
 using WampSharp.V2;
 
 namespace Lykke.Service.HFT
@@ -38,8 +38,6 @@ namespace Lykke.Service.HFT
         [UsedImplicitly]
         public IServiceProvider ConfigureServices(IServiceCollection services)
         {
-            ConfigureAutoMapper();
-
 #if DEBUG
             TelemetryConfiguration.Active.DisableTelemetry = true;
 #endif
@@ -105,17 +103,5 @@ namespace Lykke.Service.HFT
 
             app.UseWampHost(provider.GetService<IWampHost>());
         }
-
-        private void ConfigureAutoMapper()
-        {
-            AutoMapper.Mapper.Initialize(cfg =>
-            {
-                //cfg.AddProfiles(typeof(AutoMapperProfile));
-                cfg.AddProfiles(typeof(AssetsCache.AutoMapperProfile));
-            });
-
-            AutoMapper.Mapper.AssertConfigurationIsValid();
-        }
-
     }
 }

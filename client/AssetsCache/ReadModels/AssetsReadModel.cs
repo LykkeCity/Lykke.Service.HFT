@@ -34,7 +34,7 @@ namespace AssetsCache.ReadModels
             var assets = _assetsService.AssetGetAll(true);
             foreach (var asset in assets)
             {
-                _cache.Set(asset.Id, AutoMapper.Mapper.Map<Asset>(asset));
+                _cache.Set(asset.Id, Mapper.ToAsset(asset));
             }
         }
     }

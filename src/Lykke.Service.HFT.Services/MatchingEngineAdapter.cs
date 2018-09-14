@@ -1,10 +1,4 @@
-﻿using System;
-using System.Collections.Async;
-using System.Collections.Concurrent;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-using AssetsCache;
+﻿using AssetsCache;
 using Common.Log;
 using Lykke.Common.Log;
 using Lykke.MatchingEngine.Connector.Abstractions.Services;
@@ -15,8 +9,14 @@ using Lykke.Service.HFT.Core;
 using Lykke.Service.HFT.Core.Domain;
 using Lykke.Service.HFT.Core.Repositories;
 using Lykke.Service.HFT.Core.Services;
-using OrderAction = Lykke.Service.HFT.Contracts.Orders.OrderAction;
+using System;
+using System.Collections.Async;
+using System.Collections.Concurrent;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
 using CancelMode = Lykke.Service.HFT.Contracts.Orders.CancelMode;
+using OrderAction = Lykke.Service.HFT.Contracts.Orders.OrderAction;
 
 namespace Lykke.Service.HFT.Services
 {
@@ -66,7 +66,7 @@ namespace Lykke.Service.HFT.Services
             return ConvertToApiModel(response.Status);
         }
 
-        public async Task<ResponseModel<MarketOrderResponseModel>> PlaceMarketOrderAsync(string clientId, AssetPair assetPair, OrderAction orderAction, double volume,
+        public async Task<ResponseModel<MarketOrderResponseModel>> PlaceMarketOrderAsync(string clientId, AssetPair assetPair, OrderAction orderAction, decimal volume,
             bool straight, double? reservedLimitVolume = null)
         {
             var order = new MarketOrderModel
@@ -76,7 +76,7 @@ namespace Lykke.Service.HFT.Services
                 ClientId = clientId,
                 ReservedLimitVolume = reservedLimitVolume,
                 Straight = straight,
-                Volume = Math.Abs(volume),
+                Volume = (double)Math.Abs(volume),
                 OrderAction = orderAction.ToMeOrderAction(),
                 Fees = await _feeCalculator.GetMarketOrderFees(clientId, assetPair, orderAction)
             };
@@ -92,8 +92,8 @@ namespace Lykke.Service.HFT.Services
             return ConvertToApiModel(response.Status, result);
         }
 
-        public async Task<ResponseModel<LimitOrderResponseModel>> PlaceLimitOrderAsync(string clientId, AssetPair assetPair, OrderAction orderAction, double volume,
-            double price, bool cancelPreviousOrders = false)
+        public async Task<ResponseModel<LimitOrderResponseModel>> PlaceLimitOrderAsync(string clientId, AssetPair assetPair, OrderAction orderAction, decimal volume,
+            decimal price, bool cancelPreviousOrders = false)
         {
             var requestId = await StoreLimitOrder(clientId, assetPair, volume, LimitOrderType.Default, x => x.Price = price);
 
@@ -102,9 +102,9 @@ namespace Lykke.Service.HFT.Services
                 Id = requestId.ToString(),
                 AssetPairId = assetPair.Id,
                 ClientId = clientId,
-                Price = price,
+                Price = (double)price,
                 CancelPreviousOrders = cancelPreviousOrders,
-                Volume = Math.Abs(volume),
+                Volume = (double)Math.Abs(volume),
                 OrderAction = orderAction.ToMeOrderAction(),
                 Fees = await _feeCalculator.GetLimitOrderFees(clientId, assetPair, orderAction)
             };
@@ -224,8 +224,8 @@ namespace Lykke.Service.HFT.Services
             {
                 Id = id,
                 Error = status.Status != MeStatusCodes.Ok ? GetErrorCodeType(status.Status) : default(ErrorCodeType?),
-                Price = status.Price,
-                Volume = status.Volume
+                Price = (decimal)status.Price,
+                Volume = (decimal)status.Volume
             };
         }
 
@@ -237,8 +237,8 @@ namespace Lykke.Service.HFT.Services
             var model = new MultiOrderItemModel
             {
                 Id = itemId.ToString(),
-                Price = item.Price,
-                Volume = item.Volume,
+                Price = (double)item.Price,
+                Volume = (double)item.Volume,
                 OrderAction = item.OrderAction.ToMeOrderAction(),
                 Fee = fees.FirstOrDefault()
             };

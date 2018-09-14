@@ -20,15 +20,15 @@ namespace Lykke.Service.HFT.Contracts.Orders
         /// The volume of the order.
         /// </summary>
         [Required]
-        [DoubleGreaterThanZero]
-        public double Volume { get; set; }
+        [DecimalGreaterThanZero]
+        public decimal Volume { get; set; }
 
         /// <summary>
         /// The price of the order.
         /// </summary>
         [Required]
-        [DoubleGreaterThanZero]
-        public double Price { get; set; }
+        [DecimalGreaterThanZero]
+        public decimal Price { get; set; }
 
         /// <summary>
         /// [Optional] The old order identifier that needs to be replaced with this order.

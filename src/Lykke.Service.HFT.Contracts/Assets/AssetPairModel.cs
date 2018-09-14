@@ -42,11 +42,11 @@ namespace Lykke.Service.HFT.Contracts.Assets
         /// <summary>
         /// The minimum required volume when placing an order.
         /// </summary>
-        public double MinVolume { get; set; }
+        public decimal MinVolume { get; set; }
 
         /// <summary>
         /// The inverted minimum required volume when placing an order.
         /// </summary>
-        public double MinInvertedVolume { get; set; }
+        public decimal MinInvertedVolume { get; set; }
     }
 }
