@@ -9,7 +9,7 @@
   <ItemGroup>
     <PackageReference Include="Lykke.MatchingEngineConnector" Version="7.4.0" />
     <PackageReference Include="Lykke.Sdk" Version="5.3.1" />
-    <PackageReference Include="Lykke.Service.Assets.Client" Version="5.0.0-beta.1" />
+    <PackageReference Include="Lykke.Service.Assets.Client" Version="5.0.0-beta.3" />
     <PackageReference Include="Lykke.Service.OperationsHistory.Client" Version="2.2.2" />
     <PackageReference Include="Lykke.MatchingEngineConnector" Version="8.3.0" />
     <PackageReference Include="Lykke.SettingsReader" Version="4.0.1" />

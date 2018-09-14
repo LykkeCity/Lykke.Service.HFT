@@ -23,12 +23,12 @@ namespace Lykke.Service.HFT.Controllers
     public class WalletsController : Controller
     {
         private readonly IBalancesClient _balancesClient;
-        private readonly IAssetsReadModel _assetsReadModel;
+        private readonly IAssetsReadModelRepository _assetsReadModel;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="WalletsController"/> class.
         /// </summary>
-        public WalletsController(IBalancesClient balancesClient, IAssetsReadModel assetsReadModel)
+        public WalletsController(IBalancesClient balancesClient, IAssetsReadModelRepository assetsReadModel)
         {
             _balancesClient = balancesClient ?? throw new ArgumentNullException(nameof(balancesClient));
             _assetsReadModel = assetsReadModel;
@@ -54,7 +54,7 @@ namespace Lykke.Service.HFT.Controllers
 
             foreach (var wallet in walletBalances)
             {
-                var asset = _assetsReadModel.GetIfEnabled(wallet.AssetId);
+                var asset = _assetsReadModel.TryGetIfEnabled(wallet.AssetId);
                 if (asset != null)
                 {
                     wallet.Balance = wallet.Balance.TruncateDecimalPlaces(asset.Accuracy);

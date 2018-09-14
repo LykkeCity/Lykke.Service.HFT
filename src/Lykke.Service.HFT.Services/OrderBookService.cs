@@ -14,11 +14,11 @@ namespace Lykke.Service.HFT.Services
     public class OrderBookService : IOrderBooksService
     {
         private readonly IDistributedCache _distributedCache;
-        private readonly IAssetPairsReadModel _assetPairsReadModel;
+        private readonly IAssetPairsReadModelRepository _assetPairsReadModel;
 
         public OrderBookService(
             IDistributedCache distributedCache,
-            IAssetPairsReadModel assetPairsReadModel)
+            IAssetPairsReadModelRepository assetPairsReadModel)
         {
             _distributedCache = distributedCache;
             _assetPairsReadModel = assetPairsReadModel;

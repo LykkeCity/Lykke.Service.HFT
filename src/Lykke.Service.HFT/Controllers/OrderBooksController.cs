@@ -18,12 +18,12 @@ namespace Lykke.Service.HFT.Controllers
     public class OrderBooksController : Controller
     {
         private readonly IOrderBooksService _orderBooksService;
-        private readonly IAssetPairsReadModel _assetPairsReadModel;
+        private readonly IAssetPairsReadModelRepository _assetPairsReadModel;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="OrderBooksController"/> class.
         /// </summary>
-        public OrderBooksController(IOrderBooksService orderBooksService, IAssetPairsReadModel assetPairsReadModel)
+        public OrderBooksController(IOrderBooksService orderBooksService, IAssetPairsReadModelRepository assetPairsReadModel)
         {
             _orderBooksService = orderBooksService ?? throw new ArgumentNullException(nameof(orderBooksService));
             _assetPairsReadModel = assetPairsReadModel;
@@ -60,7 +60,7 @@ namespace Lykke.Service.HFT.Controllers
                 return BadRequest(ModelState);
             }
 
-            var assetPair = _assetPairsReadModel.GetIfEnabled(assetPairId);
+            var assetPair = _assetPairsReadModel.TryGetIfEnabled(assetPairId);
             if (assetPair == null)
             {
                 return NotFound();

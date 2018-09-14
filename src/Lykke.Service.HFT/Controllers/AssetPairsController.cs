@@ -19,12 +19,12 @@ namespace Lykke.Service.HFT.Controllers
     [Obsolete("Use Lykke Wallet API v2 instead.")]
     public class AssetPairsController : Controller
     {
-        private readonly IAssetPairsReadModel _assetPairsReadModel;
+        private readonly IAssetPairsReadModelRepository _assetPairsReadModel;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="AssetPairsController"/> class.
         /// </summary>
-        public AssetPairsController(IAssetPairsReadModel assetPairsReadModel)
+        public AssetPairsController(IAssetPairsReadModelRepository assetPairsReadModel)
         {
             _assetPairsReadModel = assetPairsReadModel;
         }
@@ -54,7 +54,7 @@ namespace Lykke.Service.HFT.Controllers
         [ProducesResponseType((int)HttpStatusCode.NotFound)]
         public async Task<IActionResult> GetAssetPair(string id)
         {
-            var assetPair = _assetPairsReadModel.GetIfEnabled(id);
+            var assetPair = _assetPairsReadModel.TryGetIfEnabled(id);
             if (assetPair == null)
             {
                 return NotFound();
