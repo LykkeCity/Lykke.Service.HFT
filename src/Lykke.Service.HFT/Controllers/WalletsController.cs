@@ -1,5 +1,5 @@
-﻿using AssetsCache.ReadModels;
-using Common;
+﻿using Common;
+using Lykke.Service.Assets.Client.ReadModels;
 using Lykke.Service.Balances.Client;
 using Lykke.Service.HFT.Contracts.Wallets;
 using Lykke.Service.HFT.Helpers;

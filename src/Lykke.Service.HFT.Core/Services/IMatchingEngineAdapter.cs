@@ -1,4 +1,4 @@
-﻿using AssetsCache;
+﻿using Lykke.Service.Assets.Client.Models.v3;
 using Lykke.Service.HFT.Contracts;
 using Lykke.Service.HFT.Contracts.Orders;
 using System;

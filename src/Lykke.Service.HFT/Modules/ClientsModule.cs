@@ -1,5 +1,4 @@
-﻿using System;
-using Autofac;
+﻿using Autofac;
 using Lykke.Service.Assets.Client;
 using Lykke.Service.Balances.Client;
 using Lykke.Service.FeeCalculator.Client;
@@ -20,10 +19,7 @@ namespace Lykke.Service.HFT.Modules
 
         protected override void Load(ContainerBuilder builder)
         {
-            builder.RegisterAssetsClient(AssetServiceSettings.Create(
-                new Uri(_settings.CurrentValue.AssetsServiceClient.ServiceUrl),
-                _settings.CurrentValue.HighFrequencyTradingService.Cache.CacheExpirationPeriod));
-            //builder.RegisterAssetsClient(_settings.CurrentValue.AssetsServiceClient.ServiceUrl);
+            builder.RegisterAssetsClient(_settings.CurrentValue.AssetsServiceClient.ServiceUrl);
 
             builder.RegisterBalancesClient(_settings.CurrentValue.BalancesServiceClient.ServiceUrl);
 

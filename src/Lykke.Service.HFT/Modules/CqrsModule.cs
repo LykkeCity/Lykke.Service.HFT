@@ -1,5 +1,4 @@
-﻿using AssetsCache;
-using Autofac;
+﻿using Autofac;
 using Autofac.Core;
 using Lykke.Common.Chaos;
 using Lykke.Common.Log;
@@ -8,6 +7,7 @@ using Lykke.Cqrs.Configuration;
 using Lykke.Messaging;
 using Lykke.Messaging.RabbitMq;
 using Lykke.Messaging.Serialization;
+using Lykke.Service.Assets.Client;
 using Lykke.Service.HFT.Core;
 using Lykke.Service.HFT.Core.Settings;
 using Lykke.Service.HFT.Services.Events;
@@ -50,8 +50,6 @@ namespace Lykke.Service.HFT.Modules
             builder.Register(context => new AutofacDependencyResolver(context)).As<IDependencyResolver>().SingleInstance();
 
             var rabbitMqSettings = new RabbitMQ.Client.ConnectionFactory { Uri = _settings.CqrsRabbitConnString };
-
-            builder.RegisterDefaultAssetsReadModel();
 
             builder.RegisterType<ApiKeyProjection>()
                 .WithParameter(

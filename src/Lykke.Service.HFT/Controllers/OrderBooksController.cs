@@ -1,12 +1,12 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Net;
-using System.Threading.Tasks;
-using AssetsCache.ReadModels;
+﻿using Lykke.Service.Assets.Client.ReadModels;
 using Lykke.Service.HFT.Contracts.OrderBook;
 using Lykke.Service.HFT.Core.Services;
 using Microsoft.AspNetCore.Mvc;
 using Swashbuckle.AspNetCore.SwaggerGen;
+using System;
+using System.Collections.Generic;
+using System.Net;
+using System.Threading.Tasks;
 
 namespace Lykke.Service.HFT.Controllers
 {

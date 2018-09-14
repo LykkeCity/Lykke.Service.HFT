@@ -1,5 +1,5 @@
-﻿using AssetsCache;
-using Lykke.MatchingEngine.Connector.Models.Api;
+﻿using Lykke.MatchingEngine.Connector.Models.Api;
+using Lykke.Service.Assets.Client.Models.v3;
 using System.Threading.Tasks;
 using OrderAction = Lykke.Service.HFT.Contracts.Orders.OrderAction;
 

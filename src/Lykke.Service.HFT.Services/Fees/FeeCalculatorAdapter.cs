@@ -1,6 +1,6 @@
-﻿using AssetsCache;
-using Lykke.MatchingEngine.Connector.Models.Api;
+﻿using Lykke.MatchingEngine.Connector.Models.Api;
 using Lykke.MatchingEngine.Connector.Models.Common;
+using Lykke.Service.Assets.Client.Models.v3;
 using Lykke.Service.FeeCalculator.Client;
 using Lykke.Service.HFT.Core.Services;
 using Lykke.Service.HFT.Core.Settings;

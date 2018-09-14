@@ -1,4 +1,4 @@
-﻿using AssetsCache.ReadModels;
+﻿using Lykke.Service.Assets.Client.ReadModels;
 using Lykke.Service.HFT.Contracts;
 using Lykke.Service.HFT.Contracts.History;
 using Lykke.Service.HFT.Helpers;
