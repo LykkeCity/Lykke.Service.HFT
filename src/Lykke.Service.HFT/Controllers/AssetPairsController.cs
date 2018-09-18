@@ -38,7 +38,7 @@ namespace Lykke.Service.HFT.Controllers
         [ProducesResponseType(typeof(IEnumerable<AssetPairModel>), (int)HttpStatusCode.OK)]
         public async Task<IActionResult> GetAssetPairs()
         {
-            var assetPairs = _assetPairsReadModel.GetAll();
+            var assetPairs = _assetPairsReadModel.GetAllEnabled();
             return Ok(assetPairs.Select(ToModel));
         }
 

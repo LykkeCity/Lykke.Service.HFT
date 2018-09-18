@@ -40,7 +40,7 @@ namespace Lykke.Service.HFT.Services
 
         public async Task<IEnumerable<OrderBookModel>> GetAllAsync()
         {
-            var assetPairs = _assetPairsReadModel.GetAll();
+            var assetPairs = _assetPairsReadModel.GetAllEnabled();
             var results = await Task.WhenAll(assetPairs.Select(pair => GetAsync(pair.Id)));
 
             return results.SelectMany(x => x).Where(x => x != null).ToList();
