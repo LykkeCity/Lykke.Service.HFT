@@ -282,13 +282,13 @@ namespace Lykke.Service.HFT.Controllers
             if (asset == null)
                 throw new InvalidOperationException($"Base asset '{assetPair.BaseAssetId}' for asset pair '{assetPair.Id}' not found.");
 
-            var price = order.Price.TruncateDecimalPlaces(assetPair.Accuracy);
+            var price = order.Price.TruncatePrice(assetPair);
             if (!_requestValidator.ValidatePrice(price, out badRequestModel))
             {
                 return BadRequest(badRequestModel);
             }
 
-            var volume = order.Volume.TruncateDecimalPlaces(asset.Accuracy);
+            var volume = order.Volume.TruncateVolume(asset);
             var minVolume = assetPair.MinVolume;
             if (!_requestValidator.ValidateVolume(volume, minVolume, asset.DisplayId, out badRequestModel))
             {
@@ -311,9 +311,104 @@ namespace Lykke.Service.HFT.Controllers
         }
 
         /// <summary>
+        /// Place a new limit order.
+        /// </summary>
+        /// <response code="200">The placed limit order results.</response>
+        /// <response code="404">Requested asset pair could not be found or is disabled.</response>
+        [HttpPost("stoplimit")]
+        [SwaggerOperation(nameof(PlaceLimitOrder))]
+        [ProducesResponseType(typeof(LimitOrderResponseModel), (int)HttpStatusCode.OK)]
+        [ProducesResponseType(typeof(ResponseModel), (int)HttpStatusCode.BadRequest)]
+        public async Task<IActionResult> PlaceStopLimitOrder([FromBody] PlaceStopLimitOrderModel order)
+        {
+            var assetPair = await _assetServiceDecorator.GetEnabledAssetPairAsync(order.AssetPairId);
+            if (assetPair == null)
+            {
+                return NotFound($"Assetpair {order.AssetPairId} could not be found or is disabled.");
+            }
+
+            if (!_requestValidator.ValidateAssetPair(order.AssetPairId, assetPair, out var badRequestModel))
+            {
+                return BadRequest(badRequestModel);
+            }
+
+            var asset = await _assetServiceDecorator.GetEnabledAssetAsync(assetPair.BaseAssetId);
+            if (asset == null)
+                throw new InvalidOperationException($"Base asset '{assetPair.BaseAssetId}' for asset pair '{assetPair.Id}' not found.");
+
+
+            var lowerPrice = order.LowerPrice.TruncatePrice(assetPair);
+            if (lowerPrice.HasValue && !_requestValidator.ValidatePrice(lowerPrice.Value, out badRequestModel, nameof(PlaceStopLimitOrderModel.LowerPrice)))
+            {
+                return BadRequest(badRequestModel);
+            }
+
+            var lowerLimitPrice = order.LowerLimitPrice.TruncatePrice(assetPair);
+            if (lowerLimitPrice.HasValue && !_requestValidator.ValidatePrice(lowerLimitPrice.Value, out badRequestModel, nameof(PlaceStopLimitOrderModel.LowerLimitPrice)))
+            {
+                return BadRequest(badRequestModel);
+            }
+
+            if ((lowerPrice.HasValue && !lowerLimitPrice.HasValue) ||
+                (!lowerPrice.HasValue && lowerLimitPrice.HasValue))
+            {
+                return BadRequest(ResponseModel.CreateInvalidFieldError(nameof(order.LowerPrice), "When lower price is send then also lower limit price is required and vice versa."));
+            }
+
+            var upperPrice = order.UpperPrice.TruncatePrice(assetPair);
+            if (upperPrice.HasValue && !_requestValidator.ValidatePrice(upperPrice.Value, out badRequestModel, nameof(PlaceStopLimitOrderModel.UpperPrice)))
+            {
+                return BadRequest(badRequestModel);
+            }
+
+            var upperLimitPrice = order.UpperLimitPrice.TruncatePrice(assetPair);
+            if (upperLimitPrice.HasValue && !_requestValidator.ValidatePrice(upperLimitPrice.Value, out badRequestModel, nameof(PlaceStopLimitOrderModel.UpperLimitPrice)))
+            {
+                return BadRequest(badRequestModel);
+            }
+
+            if ((upperPrice.HasValue && !upperLimitPrice.HasValue) ||
+                (!upperPrice.HasValue && upperLimitPrice.HasValue))
+            {
+                return BadRequest(ResponseModel.CreateInvalidFieldError(nameof(order.UpperPrice), "When upper price is send then also upper limit price is required and vice versa."));
+            }
+
+            if (new[] { lowerPrice, lowerLimitPrice, upperPrice, upperLimitPrice }.All(x => !x.HasValue))
+            {
+                return BadRequest(ResponseModel.CreateFail(ErrorCodeType.InvalidPrice,
+                    "At least lower or upper prices are needed for a stop order."));
+            }
+
+            var volume = order.Volume.TruncateDecimalPlaces(asset.Accuracy);
+            var minVolume = assetPair.MinVolume;
+            if (!_requestValidator.ValidateVolume(volume, minVolume, asset.DisplayId, out badRequestModel))
+            {
+                return BadRequest(badRequestModel);
+            }
+
+            var clientId = User.GetUserId();
+            var response = await _matchingEngineAdapter.PlaceStopLimitOrderAsync(
+                clientId: clientId,
+                assetPair: assetPair,
+                orderAction: order.OrderAction,
+                volume: volume,
+                lowerPrice: lowerPrice,
+                lowerLimitPrice: lowerLimitPrice,
+                upperPrice: upperPrice,
+                upperLimitPrice: upperLimitPrice);
+            if (response.Error != null)
+            {
+                return BadRequest(response);
+            }
+
+            return Ok(response.Result);
+        }
+
+        /// <summary>
         /// Place a bulk limit order.
         /// </summary>
-        /// <returns>Request id.</returns>
+        /// <response code="200">The placed bulk order results.</response>
+        /// <response code="404">Requested asset pair could not be found or is disabled.</response>
         [HttpPost("bulk")]
         [SwaggerOperation(nameof(PlaceBulkOrder))]
         [ProducesResponseType(typeof(BulkOrderResponseModel), (int)HttpStatusCode.OK)]
@@ -321,6 +416,10 @@ namespace Lykke.Service.HFT.Controllers
         public async Task<IActionResult> PlaceBulkOrder([FromBody] PlaceBulkOrderModel order)
         {
             var assetPair = await _assetServiceDecorator.GetEnabledAssetPairAsync(order.AssetPairId);
+            if (assetPair == null)
+            {
+                return NotFound($"Assetpair {order.AssetPairId} could not be found or is disabled.");
+            }
 
             if (!_requestValidator.ValidateAssetPair(order.AssetPairId, assetPair, out var badRequestModel))
             {
@@ -334,13 +433,13 @@ namespace Lykke.Service.HFT.Controllers
             var items = order.Orders?.ToArray() ?? new BulkOrderItemModel[0];
             foreach (var item in items)
             {
-                var price = item.Price.TruncateDecimalPlaces(assetPair.Accuracy);
+                var price = item.Price.TruncatePrice(assetPair);
                 if (!_requestValidator.ValidatePrice(price, out badRequestModel))
                 {
                     return BadRequest(badRequestModel);
                 }
 
-                var volume = item.Volume.TruncateDecimalPlaces(asset.Accuracy);
+                var volume = item.Volume.TruncateVolume(asset);
                 var minVolume = assetPair.MinVolume;
                 if (!_requestValidator.ValidateVolume(volume, minVolume, asset.DisplayId, out badRequestModel))
                 {
@@ -368,7 +467,7 @@ namespace Lykke.Service.HFT.Controllers
         }
 
         /// <summary>
-        /// Cancel the limit order.
+        /// Cancel a limit order.
         /// </summary>
         /// <param name="id">Limit order id</param>
         /// <response code="200">Limit order has been cancelled.</response>
@@ -490,7 +589,12 @@ namespace Lykke.Service.HFT.Controllers
                 Price = order.Price,
                 RemainingVolume = order.RemainingVolume,
                 Status = order.Status,
-                Volume = order.Volume
+                Volume = order.Volume,
+                Type = (LimitOrderType)order.Type,
+                LowerPrice = order.LowerPrice,
+                LowerLimitPrice = order.LowerLimitPrice,
+                UpperPrice = order.UpperPrice,
+                UpperLimitPrice = order.UpperLimitPrice
             };
         }
     }

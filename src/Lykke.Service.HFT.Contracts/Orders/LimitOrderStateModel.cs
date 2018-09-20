@@ -48,5 +48,30 @@ namespace Lykke.Service.HFT.Contracts.Orders
         /// The created at date time.
         /// </summary>
         public DateTime CreatedAt { get; set; }
+
+        /// <summary>
+        /// The type of limit order.
+        /// </summary>
+        public LimitOrderType Type { get; set; }
+
+        /// <summary>
+        /// The lower limit price of the limit order.
+        /// </summary>
+        public double? LowerLimitPrice { get; set; }
+
+        /// <summary>
+        /// The lower price of the limit order.
+        /// </summary>
+        public double? LowerPrice { get; set; }
+
+        /// <summary>
+        /// The upper limit price of the limit order.
+        /// </summary>
+        public double? UpperLimitPrice { get; set; }
+
+        /// <summary>
+        /// The upper price of the limit order.
+        /// </summary>
+        public double? UpperPrice { get; set; }
     }
 }

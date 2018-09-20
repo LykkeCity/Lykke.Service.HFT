@@ -59,11 +59,11 @@ namespace Lykke.Service.HFT.Controllers
         /// <summary>
         /// Validate requested price.
         /// </summary>
-        public bool ValidatePrice(double price, out ResponseModel model)
+        public bool ValidatePrice(double price, out ResponseModel model, string name = "Price")
         {
             if (Math.Abs(price) < double.Epsilon)
             {
-                model = ResponseModel.CreateInvalidFieldError("Price", "Price must be greater than asset accuracy.");
+                model = ResponseModel.CreateInvalidFieldError(name, "Price must be greater than asset accuracy.");
                 return false;
             }
 

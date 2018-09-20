@@ -46,7 +46,12 @@ namespace Lykke.Service.HFT.AzureRepositories
                 ClientId = order.ClientId,
                 LastMatchTime = order.LastMatchTime,
                 CreatedAt = order.CreatedAt,
-                Registered = order.Registered
+                Registered = order.Registered,
+                LowerPrice = order.LowerPrice,
+                LowerLimitPrice = order.LowerLimitPrice,
+                UpperLimitPrice = order.UpperLimitPrice,
+                UpperPrice = order.UpperPrice,
+                Type = order.Type
             };
         }
 

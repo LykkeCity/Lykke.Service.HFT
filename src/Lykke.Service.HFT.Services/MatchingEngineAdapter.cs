@@ -95,7 +95,7 @@ namespace Lykke.Service.HFT.Services
         public async Task<ResponseModel<LimitOrderResponseModel>> PlaceLimitOrderAsync(string clientId, AssetPair assetPair, OrderAction orderAction, double volume,
             double price, bool cancelPreviousOrders = false)
         {
-            var requestId = await StoreLimitOrder(clientId, assetPair, volume, price);
+            var requestId = await StoreLimitOrder(clientId, assetPair, volume, LimitOrderType.Default, x => x.Price = price);
 
             var order = new LimitOrderModel
             {
@@ -120,20 +120,22 @@ namespace Lykke.Service.HFT.Services
             return ConvertToApiModel(response.Status, result);
         }
 
-        private async Task<Guid> StoreLimitOrder(string clientId, AssetPair assetPair, double volume, double price)
+        private async Task<Guid> StoreLimitOrder(string clientId, AssetPair assetPair, double volume, LimitOrderType type, Action<LimitOrderState> setPrice)
         {
             var requestId = GetNextRequestId();
 
-            await _orderStateRepository.Add(new LimitOrderState
+            var order = new LimitOrderState
             {
                 Id = requestId,
                 ClientId = clientId,
                 AssetPairId = assetPair.Id,
                 Volume = volume,
-                Price = price,
-                Status = OrderStatus.Pending,
-                CreatedAt = DateTime.UtcNow
-            });
+                CreatedAt = DateTime.UtcNow,
+                Type = (int)type
+            };
+            setPrice(order);
+
+            await _orderStateRepository.Add(order);
             return requestId;
         }
 
@@ -175,6 +177,45 @@ namespace Lykke.Service.HFT.Services
             return ConvertToApiModel(response.Status, result);
         }
 
+        public async Task<ResponseModel<LimitOrderResponseModel>> PlaceStopLimitOrderAsync(string clientId, AssetPair assetPair, OrderAction orderAction, double volume,
+            double? lowerPrice, double? lowerLimitPrice, double? upperPrice, double? upperLimitPrice, bool cancelPreviousOrders = false)
+        {
+            _log.Info($"SEND {assetPair.Id} {lowerPrice} {lowerLimitPrice} {upperPrice} {upperLimitPrice}");
+
+            var requestId = await StoreLimitOrder(clientId, assetPair, volume, LimitOrderType.Stop, x =>
+                {
+                    x.LowerPrice = lowerPrice;
+                    x.LowerLimitPrice = lowerLimitPrice;
+                    x.UpperPrice = upperPrice;
+                    x.UpperLimitPrice = upperLimitPrice;
+                });
+
+            var order = new StopLimitOrderModel
+            {
+                Id = requestId.ToString(),
+                AssetPairId = assetPair.Id,
+                ClientId = clientId,
+                LowerPrice = lowerPrice,
+                LowerLimitPrice = lowerLimitPrice,
+                UpperPrice = upperPrice,
+                UpperLimitPrice = upperLimitPrice,
+                CancelPreviousOrders = cancelPreviousOrders,
+                Volume = Math.Abs(volume),
+                OrderAction = orderAction.ToMeOrderAction(),
+                Fees = await _feeCalculator.GetLimitOrderFees(clientId, assetPair, orderAction)
+            };
+
+            var response = await _matchingEngineClient.PlaceStopLimitOrderAsync(order);
+            CheckResponseAndThrowIfNull(response);
+
+            var result = new LimitOrderResponseModel
+            {
+                Id = requestId
+            };
+
+            return ConvertToApiModel(response.Status, result);
+        }
+
         private BulkOrderItemStatusModel ToBulkOrderItemStatusModel(LimitOrderStatusModel status)
         {
             Guid.TryParse(status.Id, out var id);
@@ -190,7 +231,7 @@ namespace Lykke.Service.HFT.Services
 
         private async Task<MultiOrderItemModel> ToMultiOrderItemModel(string clientId, AssetPair assetPair, BulkOrderItemModel item)
         {
-            var itemId = await StoreLimitOrder(clientId, assetPair, item.Volume, item.Price);
+            var itemId = await StoreLimitOrder(clientId, assetPair, item.Volume, LimitOrderType.Default, x => x.Price = item.Price);
             var fees = await _feeCalculator.GetLimitOrderFees(clientId, assetPair, item.OrderAction);
 
             var model = new MultiOrderItemModel
