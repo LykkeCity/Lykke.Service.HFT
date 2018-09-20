@@ -29,17 +29,17 @@ namespace Lykke.Service.HFT.Contracts.Orders
         Matched = 3,
 
         /// <summary>
-        /// Not enough funds on account
+        /// Failed: Not enough funds on account
         /// </summary>
         NotEnoughFunds = 4,
 
         /// <summary>
-        /// No liquidity
+        /// Failed: No liquidity
         /// </summary>
         NoLiquidity = 5,
 
         /// <summary>
-        /// Unknown asset
+        /// Failed: Unknown asset
         /// </summary>
         UnknownAsset = 6,
 
@@ -49,12 +49,12 @@ namespace Lykke.Service.HFT.Contracts.Orders
         Cancelled = 7,
 
         /// <summary>
-        /// Lead to negative spread
+        /// Failed: Lead to negative spread
         /// </summary>
         LeadToNegativeSpread = 8,
 
         /// <summary>
-        /// Invalid price accuracy
+        /// Failed: Invalid price accuracy
         /// </summary>
         InvalidPriceAccuracy = 9,
 
@@ -64,12 +64,42 @@ namespace Lykke.Service.HFT.Contracts.Orders
         Rejected = 10,
 
         /// <summary>
-        /// Reserved volume greater than balance
+        /// Failed: The low balance
         /// </summary>
-        ReservedVolumeGreaterThanBalance = 414,
+        LowBalance = 401,
 
         /// <summary>
-        /// Too small volume
+        /// Failed: Already processed
+        /// </summary>
+        AlreadyProcessed = 402,
+
+        /// <summary>
+        /// Failed: Disabled asset
+        /// </summary>
+        DisabledAsset = 403,
+
+        /// <summary>
+        /// Failed: Too low volume
+        /// </summary>
+        Dust = 413,
+
+        /// <summary>
+        /// Failed: Reserved volume higher than balance
+        /// </summary>
+        ReservedVolumeHigherThanBalance = 414,
+
+        /// <summary>
+        /// Failed: Not found
+        /// </summary>
+        NotFound = 415,
+
+        /// <summary>
+        /// Failed: Reserved volume lower than balance
+        /// </summary>
+        BalanceLowerThanReserved = 416,
+
+        /// <summary>
+        /// Failed: Too small volume
         /// </summary>
         TooSmallVolume = 418,
 
@@ -77,6 +107,46 @@ namespace Lykke.Service.HFT.Contracts.Orders
         /// Order was replaced
         /// </summary>
         Replaced = 422,
+        
+        /// <summary>
+        /// Failed: Invalid fee
+        /// </summary>
+        InvalidFee = 419,
+        
+        /// <summary>
+        /// Failed: Invalid price
+        /// </summary>
+        InvalidPrice = 420,
+        
+        /// <summary>
+        /// Failed: Previous order not found
+        /// </summary>
+        NotFoundPrevious = 422,
+        
+        /// <summary>
+        /// Duplicate order
+        /// </summary>
+        Duplicate = 430,
+        
+        /// <summary>
+        /// Failed: Invalid volume accuracy
+        /// </summary>
+        InvalidVolumeAccuracy = 431,
+        
+        /// <summary>
+        /// Failed: Invalid volume
+        /// </summary>
+        InvalidVolume = 434,
+        
+        /// <summary>
+        /// Failed: Too high price deviation
+        /// </summary>
+        TooHighPriceDeviation = 435,
+
+        /// <summary>
+        /// Failed: Invalid order value
+        /// </summary>
+        InvalidOrderValue = 436,
 
         /// <summary>
         /// Unexpected status code
@@ -87,6 +157,7 @@ namespace Lykke.Service.HFT.Contracts.Orders
     /// <summary>
     /// Extension methods for <see cref="OrderStatus"/>
     /// </summary>
+    [UsedImplicitly]
     public static class OrderStatusMixin
     {
         /// <summary>
@@ -99,16 +170,6 @@ namespace Lykke.Service.HFT.Contracts.Orders
         {
             switch (status)
             {
-                case OrderStatus.NotEnoughFunds:
-                case OrderStatus.NoLiquidity:
-                case OrderStatus.UnknownAsset:
-                case OrderStatus.LeadToNegativeSpread:
-                case OrderStatus.ReservedVolumeGreaterThanBalance:
-                case OrderStatus.TooSmallVolume:
-                case OrderStatus.InvalidPriceAccuracy:
-                case OrderStatus.Runtime:
-                case OrderStatus.Rejected:
-                    return true;
                 case OrderStatus.Pending:
                 case OrderStatus.InOrderBook:
                 case OrderStatus.Processing:

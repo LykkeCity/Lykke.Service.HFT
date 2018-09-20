@@ -74,6 +74,8 @@ namespace Lykke.Service.HFT.Services.Consumers
                 if (Guid.TryParse(order.Order.ExternalId, out Guid orderId) && await _hftClientService.IsHftWalletAsync(order.Order.ClientId))
                 {
                     var orderState = await _orderStateRepository.Get(orderId);
+                    _log.Info($"Received {orderId} {orderState?.Status} -> {order.Order.Status}");
+
                     // we are processing orders made by this service only
                     if (orderState != null)
                     {

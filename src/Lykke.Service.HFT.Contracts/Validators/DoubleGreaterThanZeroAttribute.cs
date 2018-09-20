@@ -14,7 +14,16 @@ namespace Lykke.Service.HFT.Contracts.Validators
 
         /// <inheritdoc />
         public override bool IsValid(object value)
-            => value as double? > double.Epsilon;
+        {
+            // Nullable should be checked by required flag.
+            if (value == null)
+            {
+                return true;
+            }
+
+            if (value as double? > double.Epsilon) return true;
+            return false;
+        }
 
         /// <inheritdoc />
         protected override ValidationResult IsValid(

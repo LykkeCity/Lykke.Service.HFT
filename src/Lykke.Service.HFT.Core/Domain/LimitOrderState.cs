@@ -15,5 +15,10 @@ namespace Lykke.Service.HFT.Core.Domain
         public DateTime? LastMatchTime { get; set; }
         public DateTime CreatedAt { get; set; }
         public DateTime Registered { get; set; }
+        public int Type { get; set; } = 0;
+        public double? LowerLimitPrice { get; set; }
+        public double? LowerPrice { get; set; }
+        public double? UpperLimitPrice { get; set; }
+        public double? UpperPrice { get; set; }
     }
 }
