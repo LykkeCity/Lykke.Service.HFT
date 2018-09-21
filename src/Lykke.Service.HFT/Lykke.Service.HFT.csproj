@@ -24,8 +24,8 @@
     <PackageReference Include="Lykke.Messaging" Version="6.2.0" />
     <PackageReference Include="Lykke.Messaging.RabbitMq" Version="2.1.0" />
     <PackageReference Include="Lykke.Sdk" Version="5.3.1" />
-    <PackageReference Include="Lykke.Service.Assets.Client" Version="5.0.2-beta.1" />
-    <PackageReference Include="Lykke.Service.Balances.Client" Version="2.0.0" />
+    <PackageReference Include="Lykke.Service.Assets.Client" Version="5.0.3" />
+    <PackageReference Include="Lykke.Service.Balances.Client" Version="2.1.0" />
     <PackageReference Include="Lykke.Service.FeeCalculator.Client" Version="2.2.0" />
     <PackageReference Include="Lykke.Service.OperationsHistory.Client" Version="2.2.2" />
     <PackageReference Include="Lykke.Service.OperationsRepository.Contract" Version="1.0.13" />

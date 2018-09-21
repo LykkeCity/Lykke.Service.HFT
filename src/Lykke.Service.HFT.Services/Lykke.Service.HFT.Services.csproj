@@ -11,13 +11,13 @@
     <PackageReference Include="AutoMapper" Version="7.0.1" />
     <PackageReference Include="Lykke.Cqrs" Version="5.2.0" />
     <PackageReference Include="Lykke.MatchingEngineConnector" Version="8.3.0" />
-    <PackageReference Include="Lykke.RabbitMqBroker" Version="7.4.1" />
-    <PackageReference Include="Lykke.Service.Assets.Client" Version="5.0.2-beta.1" />
+    <PackageReference Include="Lykke.RabbitMqBroker" Version="7.5.0" />
+    <PackageReference Include="Lykke.Service.Assets.Client" Version="5.0.3" />
     <PackageReference Include="Lykke.Service.FeeCalculator.Client" Version="2.2.0" />
     <PackageReference Include="Lykke.WampSharp" Version="1.0.2" />
     <PackageReference Include="Newtonsoft.Json" Version="11.0.2" />
     <PackageReference Include="protobuf-net" Version="2.4.0" />
-    <PackageReference Include="StackExchange.Redis" Version="1.2.6" />
+    <PackageReference Include="StackExchange.Redis" Version="2.0.505" />
   </ItemGroup>
 
   <ItemGroup>
