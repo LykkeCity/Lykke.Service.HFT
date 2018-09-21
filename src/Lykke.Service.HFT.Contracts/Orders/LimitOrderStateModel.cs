@@ -27,17 +27,17 @@ namespace Lykke.Service.HFT.Contracts.Orders
         /// <summary>
         /// The volume of the limit order.
         /// </summary>
-        public double Volume { get; set; }
+        public decimal Volume { get; set; }
 
         /// <summary>
         /// The price of the limit order.
         /// </summary>
-        public double? Price { get; set; }
+        public decimal? Price { get; set; }
 
         /// <summary>
         /// The remaining volume of the order.
         /// </summary>
-        public double RemainingVolume { get; set; }
+        public decimal RemainingVolume { get; set; }
 
         /// <summary>
         /// The last match date time.
@@ -57,21 +57,21 @@ namespace Lykke.Service.HFT.Contracts.Orders
         /// <summary>
         /// The lower limit price of the limit order.
         /// </summary>
-        public double? LowerLimitPrice { get; set; }
+        public decimal? LowerLimitPrice { get; set; }
 
         /// <summary>
         /// The lower price of the limit order.
         /// </summary>
-        public double? LowerPrice { get; set; }
+        public decimal? LowerPrice { get; set; }
 
         /// <summary>
         /// The upper limit price of the limit order.
         /// </summary>
-        public double? UpperLimitPrice { get; set; }
+        public decimal? UpperLimitPrice { get; set; }
 
         /// <summary>
         /// The upper price of the limit order.
         /// </summary>
-        public double? UpperPrice { get; set; }
+        public decimal? UpperPrice { get; set; }
     }
 }

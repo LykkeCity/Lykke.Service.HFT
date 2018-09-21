@@ -120,7 +120,8 @@ namespace Lykke.Service.HFT.Services
             return ConvertToApiModel(response.Status, result);
         }
 
-        private async Task<Guid> StoreLimitOrder(string clientId, AssetPair assetPair, double volume, LimitOrderType type, Action<LimitOrderState> setPrice)
+        private async Task<Guid> StoreLimitOrder(string clientId, AssetPair assetPair, decimal volume, 
+            LimitOrderType type, Action<LimitOrderState> setPrice)
         {
             var requestId = GetNextRequestId();
 
@@ -177,8 +178,9 @@ namespace Lykke.Service.HFT.Services
             return ConvertToApiModel(response.Status, result);
         }
 
-        public async Task<ResponseModel<LimitOrderResponseModel>> PlaceStopLimitOrderAsync(string clientId, AssetPair assetPair, OrderAction orderAction, double volume,
-            double? lowerPrice, double? lowerLimitPrice, double? upperPrice, double? upperLimitPrice, bool cancelPreviousOrders = false)
+        public async Task<ResponseModel<LimitOrderResponseModel>> PlaceStopLimitOrderAsync(
+            string clientId, AssetPair assetPair, OrderAction orderAction, decimal volume,
+            decimal? lowerPrice, decimal? lowerLimitPrice, decimal? upperPrice, decimal? upperLimitPrice, bool cancelPreviousOrders = false)
         {
             _log.Info($"SEND {assetPair.Id} {lowerPrice} {lowerLimitPrice} {upperPrice} {upperLimitPrice}");
 
@@ -195,12 +197,12 @@ namespace Lykke.Service.HFT.Services
                 Id = requestId.ToString(),
                 AssetPairId = assetPair.Id,
                 ClientId = clientId,
-                LowerPrice = lowerPrice,
-                LowerLimitPrice = lowerLimitPrice,
-                UpperPrice = upperPrice,
-                UpperLimitPrice = upperLimitPrice,
+                LowerPrice = (double?)lowerPrice,
+                LowerLimitPrice = (double?)lowerLimitPrice,
+                UpperPrice = (double?)upperPrice,
+                UpperLimitPrice = (double?)upperLimitPrice,
                 CancelPreviousOrders = cancelPreviousOrders,
-                Volume = Math.Abs(volume),
+                Volume = (double)Math.Abs(volume),
                 OrderAction = orderAction.ToMeOrderAction(),
                 Fees = await _feeCalculator.GetLimitOrderFees(clientId, assetPair, orderAction)
             };

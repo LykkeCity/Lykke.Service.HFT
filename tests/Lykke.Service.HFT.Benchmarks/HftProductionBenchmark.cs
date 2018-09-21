@@ -290,7 +290,7 @@ namespace Lykke.Service.HFT.Benchmarks
                 LowerPrice = 550,
                 UpperPrice = 600,
                 UpperLimitPrice = 650,
-                Volume = 0.001
+                Volume = 0.001m
             };
 
             var result = await client.PlaceStopLimitOrder(order).TryExecute();

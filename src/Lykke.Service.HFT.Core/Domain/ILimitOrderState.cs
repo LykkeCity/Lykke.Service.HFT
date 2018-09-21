@@ -10,15 +10,15 @@ namespace Lykke.Service.HFT.Core.Domain
         DateTime CreatedAt { get; set; }
         Guid Id { get; }
         DateTime? LastMatchTime { get; set; }
-        double? Price { get; set; }
+        decimal? Price { get; set; }
         DateTime Registered { get; set; }
-        double RemainingVolume { get; set; }
+        decimal RemainingVolume { get; set; }
         OrderStatus Status { get; set; }
-        double Volume { get; set; }
+        decimal Volume { get; set; }
         int Type { get; set; }
-        double? LowerLimitPrice { get; set; }
-        double? LowerPrice { get; set; }
-        double? UpperLimitPrice { get; set; }
-        double? UpperPrice { get; set; }
+        decimal? LowerLimitPrice { get; set; }
+        decimal? LowerPrice { get; set; }
+        decimal? UpperLimitPrice { get; set; }
+        decimal? UpperPrice { get; set; }
     }
 }
