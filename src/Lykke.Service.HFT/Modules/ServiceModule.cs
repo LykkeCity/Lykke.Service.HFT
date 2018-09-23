@@ -1,5 +1,4 @@
-﻿using System;
-using Autofac;
+﻿using Autofac;
 using Autofac.Core;
 using AzureStorage;
 using AzureStorage.Tables;
@@ -22,6 +21,7 @@ using Lykke.SettingsReader;
 using Microsoft.Extensions.Caching.Distributed;
 using Microsoft.Extensions.Caching.Redis;
 using MongoDB.Driver;
+using System;
 
 namespace Lykke.Service.HFT.Modules
 {
@@ -67,9 +67,9 @@ namespace Lykke.Service.HFT.Modules
 
             RegisterOrderStates(builder);
 
-#if !DEBUG
             BindRabbitMq(builder, currentSettings.HighFrequencyTradingService);
 
+#if !DEBUG
             RegisterPeriodicalHandlers(builder); 
 #endif
         }
@@ -127,7 +127,7 @@ namespace Lykke.Service.HFT.Modules
                         (pi, ctx) => ctx.ResolveKeyed<IDistributedCache>(Constants.FinanceDataCacheInstance)))
                 .SingleInstance();
         }
-        
+
         private void BindRabbitMq(ContainerBuilder builder, HighFrequencyTradingSettings settings)
         {
             builder.RegisterType<LimitOrdersConsumer>()

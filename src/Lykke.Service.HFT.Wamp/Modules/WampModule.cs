@@ -30,9 +30,7 @@ namespace Lykke.Service.HFT.Wamp.Modules
             builder.Register(x => x.Resolve<IWampHost>().RealmContainer.GetRealmByName(Constans.RealmName))
                 .SingleInstance();
 
-#if !DEBUG
-            BindRabbitMq(builder); 
-#endif
+            BindRabbitMq(builder);
         }
 
         private void BindRabbitMq(ContainerBuilder builder)
