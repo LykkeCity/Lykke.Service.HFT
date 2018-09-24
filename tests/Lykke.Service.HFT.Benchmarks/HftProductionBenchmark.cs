@@ -204,7 +204,7 @@ namespace Lykke.Service.HFT.Benchmarks
                 Asset = "BTC",
                 AssetPairId = "BTCUSD",
                 OrderAction = GetRandomItem(_actions),
-                Volume = 0.001
+                Volume = 0.001m
             };
 
             var result = await client.PlaceMarketOrder(order).TryExecute();
@@ -228,7 +228,7 @@ namespace Lykke.Service.HFT.Benchmarks
                 AssetPairId = "BTCUSD",
                 OrderAction = GetRandomItem(_actions),
                 Price = 500,
-                Volume = 0.001
+                Volume = 0.001m
             };
 
             var result = await client.PlaceLimitOrder(order).TryExecute();
@@ -260,7 +260,7 @@ namespace Lykke.Service.HFT.Benchmarks
                 {
                     OrderAction = OrderAction.Buy,
                     Price = 500 + x,
-                    Volume = 0.001
+                    Volume = 0.001m
                 })
             };
 
@@ -290,7 +290,7 @@ namespace Lykke.Service.HFT.Benchmarks
                 LowerPrice = 550,
                 UpperPrice = 600,
                 UpperLimitPrice = 650,
-                Volume = 0.001
+                Volume = 0.001m
             };
 
             var result = await client.PlaceStopLimitOrder(order).TryExecute();
@@ -341,7 +341,7 @@ namespace Lykke.Service.HFT.Benchmarks
                 {
                     OrderAction = OrderAction.Buy,
                     Price = 500 + x,
-                    Volume = 0.0001
+                    Volume = 0.0001m
                 })
             };
 
@@ -357,8 +357,8 @@ namespace Lykke.Service.HFT.Benchmarks
                     {
                         OrderAction = OrderAction.Buy,
                         OldId = x.Id.ToString(),
-                        Price = 1d + x.Price,
-                        Volume = 0.0001
+                        Price = 1m + x.Price,
+                        Volume = 0.0001m
                     })
             };
 

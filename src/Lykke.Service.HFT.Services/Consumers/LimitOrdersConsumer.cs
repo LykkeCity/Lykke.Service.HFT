@@ -87,8 +87,8 @@ namespace Lykke.Service.HFT.Services.Consumers
 
                         // these properties cannot change: Id, ClientId, AssetPairId, Price; ignoring them
                         orderState.Status = Enum.TryParse(order.Order.Status, out OrderStatus status) ? status : OrderStatus.Runtime;
-                        orderState.Volume = order.Order.Volume;
-                        orderState.RemainingVolume = order.Order.RemainingVolume;
+                        orderState.Volume = (decimal) order.Order.Volume;
+                        orderState.RemainingVolume = (decimal)order.Order.RemainingVolume;
                         orderState.LastMatchTime = order.Order.LastMatchTime;
                         orderState.CreatedAt = order.Order.CreatedAt;
                         orderState.Registered = order.Order.Registered;

@@ -1,10 +1,5 @@
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Net;
-using System.Threading.Tasks;
 using Common;
-using Lykke.Service.Assets.Client.Models;
+using Lykke.Service.Assets.Client.ReadModels;
 using Lykke.Service.HFT.Contracts;
 using Lykke.Service.HFT.Contracts.Orders;
 using Lykke.Service.HFT.Core.Domain;
@@ -14,6 +9,12 @@ using Lykke.Service.HFT.Helpers;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Swashbuckle.AspNetCore.SwaggerGen;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Net;
+using System.Threading.Tasks;
+using Lykke.Service.Assets.Client.Models.v3;
 
 namespace Lykke.Service.HFT.Controllers
 {
@@ -28,25 +29,28 @@ namespace Lykke.Service.HFT.Controllers
         private const int MaxPageSize = 500;
         private readonly RequestValidator _requestValidator;
         private readonly IMatchingEngineAdapter _matchingEngineAdapter;
-        private readonly IAssetServiceDecorator _assetServiceDecorator;
         private readonly ILimitOrderStateRepository _orderStateCache;
         private readonly ILimitOrderStateArchive _orderStateArchive;
+        private readonly IAssetPairsReadModelRepository _assetPairsReadModel;
+        private readonly IAssetsReadModelRepository _assetsReadModel;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="OrdersController"/> class.
         /// </summary>
         public OrdersController(
             IMatchingEngineAdapter frequencyTradingService,
-            IAssetServiceDecorator assetServiceDecorator,
             ILimitOrderStateRepository orderStateCache,
             ILimitOrderStateArchive orderStateArchive,
-            RequestValidator requestValidator)
+            RequestValidator requestValidator, 
+            IAssetPairsReadModelRepository assetPairsReadModel, 
+            IAssetsReadModelRepository assetsReadModel)
         {
             _matchingEngineAdapter = frequencyTradingService ?? throw new ArgumentNullException(nameof(frequencyTradingService));
-            _assetServiceDecorator = assetServiceDecorator ?? throw new ArgumentNullException(nameof(assetServiceDecorator));
             _orderStateCache = orderStateCache ?? throw new ArgumentNullException(nameof(orderStateCache));
             _orderStateArchive = orderStateArchive ?? throw new ArgumentNullException(nameof(orderStateArchive));
             _requestValidator = requestValidator ?? throw new ArgumentNullException(nameof(requestValidator));
+            _assetPairsReadModel = assetPairsReadModel;
+            _assetsReadModel = assetsReadModel;
         }
 
         /// <summary>
@@ -189,7 +193,7 @@ namespace Lykke.Service.HFT.Controllers
         [ProducesResponseType(typeof(ResponseModel), (int)HttpStatusCode.BadRequest)]
         public async Task<IActionResult> PlaceMarketOrder(PlaceMarketOrderModel order)
         {
-            var assetPair = await _assetServiceDecorator.GetEnabledAssetPairAsync(order.AssetPairId);
+            var assetPair = _assetPairsReadModel.TryGetIfEnabled(order.AssetPairId);
             if (assetPair == null)
             {
                 return NotFound($"Assetpair {order.AssetPairId} could not be found or is disabled.");
@@ -200,8 +204,8 @@ namespace Lykke.Service.HFT.Controllers
                 return BadRequest(badRequestModel);
             }
 
-            var baseAsset = await _assetServiceDecorator.GetEnabledAssetAsync(assetPair.BaseAssetId);
-            var quotingAsset = await _assetServiceDecorator.GetEnabledAssetAsync(assetPair.QuotingAssetId);
+            var baseAsset = _assetsReadModel.TryGetIfEnabled(assetPair.BaseAssetId);
+            var quotingAsset = _assetsReadModel.TryGetIfEnabled(assetPair.QuotingAssetId);
             if (!_requestValidator.ValidateAsset(assetPair, order.Asset, baseAsset, quotingAsset, out badRequestModel))
             {
                 return BadRequest(badRequestModel);
@@ -267,7 +271,7 @@ namespace Lykke.Service.HFT.Controllers
         [ProducesResponseType(typeof(ResponseModel), (int)HttpStatusCode.BadRequest)]
         public async Task<IActionResult> PlaceLimitOrder(PlaceLimitOrderModel order)
         {
-            var assetPair = await _assetServiceDecorator.GetEnabledAssetPairAsync(order.AssetPairId);
+            var assetPair = _assetPairsReadModel.TryGetIfEnabled(order.AssetPairId);
             if (assetPair == null)
             {
                 return NotFound($"Assetpair {order.AssetPairId} could not be found or is disabled.");
@@ -278,7 +282,7 @@ namespace Lykke.Service.HFT.Controllers
                 return BadRequest(badRequestModel);
             }
 
-            var asset = await _assetServiceDecorator.GetEnabledAssetAsync(assetPair.BaseAssetId);
+            var asset = _assetsReadModel.TryGetIfEnabled(assetPair.BaseAssetId);
             if (asset == null)
                 throw new InvalidOperationException($"Base asset '{assetPair.BaseAssetId}' for asset pair '{assetPair.Id}' not found.");
 
@@ -321,7 +325,7 @@ namespace Lykke.Service.HFT.Controllers
         [ProducesResponseType(typeof(ResponseModel), (int)HttpStatusCode.BadRequest)]
         public async Task<IActionResult> PlaceStopLimitOrder([FromBody] PlaceStopLimitOrderModel order)
         {
-            var assetPair = await _assetServiceDecorator.GetEnabledAssetPairAsync(order.AssetPairId);
+            var assetPair = _assetPairsReadModel.TryGetIfEnabled(order.AssetPairId);
             if (assetPair == null)
             {
                 return NotFound($"Assetpair {order.AssetPairId} could not be found or is disabled.");
@@ -332,7 +336,7 @@ namespace Lykke.Service.HFT.Controllers
                 return BadRequest(badRequestModel);
             }
 
-            var asset = await _assetServiceDecorator.GetEnabledAssetAsync(assetPair.BaseAssetId);
+            var asset = _assetsReadModel.TryGetIfEnabled(assetPair.BaseAssetId);
             if (asset == null)
                 throw new InvalidOperationException($"Base asset '{assetPair.BaseAssetId}' for asset pair '{assetPair.Id}' not found.");
 
@@ -415,7 +419,7 @@ namespace Lykke.Service.HFT.Controllers
         [ProducesResponseType(typeof(ResponseModel), (int)HttpStatusCode.BadRequest)]
         public async Task<IActionResult> PlaceBulkOrder([FromBody] PlaceBulkOrderModel order)
         {
-            var assetPair = await _assetServiceDecorator.GetEnabledAssetPairAsync(order.AssetPairId);
+            var assetPair = _assetPairsReadModel.TryGetIfEnabled(order.AssetPairId);
             if (assetPair == null)
             {
                 return NotFound($"Assetpair {order.AssetPairId} could not be found or is disabled.");
@@ -426,7 +430,7 @@ namespace Lykke.Service.HFT.Controllers
                 return BadRequest(badRequestModel);
             }
 
-            var asset = await _assetServiceDecorator.GetEnabledAssetAsync(assetPair.BaseAssetId);
+            var asset = _assetsReadModel.TryGetIfEnabled(assetPair.BaseAssetId);
             if (asset == null)
                 throw new InvalidOperationException($"Base asset '{assetPair.BaseAssetId}' for asset pair '{assetPair.Id}' not found.");
 
@@ -548,7 +552,7 @@ namespace Lykke.Service.HFT.Controllers
             AssetPair assetPair = null;
             if (!string.IsNullOrWhiteSpace(assetPairId))
             {
-                assetPair = await _assetServiceDecorator.GetEnabledAssetPairAsync(assetPairId);
+                assetPair = _assetPairsReadModel.TryGetIfEnabled(assetPairId);
                 if (assetPair == null)
                 {
                     return NotFound($"Assetpair '{assetPairId}' could not be found or is disabled.");

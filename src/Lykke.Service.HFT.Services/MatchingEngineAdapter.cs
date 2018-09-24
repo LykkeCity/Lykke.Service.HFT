@@ -1,22 +1,22 @@
-﻿using System;
-using System.Collections.Async;
-using System.Collections.Concurrent;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-using Common.Log;
+﻿using Common.Log;
 using Lykke.Common.Log;
 using Lykke.MatchingEngine.Connector.Abstractions.Services;
 using Lykke.MatchingEngine.Connector.Models.Api;
-using Lykke.Service.Assets.Client.Models;
+using Lykke.Service.Assets.Client.Models.v3;
 using Lykke.Service.HFT.Contracts;
 using Lykke.Service.HFT.Contracts.Orders;
 using Lykke.Service.HFT.Core;
 using Lykke.Service.HFT.Core.Domain;
 using Lykke.Service.HFT.Core.Repositories;
 using Lykke.Service.HFT.Core.Services;
-using OrderAction = Lykke.Service.HFT.Contracts.Orders.OrderAction;
+using System;
+using System.Collections.Async;
+using System.Collections.Concurrent;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
 using CancelMode = Lykke.Service.HFT.Contracts.Orders.CancelMode;
+using OrderAction = Lykke.Service.HFT.Contracts.Orders.OrderAction;
 
 namespace Lykke.Service.HFT.Services
 {
@@ -66,7 +66,7 @@ namespace Lykke.Service.HFT.Services
             return ConvertToApiModel(response.Status);
         }
 
-        public async Task<ResponseModel<MarketOrderResponseModel>> PlaceMarketOrderAsync(string clientId, AssetPair assetPair, OrderAction orderAction, double volume,
+        public async Task<ResponseModel<MarketOrderResponseModel>> PlaceMarketOrderAsync(string clientId, AssetPair assetPair, OrderAction orderAction, decimal volume,
             bool straight, double? reservedLimitVolume = null)
         {
             var order = new MarketOrderModel
@@ -76,7 +76,7 @@ namespace Lykke.Service.HFT.Services
                 ClientId = clientId,
                 ReservedLimitVolume = reservedLimitVolume,
                 Straight = straight,
-                Volume = Math.Abs(volume),
+                Volume = (double)Math.Abs(volume),
                 OrderAction = orderAction.ToMeOrderAction(),
                 Fees = await _feeCalculator.GetMarketOrderFees(clientId, assetPair, orderAction)
             };
@@ -92,8 +92,8 @@ namespace Lykke.Service.HFT.Services
             return ConvertToApiModel(response.Status, result);
         }
 
-        public async Task<ResponseModel<LimitOrderResponseModel>> PlaceLimitOrderAsync(string clientId, AssetPair assetPair, OrderAction orderAction, double volume,
-            double price, bool cancelPreviousOrders = false)
+        public async Task<ResponseModel<LimitOrderResponseModel>> PlaceLimitOrderAsync(string clientId, AssetPair assetPair, OrderAction orderAction, decimal volume,
+            decimal price, bool cancelPreviousOrders = false)
         {
             var requestId = await StoreLimitOrder(clientId, assetPair, volume, LimitOrderType.Default, x => x.Price = price);
 
@@ -102,9 +102,9 @@ namespace Lykke.Service.HFT.Services
                 Id = requestId.ToString(),
                 AssetPairId = assetPair.Id,
                 ClientId = clientId,
-                Price = price,
+                Price = (double)price,
                 CancelPreviousOrders = cancelPreviousOrders,
-                Volume = Math.Abs(volume),
+                Volume = (double)Math.Abs(volume),
                 OrderAction = orderAction.ToMeOrderAction(),
                 Fees = await _feeCalculator.GetLimitOrderFees(clientId, assetPair, orderAction)
             };
@@ -120,7 +120,8 @@ namespace Lykke.Service.HFT.Services
             return ConvertToApiModel(response.Status, result);
         }
 
-        private async Task<Guid> StoreLimitOrder(string clientId, AssetPair assetPair, double volume, LimitOrderType type, Action<LimitOrderState> setPrice)
+        private async Task<Guid> StoreLimitOrder(string clientId, AssetPair assetPair, decimal volume, 
+            LimitOrderType type, Action<LimitOrderState> setPrice)
         {
             var requestId = GetNextRequestId();
 
@@ -177,8 +178,9 @@ namespace Lykke.Service.HFT.Services
             return ConvertToApiModel(response.Status, result);
         }
 
-        public async Task<ResponseModel<LimitOrderResponseModel>> PlaceStopLimitOrderAsync(string clientId, AssetPair assetPair, OrderAction orderAction, double volume,
-            double? lowerPrice, double? lowerLimitPrice, double? upperPrice, double? upperLimitPrice, bool cancelPreviousOrders = false)
+        public async Task<ResponseModel<LimitOrderResponseModel>> PlaceStopLimitOrderAsync(
+            string clientId, AssetPair assetPair, OrderAction orderAction, decimal volume,
+            decimal? lowerPrice, decimal? lowerLimitPrice, decimal? upperPrice, decimal? upperLimitPrice, bool cancelPreviousOrders = false)
         {
             _log.Info($"SEND {assetPair.Id} {lowerPrice} {lowerLimitPrice} {upperPrice} {upperLimitPrice}");
 
@@ -195,12 +197,12 @@ namespace Lykke.Service.HFT.Services
                 Id = requestId.ToString(),
                 AssetPairId = assetPair.Id,
                 ClientId = clientId,
-                LowerPrice = lowerPrice,
-                LowerLimitPrice = lowerLimitPrice,
-                UpperPrice = upperPrice,
-                UpperLimitPrice = upperLimitPrice,
+                LowerPrice = (double?)lowerPrice,
+                LowerLimitPrice = (double?)lowerLimitPrice,
+                UpperPrice = (double?)upperPrice,
+                UpperLimitPrice = (double?)upperLimitPrice,
                 CancelPreviousOrders = cancelPreviousOrders,
-                Volume = Math.Abs(volume),
+                Volume = (double)Math.Abs(volume),
                 OrderAction = orderAction.ToMeOrderAction(),
                 Fees = await _feeCalculator.GetLimitOrderFees(clientId, assetPair, orderAction)
             };
@@ -224,8 +226,8 @@ namespace Lykke.Service.HFT.Services
             {
                 Id = id,
                 Error = status.Status != MeStatusCodes.Ok ? GetErrorCodeType(status.Status) : default(ErrorCodeType?),
-                Price = status.Price,
-                Volume = status.Volume
+                Price = (decimal)status.Price,
+                Volume = (decimal)status.Volume
             };
         }
 
@@ -237,8 +239,8 @@ namespace Lykke.Service.HFT.Services
             var model = new MultiOrderItemModel
             {
                 Id = itemId.ToString(),
-                Price = item.Price,
-                Volume = item.Volume,
+                Price = (double)item.Price,
+                Volume = (double)item.Volume,
                 OrderAction = item.OrderAction.ToMeOrderAction(),
                 Fee = fees.FirstOrDefault()
             };

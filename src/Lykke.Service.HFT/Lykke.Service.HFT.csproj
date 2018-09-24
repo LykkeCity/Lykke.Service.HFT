@@ -17,13 +17,15 @@
 
   <ItemGroup>
     <PackageReference Include="AspNetCoreRateLimit" Version="2.1.0" />
-    <PackageReference Include="Lykke.Cqrs" Version="5.0.1" />
+    <PackageReference Include="AutoMapper" Version="7.0.1" />
+    <PackageReference Include="Lykke.Cqrs" Version="5.2.0" />
     <PackageReference Include="Lykke.Http" Version="1.0.0" />
     <PackageReference Include="Lykke.MatchingEngineConnector" Version="8.3.0" />
-    <PackageReference Include="Lykke.Messaging" Version="6.0.1" />
+    <PackageReference Include="Lykke.Messaging" Version="6.2.0" />
     <PackageReference Include="Lykke.Messaging.RabbitMq" Version="2.1.0" />
-    <PackageReference Include="Lykke.Sdk" Version="5.3.0" />
-    <PackageReference Include="Lykke.Service.Balances.Client" Version="2.0.0" />
+    <PackageReference Include="Lykke.Sdk" Version="5.3.1" />
+    <PackageReference Include="Lykke.Service.Assets.Client" Version="5.0.3" />
+    <PackageReference Include="Lykke.Service.Balances.Client" Version="2.1.0" />
     <PackageReference Include="Lykke.Service.FeeCalculator.Client" Version="2.2.0" />
     <PackageReference Include="Lykke.Service.OperationsHistory.Client" Version="2.2.2" />
     <PackageReference Include="Lykke.Service.OperationsRepository.Contract" Version="1.0.13" />
@@ -34,6 +36,7 @@
     <PackageReference Include="Microsoft.AspNetCore.StaticFiles" Version="2.1.1" />
     <PackageReference Include="Microsoft.Extensions.Caching.Redis" Version="2.1.2" />
     <PackageReference Include="Microsoft.Extensions.Logging.Debug" Version="2.1.1" />
+    <PackageReference Include="protobuf-net" Version="2.4.0" />
   </ItemGroup>  
   
   <ItemGroup>

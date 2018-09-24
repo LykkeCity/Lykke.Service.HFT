@@ -1,7 +1,8 @@
-﻿using System;
+﻿using Lykke.Service.Assets.Client.Models.v3;
 using Lykke.Service.HFT.Contracts;
 using Lykke.Service.HFT.Core;
 using Lykke.Service.HFT.Core.Settings;
+using System;
 
 namespace Lykke.Service.HFT.Controllers
 {
@@ -24,7 +25,7 @@ namespace Lykke.Service.HFT.Controllers
         /// <summary>
         /// Validate requested asset pair.
         /// </summary>
-        public bool ValidateAssetPair(string assetPairId, Assets.Client.Models.AssetPair assetPair, out ResponseModel model)
+        public bool ValidateAssetPair(string assetPairId, AssetPair assetPair, out ResponseModel model)
         {
             if (assetPair == null)
             {
@@ -44,9 +45,9 @@ namespace Lykke.Service.HFT.Controllers
         /// <summary>
         /// Validate requested volume.
         /// </summary>
-        public bool ValidateVolume(double volume, double minVolume, string asset, out ResponseModel model)
+        public bool ValidateVolume(decimal volume, decimal minVolume, string asset, out ResponseModel model)
         {
-            if (Math.Abs(volume) < double.Epsilon || Math.Abs(volume) < minVolume)
+            if (Math.Abs(volume) < minVolume)
             {
                 model = ResponseModel.CreateFail(ErrorCodeType.Dust, $"The amount should be higher than minimal order size {minVolume} {asset}");
                 return false;
@@ -59,9 +60,9 @@ namespace Lykke.Service.HFT.Controllers
         /// <summary>
         /// Validate requested price.
         /// </summary>
-        public bool ValidatePrice(double price, out ResponseModel model, string name = "Price")
+        public bool ValidatePrice(decimal price, out ResponseModel model, string name = "Price")
         {
-            if (Math.Abs(price) < double.Epsilon)
+            if (price <= 0)
             {
                 model = ResponseModel.CreateInvalidFieldError(name, "Price must be greater than asset accuracy.");
                 return false;
@@ -74,8 +75,8 @@ namespace Lykke.Service.HFT.Controllers
         /// <summary>
         /// Validate requested asset.
         /// </summary>
-        public bool ValidateAsset(Assets.Client.Models.AssetPair assetPair, string assetId,
-            Assets.Client.Models.Asset baseAsset, Assets.Client.Models.Asset quotingAsset, out ResponseModel model)
+        public bool ValidateAsset(AssetPair assetPair, string assetId,
+            Asset baseAsset, Asset quotingAsset, out ResponseModel model)
         {
             if (assetId != baseAsset.Id && assetId != baseAsset.DisplayId && assetId != quotingAsset.Id && assetId != quotingAsset.DisplayId)
             {
@@ -87,7 +88,7 @@ namespace Lykke.Service.HFT.Controllers
             return true;
         }
 
-        private bool IsAssetPairDisabled(Assets.Client.Models.AssetPair assetPair)
+        private bool IsAssetPairDisabled(AssetPair assetPair)
         {
             return IsAssetDisabled(assetPair.BaseAssetId) || IsAssetDisabled(assetPair.QuotingAssetId);
         }

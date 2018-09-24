@@ -26,8 +26,8 @@ namespace Lykke.Service.HFT.Contracts.Orders
         /// The amount of the asset you want to buy or sell, should be at least the minimum volume of the asset pair.
         /// </summary>
         [Required]
-        [DoubleGreaterThanZero]
-        public double Volume { get; set; }
+        [DecimalGreaterThanZero]
+        public decimal Volume { get; set; }
 
         /// <summary>
         /// The lower limit price for this stop order.
@@ -35,8 +35,8 @@ namespace Lykke.Service.HFT.Contracts.Orders
         /// <remarks>
         /// When LowerLimitPrice is send then also LowerPrice is required y vice versa and at least lower or upper prices are required.
         /// </remarks>
-        [DoubleGreaterThanZero]
-        public double? LowerLimitPrice { get; set; }
+        [DecimalGreaterThanZero]
+        public decimal? LowerLimitPrice { get; set; }
 
         /// <summary>
         /// The lower price for this stop order.
@@ -44,8 +44,8 @@ namespace Lykke.Service.HFT.Contracts.Orders
         /// <remarks>
         /// When LowerLimitPrice is send then also LowerPrice is required y vice versa and at least lower or upper prices are required.
         /// </remarks>
-        [DoubleGreaterThanZero]
-        public double? LowerPrice { get; set; }
+        [DecimalGreaterThanZero]
+        public decimal? LowerPrice { get; set; }
 
         /// <summary>
         /// The upper limit price for this stop order.
@@ -53,8 +53,8 @@ namespace Lykke.Service.HFT.Contracts.Orders
         /// <remarks>
         /// When UpperLimitPrice is send then also UpperPrice is required y vice versa and at least lower or upper prices are required.
         /// </remarks>
-        [DoubleGreaterThanZero]
-        public double? UpperLimitPrice { get; set; }
+        [DecimalGreaterThanZero]
+        public decimal? UpperLimitPrice { get; set; }
 
         /// <summary>
         /// The upper price for this stop order.
@@ -62,7 +62,7 @@ namespace Lykke.Service.HFT.Contracts.Orders
         /// <remarks>
         /// When UpperLimitPrice is send then also UpperPrice is required y vice versa and at least lower or upper prices are required.
         /// </remarks>
-        [DoubleGreaterThanZero]
-        public double? UpperPrice { get; set; }
+        [DecimalGreaterThanZero]
+        public decimal? UpperPrice { get; set; }
     }
 }

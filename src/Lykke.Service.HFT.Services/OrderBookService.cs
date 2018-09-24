@@ -1,26 +1,27 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
+﻿using Lykke.Service.Assets.Client.ReadModels;
 using Lykke.Service.HFT.Contracts.OrderBook;
 using Lykke.Service.HFT.Core;
 using Lykke.Service.HFT.Core.Services;
 using Microsoft.Extensions.Caching.Distributed;
 using Newtonsoft.Json;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
 
 namespace Lykke.Service.HFT.Services
 {
     public class OrderBookService : IOrderBooksService
     {
         private readonly IDistributedCache _distributedCache;
-        private readonly IAssetServiceDecorator _assetServiceDecorator;
+        private readonly IAssetPairsReadModelRepository _assetPairsReadModel;
 
         public OrderBookService(
             IDistributedCache distributedCache,
-            IAssetServiceDecorator assetServiceDecorator)
+            IAssetPairsReadModelRepository assetPairsReadModel)
         {
             _distributedCache = distributedCache;
-            _assetServiceDecorator = assetServiceDecorator ?? throw new ArgumentNullException(nameof(assetServiceDecorator));
+            _assetPairsReadModel = assetPairsReadModel;
         }
 
         public async Task<ICollection<Guid>> GetOrderIdsAsync(IEnumerable<string> assetPairs)
@@ -39,7 +40,7 @@ namespace Lykke.Service.HFT.Services
 
         public async Task<IEnumerable<OrderBookModel>> GetAllAsync()
         {
-            var assetPairs = await _assetServiceDecorator.GetAllEnabledAssetPairsAsync();
+            var assetPairs = _assetPairsReadModel.GetAllEnabled();
             var results = await Task.WhenAll(assetPairs.Select(pair => GetAsync(pair.Id)));
 
             return results.SelectMany(x => x).Where(x => x != null).ToList();

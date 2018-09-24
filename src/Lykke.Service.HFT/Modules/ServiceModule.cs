@@ -1,5 +1,4 @@
-﻿using System;
-using Autofac;
+﻿using Autofac;
 using Autofac.Core;
 using AzureStorage;
 using AzureStorage.Tables;
@@ -22,6 +21,7 @@ using Lykke.SettingsReader;
 using Microsoft.Extensions.Caching.Distributed;
 using Microsoft.Extensions.Caching.Redis;
 using MongoDB.Driver;
+using System;
 
 namespace Lykke.Service.HFT.Modules
 {
@@ -65,13 +65,13 @@ namespace Lykke.Service.HFT.Modules
 
             RegisterOrderBooks(builder);
 
-            RegisterAssets(builder);
-
             RegisterOrderStates(builder);
 
             BindRabbitMq(builder, currentSettings.HighFrequencyTradingService);
 
-            RegisterPeriodicalHandlers(builder);
+#if !DEBUG
+            RegisterPeriodicalHandlers(builder); 
+#endif
         }
 
         private void RegisterApiKeyService(ContainerBuilder builder)
@@ -125,13 +125,6 @@ namespace Lykke.Service.HFT.Modules
                     new ResolvedParameter(
                         (pi, ctx) => pi.ParameterType == typeof(IDistributedCache),
                         (pi, ctx) => ctx.ResolveKeyed<IDistributedCache>(Constants.FinanceDataCacheInstance)))
-                .SingleInstance();
-        }
-
-        private void RegisterAssets(ContainerBuilder builder)
-        {
-            builder.RegisterType<AssetServiceDecorator>()
-                .As<IAssetServiceDecorator>()
                 .SingleInstance();
         }
 

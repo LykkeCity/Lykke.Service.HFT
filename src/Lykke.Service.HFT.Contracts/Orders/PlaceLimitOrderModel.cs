@@ -26,14 +26,14 @@ namespace Lykke.Service.HFT.Contracts.Orders
         /// The amount of the asset you want to buy or sell, should be at least the minimum volume of the asset pair.
         /// </summary>
         [Required]
-        [DoubleGreaterThanZero]
-        public double Volume { get; set; }
+        [DecimalGreaterThanZero]
+        public decimal Volume { get; set; }
 
         /// <summary>
         /// The price for which you want to buy or sell the asset.
         /// </summary>
         [Required]
-        [DoubleGreaterThanZero]
-        public double Price { get; set; }
+        [DecimalGreaterThanZero]
+        public decimal Price { get; set; }
     }
 }

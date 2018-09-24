@@ -22,11 +22,11 @@ namespace Lykke.Service.HFT.Contracts.Orders
         /// <summary>
         /// The volume of this order.
         /// </summary>
-        public double Volume { get; set; }
+        public decimal Volume { get; set; }
 
         /// <summary>
         /// The price of this order.
         /// </summary>
-        public double Price { get; set; }
+        public decimal Price { get; set; }
     }
 }

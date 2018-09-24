@@ -3,10 +3,10 @@
 namespace Lykke.Service.HFT.Contracts.Validators
 {
     /// <summary>
-    /// Checks if double value is greater then zero.
+    /// Checks if decimal value is greater then zero.
     /// </summary>
     /// <seealso cref="System.ComponentModel.DataAnnotations.ValidationAttribute" />
-    internal class DoubleGreaterThanZeroAttribute : ValidationAttribute
+    internal class DecimalGreaterThanZeroAttribute : ValidationAttribute
     {
         /// <inheritdoc />
         public override string FormatErrorMessage(string name)
@@ -21,7 +21,7 @@ namespace Lykke.Service.HFT.Contracts.Validators
                 return true;
             }
 
-            if (value as double? > double.Epsilon) return true;
+            if (value as decimal? > 0m) return true;
             return false;
         }
 

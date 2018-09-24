@@ -1,13 +1,13 @@
-﻿using System;
+﻿using Lykke.Service.Assets.Client.ReadModels;
+using Lykke.Service.HFT.Contracts.Assets;
+using Microsoft.AspNetCore.Mvc;
+using Swashbuckle.AspNetCore.SwaggerGen;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Net;
 using System.Threading.Tasks;
-using Lykke.Service.Assets.Client.Models;
-using Lykke.Service.HFT.Contracts.Assets;
-using Lykke.Service.HFT.Core.Services;
-using Microsoft.AspNetCore.Mvc;
-using Swashbuckle.AspNetCore.SwaggerGen;
+using Lykke.Service.Assets.Client.Models.v3;
 
 namespace Lykke.Service.HFT.Controllers
 {
@@ -16,16 +16,17 @@ namespace Lykke.Service.HFT.Controllers
     /// </summary>
     [Route("api/[controller]")]
     [ApiController]
+    [Obsolete("Use Lykke Wallet API v2 instead.")]
     public class AssetPairsController : Controller
     {
-        private readonly IAssetServiceDecorator _assetServiceDecorator;
+        private readonly IAssetPairsReadModelRepository _assetPairsReadModel;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="AssetPairsController"/> class.
         /// </summary>
-        public AssetPairsController(IAssetServiceDecorator assetServiceDecorator)
+        public AssetPairsController(IAssetPairsReadModelRepository assetPairsReadModel)
         {
-            _assetServiceDecorator = assetServiceDecorator ?? throw new ArgumentNullException(nameof(assetServiceDecorator));
+            _assetPairsReadModel = assetPairsReadModel;
         }
 
         /// <summary>
@@ -37,7 +38,7 @@ namespace Lykke.Service.HFT.Controllers
         [ProducesResponseType(typeof(IEnumerable<AssetPairModel>), (int)HttpStatusCode.OK)]
         public async Task<IActionResult> GetAssetPairs()
         {
-            var assetPairs = await _assetServiceDecorator.GetAllEnabledAssetPairsAsync();
+            var assetPairs = _assetPairsReadModel.GetAllEnabled();
             return Ok(assetPairs.Select(ToModel));
         }
 
@@ -53,7 +54,7 @@ namespace Lykke.Service.HFT.Controllers
         [ProducesResponseType((int)HttpStatusCode.NotFound)]
         public async Task<IActionResult> GetAssetPair(string id)
         {
-            var assetPair = await _assetServiceDecorator.GetEnabledAssetPairAsync(id);
+            var assetPair = _assetPairsReadModel.TryGetIfEnabled(id);
             if (assetPair == null)
             {
                 return NotFound();

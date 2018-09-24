@@ -1,16 +1,16 @@
-﻿using System.Collections.Generic;
-using System.Linq;
-using System.Net;
-using System.Threading.Tasks;
+﻿using Lykke.Service.Assets.Client.ReadModels;
 using Lykke.Service.HFT.Contracts;
 using Lykke.Service.HFT.Contracts.History;
-using Lykke.Service.HFT.Core.Services;
 using Lykke.Service.HFT.Helpers;
 using Lykke.Service.OperationsHistory.AutorestClient.Models;
 using Lykke.Service.OperationsHistory.Client;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Swashbuckle.AspNetCore.SwaggerGen;
+using System.Collections.Generic;
+using System.Linq;
+using System.Net;
+using System.Threading.Tasks;
 using FeeType = Lykke.Service.HFT.Contracts.History.FeeType;
 
 namespace Lykke.Service.HFT.Controllers
@@ -26,17 +26,17 @@ namespace Lykke.Service.HFT.Controllers
         private const int MaxPageSize = 1000;
         private const int MaxSkipSize = MaxPageSize * 1000;
         private readonly IOperationsHistoryClient _operationsHistoryClient;
-        private readonly IAssetServiceDecorator _assetServiceDecorator;
+        private readonly IAssetsReadModelRepository _assetsReadModel;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="HistoryController"/> class.
         /// </summary>
         public HistoryController(
             IOperationsHistoryClient operationsHistoryClient,
-            IAssetServiceDecorator assetServiceDecorator)
+            IAssetsReadModelRepository assetsReadModel)
         {
             _operationsHistoryClient = operationsHistoryClient;
-            _assetServiceDecorator = assetServiceDecorator;
+            _assetsReadModel = assetsReadModel;
         }
 
         /// <summary>
@@ -66,7 +66,7 @@ namespace Lykke.Service.HFT.Controllers
                 return BadRequest(new ResponseModel { Error = toSkip.Error });
             }
 
-            if (assetId != null && await _assetServiceDecorator.GetAssetAsync(assetId) == null)
+            if (assetId != null && _assetsReadModel.TryGetIfEnabled(assetId) == null)
             {
                 return NotFound();
             }
