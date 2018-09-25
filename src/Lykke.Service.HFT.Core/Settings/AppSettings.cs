@@ -1,5 +1,5 @@
 ﻿using Lykke.Sdk.Settings;
-using Lykke.Service.OperationsHistory.Client;
+using Lykke.Service.History.Client;
 
 namespace Lykke.Service.HFT.Core.Settings
 {
@@ -10,7 +10,7 @@ namespace Lykke.Service.HFT.Core.Settings
         public AssetsServiceClientSettings AssetsServiceClient { get; set; }
         public BalancesServiceClientSettings BalancesServiceClient { get; set; }
         public FeeCalculatorServiceClientSettings FeeCalculatorServiceClient { get; set; }
-        public OperationsHistoryServiceClientSettings OperationsHistoryServiceClient { get; set; }
+        public HistoryServiceClientSettings HistoryServiceClient { get; set; }
         public FeeSettings FeeSettings { get; set; }
     }
 }

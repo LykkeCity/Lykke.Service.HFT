@@ -2,11 +2,12 @@
 using Lykke.Service.HFT.Contracts;
 using Lykke.Service.HFT.Contracts.History;
 using Lykke.Service.HFT.Helpers;
-using Lykke.Service.OperationsHistory.AutorestClient.Models;
-using Lykke.Service.OperationsHistory.Client;
+using Lykke.Service.History.Client;
+using Lykke.Service.History.Contracts.Enums;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Swashbuckle.AspNetCore.SwaggerGen;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Net;
@@ -25,18 +26,17 @@ namespace Lykke.Service.HFT.Controllers
     {
         private const int MaxPageSize = 1000;
         private const int MaxSkipSize = MaxPageSize * 1000;
-        private readonly IOperationsHistoryClient _operationsHistoryClient;
         private readonly IAssetsReadModelRepository _assetsReadModel;
+        private readonly IHistoryClient _historyClient;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="HistoryController"/> class.
         /// </summary>
         public HistoryController(
-            IOperationsHistoryClient operationsHistoryClient,
-            IAssetsReadModelRepository assetsReadModel)
+            IAssetsReadModelRepository assetsReadModel, IHistoryClient historyClient)
         {
-            _operationsHistoryClient = operationsHistoryClient;
             _assetsReadModel = assetsReadModel;
+            _historyClient = historyClient;
         }
 
         /// <summary>
@@ -71,71 +71,45 @@ namespace Lykke.Service.HFT.Controllers
                 return NotFound();
             }
 
-            var walletId = User.GetUserId();
+            var walletId = Guid.Parse(User.GetUserId());
 
-            var response = await _operationsHistoryClient.GetByWalletId(
+            var response = await _historyClient.HistoryApi.GetHistoryByWalletAsync(
                 walletId: walletId,
-                operationType: null,
+                new[] { HistoryType.Trade },
                 assetId: assetId,
                 assetPairId: assetPairId,
-                take: toTake.Result,
-                skip: toSkip.Result);
+                offset: toSkip.Result,
+                limit: toTake.Result);
 
-            if (response.Error != null)
-            {
-                return BadRequest(ResponseModel.CreateFail(ErrorCodeType.Runtime, response.Error.Message));
-            }
-
-            var result = response.Records
-                .Where(x => x.Type == HistoryOperationType.Trade || x.Type == HistoryOperationType.LimitTrade)
+            var result = response
+                .Cast<History.Contracts.History.TradeModel>()
                 .Select(ToModel);
 
             return Ok(result);
         }
 
-        /// <summary>
-        /// Get trade details by id
-        /// </summary>
-        /// <param name="tradeId">Trade identifier</param>
-        /// <response code="200">The requested historic client trades.</response>
-        /// <response code="404">Specified asset or asset pair could not be found.</response>
-        [HttpGet("trades/{tradeId}")]
-        [SwaggerOperation(nameof(GetTrade))]
-        [ProducesResponseType(typeof(HistoryTradeModel), (int)HttpStatusCode.OK)]
-        [ProducesResponseType((int)HttpStatusCode.NotFound)]
-        public async Task<IActionResult> GetTrade(string tradeId)
-        {
-            if (tradeId == null)
-            {
-                return NotFound();
-            }
-
-            var walletId = User.GetUserId();
-
-            var response = await _operationsHistoryClient.GetByOperationId(walletId, tradeId);
-            if (response == null)
-            {
-                return NotFound();
-            }
-
-            return Ok(ToModel(response));
-        }
-
-        private static HistoryTradeModel ToModel(HistoryOperation src)
+        private static HistoryTradeModel ToModel(History.Contracts.History.TradeModel src)
         {
             return new HistoryTradeModel
             {
                 Id = src.Id,
-                DateTime = src.DateTime,
-                State = src.State.ConvertToEnum(TradeStatus.Unknown),
-                Amount = src.Amount,
-                Asset = src.Asset,
-                AssetPair = src.AssetPair,
+                OrderId = src.OrderId,
+                DateTime = src.Timestamp,
+                Timestamp = src.Timestamp,
+                Amount = src.BaseVolume,
+                BaseVolume = src.BaseVolume,
+                QuotingVolume = src.QuotingVolume,
+                Asset = src.BaseAssetId,
+                BaseAssetId = src.BaseAssetId,
+                QuotingAssetId = src.QuotingAssetId,
+                AssetPair = src.AssetPairId,
+                AssetPairId = src.AssetPairId,
                 Price = src.Price,
                 Fee = new FeeModel
                 {
                     Amount = src.FeeSize,
-                    Type = src.FeeType.ConvertToEnum(FeeType.Unknown)
+                    Type = src.FeeSize.HasValue ? FeeType.Absolute : FeeType.Unknown,
+                    FeeAssetId = src.FeeAssetId
                 }
             };
         }

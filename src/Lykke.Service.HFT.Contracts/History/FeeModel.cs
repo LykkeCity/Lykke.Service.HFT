@@ -1,4 +1,5 @@
-﻿using JetBrains.Annotations;
+﻿using System;
+using JetBrains.Annotations;
 
 namespace Lykke.Service.HFT.Contracts.History
 {
@@ -11,11 +12,17 @@ namespace Lykke.Service.HFT.Contracts.History
         /// <summary>
         /// The fee amount.
         /// </summary>
-        public double Amount { get; set; }
+        public decimal? Amount { get; set; }
 
         /// <summary>
         /// The fee type.
         /// </summary>
+        [Obsolete("Deprecated")]
         public FeeType Type { get; set; }
+
+        /// <summary>
+        /// Asset that was used for fee.
+        /// </summary>
+        public string FeeAssetId { get; set; }
     }
 }

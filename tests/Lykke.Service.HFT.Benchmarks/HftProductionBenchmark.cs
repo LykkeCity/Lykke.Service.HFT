@@ -126,7 +126,7 @@ namespace Lykke.Service.HFT.Benchmarks
         public async Task GetTrade()
         {
             var client = GetClient<IHistoryApi>();
-            var result = await client.GetTrade(GetRandomItem(_trades).Id);
+            var result = await client.GetTrade(GetRandomItem(_trades).Id.ToString());
             result.Should().NotBeNull();
         }
 

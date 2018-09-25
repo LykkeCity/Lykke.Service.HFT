@@ -1,4 +1,5 @@
 using Common;
+using Lykke.Service.Assets.Client.Models.v3;
 using Lykke.Service.Assets.Client.ReadModels;
 using Lykke.Service.HFT.Contracts;
 using Lykke.Service.HFT.Contracts.Orders;
@@ -14,7 +15,6 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Net;
 using System.Threading.Tasks;
-using Lykke.Service.Assets.Client.Models.v3;
 
 namespace Lykke.Service.HFT.Controllers
 {
@@ -41,8 +41,8 @@ namespace Lykke.Service.HFT.Controllers
             IMatchingEngineAdapter frequencyTradingService,
             ILimitOrderStateRepository orderStateCache,
             ILimitOrderStateArchive orderStateArchive,
-            RequestValidator requestValidator, 
-            IAssetPairsReadModelRepository assetPairsReadModel, 
+            RequestValidator requestValidator,
+            IAssetPairsReadModelRepository assetPairsReadModel,
             IAssetsReadModelRepository assetsReadModel)
         {
             _matchingEngineAdapter = frequencyTradingService ?? throw new ArgumentNullException(nameof(frequencyTradingService));
