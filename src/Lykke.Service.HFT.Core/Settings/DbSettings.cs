@@ -9,8 +9,5 @@ namespace Lykke.Service.HFT.Core.Settings
 
         [MongoCheck]
         public string OrderStateConnString { get; set; }
-
-        [AzureTableCheck]
-        public string OrdersArchiveConnString { get; set; }
     }
 }

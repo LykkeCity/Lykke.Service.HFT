@@ -1,9 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
-using System.Threading.Tasks;
-using BenchmarkDotNet.Attributes;
+﻿using BenchmarkDotNet.Attributes;
 using FluentAssertions;
 using Lykke.HttpClientGenerator;
 using Lykke.Service.HFT.Client;
@@ -11,6 +6,11 @@ using Lykke.Service.HFT.Contracts.Assets;
 using Lykke.Service.HFT.Contracts.History;
 using Lykke.Service.HFT.Contracts.Orders;
 using Newtonsoft.Json;
+using System;
+using System.Collections.Generic;
+using System.IO;
+using System.Linq;
+using System.Threading.Tasks;
 
 namespace Lykke.Service.HFT.Benchmarks
 {
@@ -88,14 +88,6 @@ namespace Lykke.Service.HFT.Benchmarks
         {
             var index = _random.Next(0, items.Count - 1);
             return items.ElementAt(index);
-        }
-
-        [Benchmark]
-        public async Task IsAlive()
-        {
-            var client = GetClient<IHighFrequencyTradingApi>();
-            var result = await client.GetIsAliveDetails().TryExecute();
-            result.Should().NotBeNull();
         }
 
         [Benchmark]
@@ -310,7 +302,7 @@ namespace Lykke.Service.HFT.Benchmarks
                 var saved = await client.GetOrder(orderId);
 
                 saved.AssetPairId.Should().Be(order.AssetPairId);
-                saved.Type.Should().Be(LimitOrderType.Stop);
+                saved.Type.Should().Be(OrderType.StopLimit);
                 saved.LowerLimitPrice.Should().Be(order.LowerLimitPrice);
                 saved.LowerPrice.Should().Be(order.LowerPrice);
                 saved.UpperPrice.Should().Be(order.UpperPrice);
@@ -374,7 +366,7 @@ namespace Lykke.Service.HFT.Benchmarks
             foreach (var item in result.Statuses)
             {
                 var current = await client.GetOrder(item.Id);
-                current.Status.Should().Be(OrderStatus.InOrderBook);
+                current.Status.Should().Be(OrderStatus.Placed);
             }
         }
     }

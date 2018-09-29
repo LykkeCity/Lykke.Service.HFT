@@ -1,12 +1,14 @@
 using Common;
+using JetBrains.Annotations;
 using Lykke.Service.Assets.Client.Models.v3;
 using Lykke.Service.Assets.Client.ReadModels;
 using Lykke.Service.HFT.Contracts;
 using Lykke.Service.HFT.Contracts.Orders;
 using Lykke.Service.HFT.Core.Domain;
-using Lykke.Service.HFT.Core.Repositories;
 using Lykke.Service.HFT.Core.Services;
 using Lykke.Service.HFT.Helpers;
+using Lykke.Service.History.Client;
+using Lykke.Service.History.Contracts.Orders;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Swashbuckle.AspNetCore.SwaggerGen;
@@ -15,6 +17,8 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Net;
 using System.Threading.Tasks;
+using OrderStatus = Lykke.Service.HFT.Contracts.Orders.OrderStatus;
+using OrderType = Lykke.Service.HFT.Contracts.Orders.OrderType;
 
 namespace Lykke.Service.HFT.Controllers
 {
@@ -29,28 +33,25 @@ namespace Lykke.Service.HFT.Controllers
         private const int MaxPageSize = 500;
         private readonly RequestValidator _requestValidator;
         private readonly IMatchingEngineAdapter _matchingEngineAdapter;
-        private readonly ILimitOrderStateRepository _orderStateCache;
-        private readonly ILimitOrderStateArchive _orderStateArchive;
         private readonly IAssetPairsReadModelRepository _assetPairsReadModel;
         private readonly IAssetsReadModelRepository _assetsReadModel;
+        private readonly IHistoryClient _historyClient;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="OrdersController"/> class.
         /// </summary>
         public OrdersController(
             IMatchingEngineAdapter frequencyTradingService,
-            ILimitOrderStateRepository orderStateCache,
-            ILimitOrderStateArchive orderStateArchive,
             RequestValidator requestValidator,
             IAssetPairsReadModelRepository assetPairsReadModel,
-            IAssetsReadModelRepository assetsReadModel)
+            IAssetsReadModelRepository assetsReadModel,
+            [NotNull] IHistoryClient historyClient)
         {
             _matchingEngineAdapter = frequencyTradingService ?? throw new ArgumentNullException(nameof(frequencyTradingService));
-            _orderStateCache = orderStateCache ?? throw new ArgumentNullException(nameof(orderStateCache));
-            _orderStateArchive = orderStateArchive ?? throw new ArgumentNullException(nameof(orderStateArchive));
             _requestValidator = requestValidator ?? throw new ArgumentNullException(nameof(requestValidator));
             _assetPairsReadModel = assetPairsReadModel;
             _assetsReadModel = assetsReadModel;
+            _historyClient = historyClient ?? throw new ArgumentNullException(nameof(historyClient));
         }
 
         /// <summary>
@@ -58,12 +59,13 @@ namespace Lykke.Service.HFT.Controllers
         /// </summary>
         /// <param name="status">Order status</param>
         /// <param name="take">The amount of orders to take, default 100; max 500.</param>
+        /// <param name="orderType">The type of orders.</param>
         /// <response code="200">The latest client orders.</response>
         [HttpGet]
         [SwaggerOperation(nameof(GetOrders))]
         [ProducesResponseType(typeof(IEnumerable<LimitOrderStateModel>), (int)HttpStatusCode.OK)]
         [ProducesResponseType((int)HttpStatusCode.BadRequest)]
-        public async Task<IActionResult> GetOrders(OrderStatusQuery? status = null, int? take = 100)
+        public async Task<IActionResult> GetOrders(OrderStatusQuery? status = null, int? take = 100, OrderType orderType = OrderType.Unknown)
         {
             var toTake = take.ValidateAndGetValue(nameof(take), MaxPageSize, 100);
             if (toTake.Error != null)
@@ -76,54 +78,77 @@ namespace Lykke.Service.HFT.Controllers
                 status = OrderStatusQuery.All;
             }
 
-            var clientId = User.GetUserId();
+            var walletId = Guid.Parse(User.GetUserId());
+            var orderTypes = orderType == OrderType.Unknown
+                ? new History.Contracts.Enums.OrderType[0]
+                : new[] { (History.Contracts.Enums.OrderType)orderType };
 
-            var states = new List<OrderStatus>();
+            IEnumerable<OrderModel> orders = null;
             switch (status)
             {
                 case OrderStatusQuery.All:
+                    orders = await _historyClient.OrdersApi.GetOrdersByWalletAsync(
+                        walletId,
+                        new History.Contracts.Enums.OrderStatus[0],
+                        orderTypes,
+                        0,
+                        toTake.Result);
                     break;
                 case OrderStatusQuery.Open:
-                    states.AddRange(new[]
-                    {
-                        OrderStatus.Pending,
-                        OrderStatus.InOrderBook,
-                        OrderStatus.Processing
-                    });
+                    orders = await _historyClient.OrdersApi.GetActiveOrdersByWalletAsync(walletId, 0, toTake.Result);
                     break;
                 case OrderStatusQuery.InOrderBook:
-                    states.Add(OrderStatus.InOrderBook);
+                    orders = await _historyClient.OrdersApi.GetOrdersByWalletAsync(
+                        walletId,
+                        new[] { History.Contracts.Enums.OrderStatus.Placed },
+                        orderTypes,
+                        0,
+                        toTake.Result);
                     break;
                 case OrderStatusQuery.Processing:
-                    states.Add(OrderStatus.Processing);
+                    orders = await _historyClient.OrdersApi.GetOrdersByWalletAsync(
+                        walletId,
+                        new[] { History.Contracts.Enums.OrderStatus.PartiallyMatched },
+                        orderTypes,
+                        0,
+                        toTake.Result);
                     break;
                 case OrderStatusQuery.Matched:
-                    states.Add(OrderStatus.Matched);
+                    orders = await _historyClient.OrdersApi.GetOrdersByWalletAsync(
+                        walletId,
+                        new[] { History.Contracts.Enums.OrderStatus.Matched },
+                        orderTypes,
+                        0,
+                        toTake.Result);
                     break;
                 case OrderStatusQuery.Replaced:
-                    states.Add(OrderStatus.Replaced);
+                    orders = await _historyClient.OrdersApi.GetOrdersByWalletAsync(
+                        walletId,
+                        new[] { History.Contracts.Enums.OrderStatus.Replaced },
+                        orderTypes,
+                        0,
+                        toTake.Result);
                     break;
                 case OrderStatusQuery.Cancelled:
-                    states.Add(OrderStatus.Cancelled);
+                    orders = await _historyClient.OrdersApi.GetOrdersByWalletAsync(
+                        walletId,
+                        new[] { History.Contracts.Enums.OrderStatus.Cancelled },
+                        orderTypes,
+                        0,
+                        toTake.Result);
                     break;
                 case OrderStatusQuery.Rejected:
-                    states = Enum.GetValues(typeof(OrderStatus))
-                        .Cast<OrderStatus>()
-                        .Except(new[]
-                        {
-                            OrderStatus.Pending,
-                            OrderStatus.InOrderBook,
-                            OrderStatus.Processing,
-                            OrderStatus.Matched,
-                            OrderStatus.Cancelled
-                        })
-                        .ToList();
+                    orders = await _historyClient.OrdersApi.GetOrdersByWalletAsync(
+                        walletId,
+                        new[] { History.Contracts.Enums.OrderStatus.Rejected },
+                        orderTypes,
+                        0,
+                        toTake.Result);
                     break;
             }
 
-            var result = await _orderStateCache.GetOrdersByStatus(clientId, states, toTake.Result);
 
-            return Ok(result.Select(ToModel));
+            return Ok(orders.Select(ToModel));
         }
 
 
@@ -144,17 +169,7 @@ namespace Lykke.Service.HFT.Controllers
                 return NotFound();
             }
 
-            var order = await _orderStateCache.Get(id) as ILimitOrderState;
-
-            if (order == null)
-            {
-                var clientId = User.GetUserId();
-                order = await _orderStateArchive.GetAsync(clientId, id);
-                if (order == null)
-                {
-                    return NotFound();
-                }
-            }
+            var order = await _historyClient.OrdersApi.GetOrderAsync(id);
 
             return Ok(ToModel(order));
         }
@@ -220,9 +235,9 @@ namespace Lykke.Service.HFT.Controllers
                 return BadRequest(badRequestModel);
             }
 
-            var clientId = User.GetUserId();
+            var walletId = User.GetUserId();
             var response = await _matchingEngineAdapter.PlaceMarketOrderAsync(
-                clientId: clientId,
+                clientId: walletId,
                 assetPair: assetPair,
                 orderAction: order.OrderAction,
                 volume: volume,
@@ -299,9 +314,9 @@ namespace Lykke.Service.HFT.Controllers
                 return BadRequest(badRequestModel);
             }
 
-            var clientId = User.GetUserId();
+            var walletId = User.GetUserId();
             var response = await _matchingEngineAdapter.PlaceLimitOrderAsync(
-                clientId: clientId,
+                clientId: walletId,
                 assetPair: assetPair,
                 orderAction: order.OrderAction,
                 volume: volume,
@@ -390,9 +405,9 @@ namespace Lykke.Service.HFT.Controllers
                 return BadRequest(badRequestModel);
             }
 
-            var clientId = User.GetUserId();
+            var walletId = User.GetUserId();
             var response = await _matchingEngineAdapter.PlaceStopLimitOrderAsync(
-                clientId: clientId,
+                clientId: walletId,
                 assetPair: assetPair,
                 orderAction: order.OrderAction,
                 volume: volume,
@@ -454,9 +469,9 @@ namespace Lykke.Service.HFT.Controllers
                 item.Volume = volume;
             }
 
-            var clientId = User.GetUserId();
+            var walletId = User.GetUserId();
             var response = await _matchingEngineAdapter.PlaceBulkLimitOrderAsync(
-                clientId: clientId,
+                clientId: walletId,
                 assetPair: assetPair,
                 items: items,
                 cancelPrevious: order.CancelPreviousOrders,
@@ -502,28 +517,21 @@ namespace Lykke.Service.HFT.Controllers
                 return NotFound();
             }
 
-            var clientId = User.GetUserId();
+            var walletId = Guid.Parse(User.GetUserId());
 
-            var order = await _orderStateCache.Get(id) as ILimitOrderState;
+            var order = await _historyClient.OrdersApi.GetOrderAsync(id);
             if (order == null)
             {
-                order = await _orderStateArchive.GetAsync(clientId, id);
-                if (order == null)
-                {
-                    return NotFound();
-                }
+                return NotFound();
             }
-            if (order.ClientId != clientId)
+            if (order.WalletId != walletId)
             {
                 return Forbid();
             }
 
-            if (order.Status == OrderStatus.Cancelled || order.Status == OrderStatus.Replaced)
-            {
-                return Ok();
-            }
-            // if rejected, do nothing
-            if (order.Status.IsRejected())
+            if (order.Status == History.Contracts.Enums.OrderStatus.Cancelled
+                || order.Status == History.Contracts.Enums.OrderStatus.Replaced
+                || order.Status == History.Contracts.Enums.OrderStatus.Rejected)
             {
                 return Ok();
             }
@@ -582,19 +590,19 @@ namespace Lykke.Service.HFT.Controllers
             return Ok();
         }
 
-        private static LimitOrderStateModel ToModel(ILimitOrderState order)
+        private static LimitOrderStateModel ToModel(OrderModel order)
         {
             return new LimitOrderStateModel
             {
                 Id = order.Id,
                 AssetPairId = order.AssetPairId,
-                CreatedAt = order.CreatedAt,
-                LastMatchTime = order.LastMatchTime,
+                CreatedAt = order.CreateDt,
+                LastMatchTime = order.MatchDt,
                 Price = order.Price,
                 RemainingVolume = order.RemainingVolume,
-                Status = order.Status,
+                Status = (OrderStatus)order.Status,
                 Volume = order.Volume,
-                Type = (LimitOrderType)order.Type,
+                Type = (OrderType)order.Type,
                 LowerPrice = order.LowerPrice,
                 LowerLimitPrice = order.LowerLimitPrice,
                 UpperPrice = order.UpperPrice,

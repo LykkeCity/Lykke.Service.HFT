@@ -1,7 +1,6 @@
 ﻿using System;
-using Lykke.Service.HFT.Contracts.Orders;
 
-namespace Lykke.Service.HFT.Contracts.Events
+namespace Lykke.Service.HFT.Wamp.Events
 {
     /// <summary>
     /// Limit order update event order contract class.
@@ -17,7 +16,7 @@ namespace Lykke.Service.HFT.Contracts.Events
         /// <summary>
         /// The order status.
         /// </summary>
-        public OrderStatus Status { get; set; }
+        public string Status { get; set; }
 
         /// <summary>
         /// The order asset-pair.

@@ -5,8 +5,6 @@ using Lykke.MatchingEngine.Connector.Models.Api;
 using Lykke.Service.Assets.Client.Models.v3;
 using Lykke.Service.HFT.Contracts;
 using Lykke.Service.HFT.Contracts.Orders;
-using Lykke.Service.HFT.Core.Domain;
-using Lykke.Service.HFT.Core.Repositories;
 using Lykke.Service.HFT.Core.Services;
 using System;
 using System.Collections.Async;
@@ -23,16 +21,13 @@ namespace Lykke.Service.HFT.Services
     {
         private readonly ILog _log;
         private readonly IMatchingEngineClient _matchingEngineClient;
-        private readonly ILimitOrderStateRepository _orderStateRepository;
         private readonly IFeeCalculatorAdapter _feeCalculator;
 
         public MatchingEngineAdapter(IMatchingEngineClient matchingEngineClient,
-            ILimitOrderStateRepository orderStateRepository,
             IFeeCalculatorAdapter feeCalculator,
             ILogFactory logFactory)
         {
             _matchingEngineClient = matchingEngineClient ?? throw new ArgumentNullException(nameof(matchingEngineClient));
-            _orderStateRepository = orderStateRepository ?? throw new ArgumentNullException(nameof(orderStateRepository));
             _feeCalculator = feeCalculator ?? throw new ArgumentNullException(nameof(feeCalculator));
 
             if (logFactory == null)
@@ -94,7 +89,7 @@ namespace Lykke.Service.HFT.Services
         public async Task<ResponseModel<LimitOrderResponseModel>> PlaceLimitOrderAsync(string clientId, AssetPair assetPair, OrderAction orderAction, decimal volume,
             decimal price, bool cancelPreviousOrders = false)
         {
-            var requestId = await StoreLimitOrder(clientId, assetPair, volume, LimitOrderType.Default, x => x.Price = price);
+            var requestId = GetNextRequestId();
 
             var order = new LimitOrderModel
             {
@@ -117,26 +112,6 @@ namespace Lykke.Service.HFT.Services
             };
 
             return ConvertToApiModel(response.Status, result);
-        }
-
-        private async Task<Guid> StoreLimitOrder(string clientId, AssetPair assetPair, decimal volume, 
-            LimitOrderType type, Action<LimitOrderState> setPrice)
-        {
-            var requestId = GetNextRequestId();
-
-            var order = new LimitOrderState
-            {
-                Id = requestId,
-                ClientId = clientId,
-                AssetPairId = assetPair.Id,
-                Volume = volume,
-                CreatedAt = DateTime.UtcNow,
-                Type = (int)type
-            };
-            setPrice(order);
-
-            await _orderStateRepository.Add(order);
-            return requestId;
         }
 
         public async Task<ResponseModel<BulkOrderResponseModel>> PlaceBulkLimitOrderAsync(string clientId, AssetPair assetPair, IEnumerable<BulkOrderItemModel> items, bool cancelPrevious, CancelMode? cancelMode)
@@ -181,15 +156,7 @@ namespace Lykke.Service.HFT.Services
             string clientId, AssetPair assetPair, OrderAction orderAction, decimal volume,
             decimal? lowerPrice, decimal? lowerLimitPrice, decimal? upperPrice, decimal? upperLimitPrice, bool cancelPreviousOrders = false)
         {
-            _log.Info($"SEND {assetPair.Id} {lowerPrice} {lowerLimitPrice} {upperPrice} {upperLimitPrice}");
-
-            var requestId = await StoreLimitOrder(clientId, assetPair, volume, LimitOrderType.Stop, x =>
-                {
-                    x.LowerPrice = lowerPrice;
-                    x.LowerLimitPrice = lowerLimitPrice;
-                    x.UpperPrice = upperPrice;
-                    x.UpperLimitPrice = upperLimitPrice;
-                });
+            var requestId = GetNextRequestId();
 
             var order = new StopLimitOrderModel
             {
@@ -232,12 +199,12 @@ namespace Lykke.Service.HFT.Services
 
         private async Task<MultiOrderItemModel> ToMultiOrderItemModel(string clientId, AssetPair assetPair, BulkOrderItemModel item)
         {
-            var itemId = await StoreLimitOrder(clientId, assetPair, item.Volume, LimitOrderType.Default, x => x.Price = item.Price);
+            var requestId = GetNextRequestId();
             var fees = await _feeCalculator.GetLimitOrderFees(clientId, assetPair, item.OrderAction);
 
             var model = new MultiOrderItemModel
             {
-                Id = itemId.ToString(),
+                Id = requestId.ToString(),
                 Price = (double)item.Price,
                 Volume = (double)item.Volume,
                 OrderAction = item.OrderAction.ToMeOrderAction(),

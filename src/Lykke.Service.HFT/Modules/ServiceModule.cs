@@ -1,10 +1,6 @@
 ﻿using Autofac;
 using Autofac.Core;
-using AzureStorage;
-using AzureStorage.Tables;
-using Lykke.Common.Log;
 using Lykke.Sdk;
-using Lykke.Service.HFT.AzureRepositories;
 using Lykke.Service.HFT.Controllers;
 using Lykke.Service.HFT.Core;
 using Lykke.Service.HFT.Core.Domain;
@@ -13,15 +9,11 @@ using Lykke.Service.HFT.Core.Services;
 using Lykke.Service.HFT.Core.Services.ApiKey;
 using Lykke.Service.HFT.Core.Settings;
 using Lykke.Service.HFT.MongoRepositories;
-using Lykke.Service.HFT.PeriodicalHandlers;
 using Lykke.Service.HFT.Services;
-using Lykke.Service.HFT.Services.Consumers;
 using Lykke.Service.HFT.Services.Fees;
 using Lykke.SettingsReader;
 using Microsoft.Extensions.Caching.Distributed;
 using Microsoft.Extensions.Caching.Redis;
-using MongoDB.Driver;
-using System;
 
 namespace Lykke.Service.HFT.Modules
 {
@@ -64,14 +56,6 @@ namespace Lykke.Service.HFT.Modules
             RegisterFeeServices(builder);
 
             RegisterOrderBooks(builder);
-
-            RegisterOrderStates(builder);
-
-            BindRabbitMq(builder, currentSettings.HighFrequencyTradingService);
-
-#if !DEBUG
-            RegisterPeriodicalHandlers(builder); 
-#endif
         }
 
         private void RegisterApiKeyService(ContainerBuilder builder)
@@ -125,57 +109,6 @@ namespace Lykke.Service.HFT.Modules
                     new ResolvedParameter(
                         (pi, ctx) => pi.ParameterType == typeof(IDistributedCache),
                         (pi, ctx) => ctx.ResolveKeyed<IDistributedCache>(Constants.FinanceDataCacheInstance)))
-                .SingleInstance();
-        }
-
-        private void BindRabbitMq(ContainerBuilder builder, HighFrequencyTradingSettings settings)
-        {
-            builder.RegisterType<LimitOrdersConsumer>()
-                .WithParameter(TypedParameter.From(settings.LimitOrdersFeed))
-                .SingleInstance().AutoActivate();
-        }
-
-        private void RegisterOrderStates(ContainerBuilder builder)
-        {
-            var mongoUrl = new MongoUrl(_settings.CurrentValue.HighFrequencyTradingService.Db.OrderStateConnString);
-            builder.RegisterType<LimitOrderStateRepository>()
-                .As<IRepository<LimitOrderState>>()
-                .As<ILimitOrderStateRepository>()
-                .WithParameter(new ResolvedParameter(
-                    (pi, ctx) => pi.ParameterType == typeof(IMongoDatabase),
-                    (pi, ctx) => new MongoClient(mongoUrl).GetDatabase(mongoUrl.DatabaseName)))
-                .SingleInstance();
-
-            builder.RegisterType<LimitOrderStateArchive>()
-                .As<ILimitOrderStateArchive>()
-                .WithParameter(new ResolvedParameter(
-                    (pi, ctx) => pi.ParameterType == typeof(INoSQLTableStorage<LimitOrderStateEntity>),
-                    (pi, ctx) => AzureTableStorage<LimitOrderStateEntity>.Create(
-                        _settings.ConnectionString(x => x.HighFrequencyTradingService.Db.OrdersArchiveConnString),
-                        "HftOrderStateArchive",
-                        ctx.Resolve<ILogFactory>())))
-                .SingleInstance();
-        }
-
-        private void RegisterPeriodicalHandlers(ContainerBuilder builder)
-        {
-            builder.RegisterType<GhostOrdersRemover>()
-                .WithParameter(TypedParameter.From(TimeSpan.FromHours(4)))
-                .As<IStartable>()
-                .AutoActivate()
-                .SingleInstance();
-
-            builder.RegisterType<OrderStateArchiver>()
-                .WithParameter("checkInterval", TimeSpan.FromHours(12))
-                .WithParameter("activeOrdersWindow", TimeSpan.FromDays(30))
-                .As<IStartable>()
-                .AutoActivate()
-                .SingleInstance();
-
-            builder.RegisterType<PendingOrdersChecker>()
-                .WithParameter(TypedParameter.From(TimeSpan.FromMinutes(5)))
-                .As<IStartable>()
-                .AutoActivate()
                 .SingleInstance();
         }
 
