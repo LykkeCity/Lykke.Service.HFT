@@ -268,7 +268,7 @@ namespace Lykke.Service.HFT.Services
         {
             return status == MeStatusCodes.Ok
                 ? ResponseModel.CreateOk()
-                : CreateFail(x => ResponseModel.CreateFail(x, x.ToString()));
+                : ResponseModel.CreateFail(ErrorCodeType.Rejected, status.ToString());
         }
 
         private ResponseModel<T> ConvertToApiModel<T>(MeStatusCodes status, T result)
@@ -278,15 +278,9 @@ namespace Lykke.Service.HFT.Services
                 return ResponseModel<T>.CreateOk(result);
             }
 
-            var response = CreateFail(x => ResponseModel<T>.CreateFail(x, x.ToString()));
+            var response = ResponseModel<T>.CreateFail(ErrorCodeType.Rejected, status.ToString());
             response.Result = result;
             return response;
-        }
-
-        private T CreateFail<T>(Func<ErrorCodeType, T> creator)
-        {
-            var errorCode = ErrorCodeType.Rejected;
-            return creator(errorCode);
         }
     }
 }
