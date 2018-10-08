@@ -379,7 +379,7 @@ namespace Lykke.Service.HFT.Controllers
 
             if (new[] { lowerPrice, lowerLimitPrice, upperPrice, upperLimitPrice }.All(x => !x.HasValue))
             {
-                return BadRequest(ResponseModel.CreateFail(ErrorCodeType.InvalidPrice,
+                return BadRequest(ResponseModel.CreateFail(ErrorCodeType.Rejected,
                     "At least lower or upper prices are needed for a stop order."));
             }
 

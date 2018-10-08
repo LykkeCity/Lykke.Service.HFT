@@ -1,6 +1,5 @@
 ﻿using Lykke.Service.Assets.Client.Models.v3;
 using Lykke.Service.HFT.Contracts;
-using Lykke.Service.HFT.Core;
 using Lykke.Service.HFT.Core.Settings;
 using System;
 
@@ -29,7 +28,7 @@ namespace Lykke.Service.HFT.Controllers
         {
             if (assetPair == null)
             {
-                model = ResponseModel.CreateFail(ErrorCodeType.UnknownAsset, ErrorCodeType.UnknownAsset.GetErrorMessage());
+                model = ResponseModel.CreateInvalidFieldError("AssetPairId", $"AssetPair {assetPairId} is unknown");
                 return false;
             }
             if (IsAssetPairDisabled(assetPair))
@@ -49,7 +48,7 @@ namespace Lykke.Service.HFT.Controllers
         {
             if (Math.Abs(volume) < minVolume)
             {
-                model = ResponseModel.CreateFail(ErrorCodeType.Dust, $"The amount should be higher than minimal order size {minVolume} {asset}");
+                model = ResponseModel.CreateFail(ErrorCodeType.Rejected, $"The amount should be higher than minimal order size {minVolume} {asset}");
                 return false;
             }
 
