@@ -10,37 +10,70 @@ namespace Lykke.Service.HFT.Contracts.History
         /// <summary>
         /// The ID of the trade.
         /// </summary>
-        public string Id { get; set; }
+        public Guid Id { get; set; }
 
         /// <summary>
-        /// The time the trade was placed.
+        /// Related order Id.
         /// </summary>
+        public Guid OrderId { get; set; }
+
+        /// <summary>
+        /// The time the trade.
+        /// </summary>
+        [Obsolete("Use Timestamp instead")]
         public DateTime DateTime { get; set; }
+
+        /// <summary>
+        /// The time the trade.
+        /// </summary>
+        public DateTime Timestamp { get; set; }
 
         /// <summary>
         /// The current status of the trade.
         /// </summary>
-        public TradeStatus State { get; set; }
+        [Obsolete("Deprecated")]
+        public string State { get; set; }
 
         /// <summary>
         /// The trade amount.
         /// </summary>
-        public double Amount { get; set; }
+        [Obsolete("Use BaseVolume instead")]
+        public decimal Amount { get; set; }
+
+        public decimal BaseVolume { get; set; }
+        public decimal QuotingVolume { get; set; }
 
         /// <summary>
         /// The trade base asset.
         /// </summary>
+        [Obsolete("Use BaseAssetId instead")]
         public string Asset { get; set; }
+
+        /// <summary>
+        /// The trade base asset.
+        /// </summary>
+        public string BaseAssetId { get; set; }
+
+        /// <summary>
+        /// The trade quoting asset.
+        /// </summary>
+        public string QuotingAssetId { get; set; }
 
         /// <summary>
         /// The trading pair.
         /// </summary>
+        [Obsolete("Use AssetPairId instead")]
         public string AssetPair { get; set; }
+
+        /// <summary>
+        /// The trading pair.
+        /// </summary>
+        public string AssetPairId { get; set; }
 
         /// <summary>
         /// The trading price.
         /// </summary>
-        public double? Price { get; set; }
+        public decimal? Price { get; set; }
 
         /// <summary>
         /// The applied trading fee.

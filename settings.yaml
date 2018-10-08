@@ -81,9 +81,9 @@ MonitoringServiceClient:
     MonitoringServiceUrl:
         settings-key: MonitoringServiceUrl       
 
-OperationsHistoryServiceClient:
+HistoryServiceClient:
     ServiceUrl:
-        settings-key: OperationsHistoryServiceUrl
+        settings-key: HistoryServiceUrl
 
 SlackNotifications:
     AzureQueue:
