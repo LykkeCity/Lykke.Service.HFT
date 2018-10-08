@@ -5,7 +5,6 @@ using Lykke.MatchingEngine.Connector.Models.Api;
 using Lykke.Service.Assets.Client.Models.v3;
 using Lykke.Service.HFT.Contracts;
 using Lykke.Service.HFT.Contracts.Orders;
-using Lykke.Service.HFT.Core;
 using Lykke.Service.HFT.Core.Domain;
 using Lykke.Service.HFT.Core.Repositories;
 using Lykke.Service.HFT.Core.Services;
@@ -171,7 +170,7 @@ namespace Lykke.Service.HFT.Services
             var result = new BulkOrderResponseModel
             {
                 AssetPairId = assetPair.Id,
-                Error = response.Status != MeStatusCodes.Ok ? GetErrorCodeType(response.Status) : default(ErrorCodeType?),
+                Error = response.Status != MeStatusCodes.Ok ? ErrorCodeType.Rejected : default(ErrorCodeType?),
                 Statuses = response.Statuses?.Select(ToBulkOrderItemStatusModel).ToArray()
             };
 
@@ -225,7 +224,7 @@ namespace Lykke.Service.HFT.Services
             return new BulkOrderItemStatusModel
             {
                 Id = id,
-                Error = status.Status != MeStatusCodes.Ok ? GetErrorCodeType(status.Status) : default(ErrorCodeType?),
+                Error = status.Status != MeStatusCodes.Ok ? ErrorCodeType.Rejected : default(ErrorCodeType?),
                 Price = (decimal)status.Price,
                 Volume = (decimal)status.Volume
             };
@@ -269,7 +268,7 @@ namespace Lykke.Service.HFT.Services
         {
             return status == MeStatusCodes.Ok
                 ? ResponseModel.CreateOk()
-                : CreateFail(status, x => ResponseModel.CreateFail(x, x.GetErrorMessage()));
+                : ResponseModel.CreateFail(ErrorCodeType.Rejected, status.ToString());
         }
 
         private ResponseModel<T> ConvertToApiModel<T>(MeStatusCodes status, T result)
@@ -279,63 +278,9 @@ namespace Lykke.Service.HFT.Services
                 return ResponseModel<T>.CreateOk(result);
             }
 
-            var response = CreateFail(status, x => ResponseModel<T>.CreateFail(x, x.GetErrorMessage()));
+            var response = ResponseModel<T>.CreateFail(ErrorCodeType.Rejected, status.ToString());
             response.Result = result;
             return response;
-        }
-
-        private T CreateFail<T>(MeStatusCodes status, Func<ErrorCodeType, T> creator)
-        {
-            var errorCode = GetErrorCodeType(status);
-            return creator(errorCode);
-        }
-
-        private ErrorCodeType GetErrorCodeType(MeStatusCodes code)
-        {
-            switch (code)
-            {
-                case MeStatusCodes.Ok:
-                    throw new InvalidOperationException("Ok is not an error.");
-                case MeStatusCodes.LowBalance:
-                    return ErrorCodeType.LowBalance;
-                case MeStatusCodes.AlreadyProcessed:
-                    return ErrorCodeType.AlreadyProcessed;
-                case MeStatusCodes.UnknownAsset:
-                    return ErrorCodeType.UnknownAsset;
-                case MeStatusCodes.NoLiquidity:
-                    return ErrorCodeType.NoLiquidity;
-                case MeStatusCodes.NotEnoughFunds:
-                    return ErrorCodeType.NotEnoughFunds;
-                case MeStatusCodes.Dust:
-                    return ErrorCodeType.Dust;
-                case MeStatusCodes.ReservedVolumeHigherThanBalance:
-                    return ErrorCodeType.ReservedVolumeHigherThanBalance;
-                case MeStatusCodes.NotFound:
-                    return ErrorCodeType.NotFound;
-                case MeStatusCodes.BalanceLowerThanReserved:
-                    return ErrorCodeType.BalanceLowerThanReserved;
-                case MeStatusCodes.LeadToNegativeSpread:
-                    return ErrorCodeType.LeadToNegativeSpread;
-                case MeStatusCodes.TooSmallVolume:
-                    return ErrorCodeType.Dust;
-                case MeStatusCodes.InvalidFee:
-                    return ErrorCodeType.InvalidFee;
-                case MeStatusCodes.Duplicate:
-                    return ErrorCodeType.Duplicate;
-                case MeStatusCodes.Runtime:
-                    return ErrorCodeType.Runtime;
-                case MeStatusCodes.BadRequest:
-                    return ErrorCodeType.BadRequest;
-                case MeStatusCodes.InvalidPrice:
-                    return ErrorCodeType.InvalidPrice;
-                case MeStatusCodes.Replaced:
-                    return ErrorCodeType.Replaced;
-                case MeStatusCodes.NotFoundPrevious:
-                    return ErrorCodeType.NotFoundPrevious;
-                default:
-                    _log.Warning($"Unknown ME status code {code}", process: nameof(GetErrorCodeType));
-                    return ErrorCodeType.Runtime;
-            }
         }
     }
 }

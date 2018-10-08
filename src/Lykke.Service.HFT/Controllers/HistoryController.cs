@@ -24,18 +24,22 @@ namespace Lykke.Service.HFT.Controllers
     [ApiController]
     public class HistoryController : Controller
     {
-        private const int MaxPageSize = 1000;
-        private const int MaxSkipSize = MaxPageSize * 1000;
-        private readonly IAssetsReadModelRepository _assetsReadModel;
+        private const int MaxPageSize = 500;
+        private const int MaxSkipSize = 500;
         private readonly IHistoryClient _historyClient;
+        private readonly IAssetsReadModelRepository _assetsReadModel;
+        private readonly IAssetPairsReadModelRepository _assetPairsReadModel;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="HistoryController"/> class.
         /// </summary>
         public HistoryController(
-            IAssetsReadModelRepository assetsReadModel, IHistoryClient historyClient)
+            IHistoryClient historyClient,
+            IAssetsReadModelRepository assetsReadModel,
+            IAssetPairsReadModelRepository assetPairsReadModel)
         {
             _assetsReadModel = assetsReadModel;
+            _assetPairsReadModel = assetPairsReadModel;
             _historyClient = historyClient;
         }
 
@@ -67,6 +71,11 @@ namespace Lykke.Service.HFT.Controllers
             }
 
             if (assetId != null && _assetsReadModel.TryGetIfEnabled(assetId) == null)
+            {
+                return NotFound();
+            }
+
+            if (assetPairId != null && _assetPairsReadModel.TryGetIfEnabled(assetPairId) == null)
             {
                 return NotFound();
             }
