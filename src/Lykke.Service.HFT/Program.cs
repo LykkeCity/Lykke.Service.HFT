@@ -13,12 +13,10 @@ namespace Lykke.Service.HFT
         /// </summary>
         public static Task Main(string[] args)
         {
-            const int port = 5000;
-
 #if DEBUG
-            return LykkeStarter.Start<Startup>(true, port);
+            return LykkeStarter.Start<Startup>(true);
 #else
-            return LykkeStarter.Start<Startup>(true, port);
+            return LykkeStarter.Start<Startup>(false);
 #endif
         }
     }
