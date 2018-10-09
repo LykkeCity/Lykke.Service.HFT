@@ -1,4 +1,4 @@
-﻿namespace Lykke.Service.HFT.Contracts.Events
+﻿namespace Lykke.Service.HFT.Wamp.Events
 {
     /// <summary>
     /// Wamp real-time event when limit order is updated.

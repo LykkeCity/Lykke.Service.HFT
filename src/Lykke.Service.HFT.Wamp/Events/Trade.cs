@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace Lykke.Service.HFT.Contracts.Events
+namespace Lykke.Service.HFT.Wamp.Events
 {
     /// <summary>
     /// Limit order update event trade contract class.

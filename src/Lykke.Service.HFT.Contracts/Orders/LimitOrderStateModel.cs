@@ -52,7 +52,7 @@ namespace Lykke.Service.HFT.Contracts.Orders
         /// <summary>
         /// The type of limit order.
         /// </summary>
-        public LimitOrderType Type { get; set; }
+        public OrderType Type { get; set; }
 
         /// <summary>
         /// The lower limit price of the limit order.
