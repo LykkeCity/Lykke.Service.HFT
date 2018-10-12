@@ -32,6 +32,10 @@ HighFrequencyTradingService:
                 - Redis
         CacheExpirationPeriod:
             settings-key: HFT-DictionaryCacheExpirationPeriod
+        OrderBooksCacheInstance:
+            settings-key: OrderBooks-CacheInstance
+        OrderBooksCacheKeyPattern:
+            settings-key: OrderBooks-CacheKeyPattern
 
     LimitOrdersFeed:
         ConnectionString:

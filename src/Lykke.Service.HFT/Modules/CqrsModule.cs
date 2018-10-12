@@ -8,7 +8,6 @@ using Lykke.Messaging;
 using Lykke.Messaging.RabbitMq;
 using Lykke.Messaging.Serialization;
 using Lykke.Service.Assets.Client;
-using Lykke.Service.HFT.Core;
 using Lykke.Service.HFT.Core.Settings;
 using Lykke.Service.HFT.Services.Events;
 using Lykke.Service.HFT.Services.Projections;
@@ -55,7 +54,7 @@ namespace Lykke.Service.HFT.Modules
                 .WithParameter(
                     new ResolvedParameter(
                         (pi, ctx) => pi.ParameterType == typeof(IDistributedCache),
-                        (pi, ctx) => ctx.ResolveKeyed<IDistributedCache>(Constants.ApiKeyCacheInstance)));
+                        (pi, ctx) => ctx.ResolveKeyed<IDistributedCache>(_settings.Cache.ApiKeyCacheInstance)));
 
             builder.Register(ctx =>
             {
