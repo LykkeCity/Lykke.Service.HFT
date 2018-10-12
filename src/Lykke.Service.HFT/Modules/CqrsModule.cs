@@ -86,7 +86,7 @@ namespace Lykke.Service.HFT.Modules
                         typeof(ApiKeyUpdatedEvent))
                         .From("api-key").On(defaultRoute)
                         .WithProjection(typeof(ApiKeyProjection), "api-key")
-                    .WithAssetsReadModel()
+                    .WithAssetsReadModel(route: System.Environment.MachineName)
                 );
             })
             .As<ICqrsEngine>().SingleInstance();
