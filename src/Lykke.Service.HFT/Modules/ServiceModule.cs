@@ -2,7 +2,6 @@
 using Autofac.Core;
 using Lykke.Sdk;
 using Lykke.Service.HFT.Controllers;
-using Lykke.Service.HFT.Core;
 using Lykke.Service.HFT.Core.Domain;
 using Lykke.Service.HFT.Core.Repositories;
 using Lykke.Service.HFT.Core.Services;
@@ -60,13 +59,14 @@ namespace Lykke.Service.HFT.Modules
 
         private void RegisterApiKeyService(ContainerBuilder builder)
         {
-            RegisterRedisCache(builder, Constants.ApiKeyCacheInstance);
+            var instanceName = _settings.CurrentValue.HighFrequencyTradingService.Cache.ApiKeyCacheInstance;
+            RegisterRedisCache(builder, instanceName);
 
             builder.RegisterType<HftClientService>()
                 .WithParameter(
                     new ResolvedParameter(
                         (pi, ctx) => pi.ParameterType == typeof(IDistributedCache),
-                        (pi, ctx) => ctx.ResolveKeyed<IDistributedCache>(Constants.ApiKeyCacheInstance)))
+                        (pi, ctx) => ctx.ResolveKeyed<IDistributedCache>(instanceName)))
                 .As<IHftClientService>()
                 .SingleInstance();
 
@@ -79,10 +79,11 @@ namespace Lykke.Service.HFT.Modules
                 .SingleInstance();
 
             builder.RegisterType<ApiKeyCacheInitializer>()
+                .WithParameter(TypedParameter.From(instanceName))
                 .WithParameter(
                     new ResolvedParameter(
                         (pi, ctx) => pi.ParameterType == typeof(IDistributedCache),
-                        (pi, ctx) => ctx.ResolveKeyed<IDistributedCache>(Constants.ApiKeyCacheInstance)))
+                        (pi, ctx) => ctx.ResolveKeyed<IDistributedCache>(instanceName)))
                 .As<IApiKeyCacheInitializer>()
                 .SingleInstance();
 
@@ -101,14 +102,16 @@ namespace Lykke.Service.HFT.Modules
 
         private void RegisterOrderBooks(ContainerBuilder builder)
         {
-            RegisterRedisCache(builder, Constants.FinanceDataCacheInstance);
+            var instanceName = _settings.CurrentValue.HighFrequencyTradingService.Cache.OrderBooksCacheInstance;
+            RegisterRedisCache(builder, instanceName);
 
             builder.RegisterType<OrderBookService>()
                 .As<IOrderBooksService>()
+                .WithParameter(TypedParameter.From(_settings.CurrentValue.HighFrequencyTradingService.Cache.OrderBooksCacheKeyPattern))
                 .WithParameter(
                     new ResolvedParameter(
                         (pi, ctx) => pi.ParameterType == typeof(IDistributedCache),
-                        (pi, ctx) => ctx.ResolveKeyed<IDistributedCache>(Constants.FinanceDataCacheInstance)))
+                        (pi, ctx) => ctx.ResolveKeyed<IDistributedCache>(instanceName)))
                 .SingleInstance();
         }
 

@@ -1,6 +1,5 @@
 ﻿using Lykke.Service.Assets.Client.ReadModels;
 using Lykke.Service.HFT.Contracts.OrderBook;
-using Lykke.Service.HFT.Core;
 using Lykke.Service.HFT.Core.Services;
 using Microsoft.Extensions.Caching.Distributed;
 using Newtonsoft.Json;
@@ -15,13 +14,16 @@ namespace Lykke.Service.HFT.Services
     {
         private readonly IDistributedCache _distributedCache;
         private readonly IAssetPairsReadModelRepository _assetPairsReadModel;
+        private readonly string _orderBooksCacheKeyPattern;
 
         public OrderBookService(
             IDistributedCache distributedCache,
-            IAssetPairsReadModelRepository assetPairsReadModel)
+            IAssetPairsReadModelRepository assetPairsReadModel,
+            string orderBooksCacheKeyPattern)
         {
             _distributedCache = distributedCache;
             _assetPairsReadModel = assetPairsReadModel;
+            _orderBooksCacheKeyPattern = orderBooksCacheKeyPattern;
         }
 
         public async Task<ICollection<Guid>> GetOrderIdsAsync(IEnumerable<string> assetPairs)
@@ -58,7 +60,7 @@ namespace Lykke.Service.HFT.Services
 
         private async Task<OrderBookModel> GetOrderBook(string assetPair, bool buy)
         {
-            var orderBook = await _distributedCache.GetStringAsync(Constants.GetKeyForOrderBook(assetPair, buy));
+            var orderBook = await _distributedCache.GetStringAsync(GetKeyForOrderBook(assetPair, buy));
             return orderBook != null
                 ? JsonConvert.DeserializeObject<OrderBookModel>(orderBook)
                 : new OrderBookModel { AssetPair = assetPair, IsBuy = buy, Timestamp = DateTime.UtcNow };
@@ -66,7 +68,7 @@ namespace Lykke.Service.HFT.Services
 
         private async Task<IEnumerable<Guid>> GetOrderIds(string assetPairId, bool buy)
         {
-            var orderBook = await _distributedCache.GetStringAsync(Constants.GetKeyForOrderBook(assetPairId, buy));
+            var orderBook = await _distributedCache.GetStringAsync(GetKeyForOrderBook(assetPairId, buy));
             if (orderBook == null)
             {
                 return Enumerable.Empty<Guid>();
@@ -77,6 +79,11 @@ namespace Lykke.Service.HFT.Services
                 .Select(x => x.Id)
                 .Where(x => Guid.TryParse(x, out Guid _))
                 .Select(Guid.Parse);
+        }
+
+        private string GetKeyForOrderBook(string assetPairId, bool isBuy)
+        {
+            return string.Format(_orderBooksCacheKeyPattern, assetPairId, isBuy);
         }
     }
 }
