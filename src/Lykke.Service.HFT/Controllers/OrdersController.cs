@@ -1,10 +1,8 @@
-using Common;
 using JetBrains.Annotations;
 using Lykke.Service.Assets.Client.Models.v3;
 using Lykke.Service.Assets.Client.ReadModels;
 using Lykke.Service.HFT.Contracts;
 using Lykke.Service.HFT.Contracts.Orders;
-using Lykke.Service.HFT.Core.Domain;
 using Lykke.Service.HFT.Core.Services;
 using Lykke.Service.HFT.Helpers;
 using Lykke.Service.History.Client;
@@ -228,7 +226,7 @@ namespace Lykke.Service.HFT.Controllers
 
             var straight = order.Asset == baseAsset.Id || order.Asset == baseAsset.DisplayId;
             var asset = straight ? baseAsset : quotingAsset;
-            var volume = order.Volume.TruncateDecimalPlaces(asset.Accuracy);
+            var volume = order.Volume;
             var minVolume = straight ? assetPair.MinVolume : assetPair.MinInvertedVolume;
             if (!_requestValidator.ValidateVolume(volume, minVolume, asset.DisplayId, out badRequestModel))
             {
@@ -301,13 +299,13 @@ namespace Lykke.Service.HFT.Controllers
             if (asset == null)
                 throw new InvalidOperationException($"Base asset '{assetPair.BaseAssetId}' for asset pair '{assetPair.Id}' not found.");
 
-            var price = order.Price.TruncatePrice(assetPair);
+            var price = order.Price;
             if (!_requestValidator.ValidatePrice(price, out badRequestModel))
             {
                 return BadRequest(badRequestModel);
             }
 
-            var volume = order.Volume.TruncateVolume(asset);
+            var volume = order.Volume;
             var minVolume = assetPair.MinVolume;
             if (!_requestValidator.ValidateVolume(volume, minVolume, asset.DisplayId, out badRequestModel))
             {
@@ -356,13 +354,13 @@ namespace Lykke.Service.HFT.Controllers
                 throw new InvalidOperationException($"Base asset '{assetPair.BaseAssetId}' for asset pair '{assetPair.Id}' not found.");
 
 
-            var lowerPrice = order.LowerPrice.TruncatePrice(assetPair);
+            var lowerPrice = order.LowerPrice;
             if (lowerPrice.HasValue && !_requestValidator.ValidatePrice(lowerPrice.Value, out badRequestModel, nameof(PlaceStopLimitOrderModel.LowerPrice)))
             {
                 return BadRequest(badRequestModel);
             }
 
-            var lowerLimitPrice = order.LowerLimitPrice.TruncatePrice(assetPair);
+            var lowerLimitPrice = order.LowerLimitPrice;
             if (lowerLimitPrice.HasValue && !_requestValidator.ValidatePrice(lowerLimitPrice.Value, out badRequestModel, nameof(PlaceStopLimitOrderModel.LowerLimitPrice)))
             {
                 return BadRequest(badRequestModel);
@@ -374,13 +372,13 @@ namespace Lykke.Service.HFT.Controllers
                 return BadRequest(ResponseModel.CreateInvalidFieldError(nameof(order.LowerPrice), "When lower price is send then also lower limit price is required and vice versa."));
             }
 
-            var upperPrice = order.UpperPrice.TruncatePrice(assetPair);
+            var upperPrice = order.UpperPrice;
             if (upperPrice.HasValue && !_requestValidator.ValidatePrice(upperPrice.Value, out badRequestModel, nameof(PlaceStopLimitOrderModel.UpperPrice)))
             {
                 return BadRequest(badRequestModel);
             }
 
-            var upperLimitPrice = order.UpperLimitPrice.TruncatePrice(assetPair);
+            var upperLimitPrice = order.UpperLimitPrice;
             if (upperLimitPrice.HasValue && !_requestValidator.ValidatePrice(upperLimitPrice.Value, out badRequestModel, nameof(PlaceStopLimitOrderModel.UpperLimitPrice)))
             {
                 return BadRequest(badRequestModel);
@@ -398,7 +396,7 @@ namespace Lykke.Service.HFT.Controllers
                     "At least lower or upper prices are needed for a stop order."));
             }
 
-            var volume = order.Volume.TruncateDecimalPlaces(asset.Accuracy);
+            var volume = order.Volume;
             var minVolume = assetPair.MinVolume;
             if (!_requestValidator.ValidateVolume(volume, minVolume, asset.DisplayId, out badRequestModel))
             {
@@ -452,13 +450,13 @@ namespace Lykke.Service.HFT.Controllers
             var items = order.Orders?.ToArray() ?? new BulkOrderItemModel[0];
             foreach (var item in items)
             {
-                var price = item.Price.TruncatePrice(assetPair);
+                var price = item.Price;
                 if (!_requestValidator.ValidatePrice(price, out badRequestModel))
                 {
                     return BadRequest(badRequestModel);
                 }
 
-                var volume = item.Volume.TruncateVolume(asset);
+                var volume = item.Volume;
                 var minVolume = assetPair.MinVolume;
                 if (!_requestValidator.ValidateVolume(volume, minVolume, asset.DisplayId, out badRequestModel))
                 {
