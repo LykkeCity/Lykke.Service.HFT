@@ -15,6 +15,8 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Net;
 using System.Threading.Tasks;
+using Common.Log;
+using Lykke.Common.Log;
 using OrderStatus = Lykke.Service.HFT.Contracts.Orders.OrderStatus;
 using OrderType = Lykke.Service.HFT.Contracts.Orders.OrderType;
 
@@ -34,6 +36,7 @@ namespace Lykke.Service.HFT.Controllers
         private readonly IAssetPairsReadModelRepository _assetPairsReadModel;
         private readonly IAssetsReadModelRepository _assetsReadModel;
         private readonly IHistoryClient _historyClient;
+        private readonly ILog _log;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="OrdersController"/> class.
@@ -43,13 +46,15 @@ namespace Lykke.Service.HFT.Controllers
             RequestValidator requestValidator,
             IAssetPairsReadModelRepository assetPairsReadModel,
             IAssetsReadModelRepository assetsReadModel,
-            [NotNull] IHistoryClient historyClient)
+            [NotNull] IHistoryClient historyClient,
+            ILogFactory logFactory)
         {
             _matchingEngineAdapter = frequencyTradingService ?? throw new ArgumentNullException(nameof(frequencyTradingService));
             _requestValidator = requestValidator ?? throw new ArgumentNullException(nameof(requestValidator));
             _assetPairsReadModel = assetPairsReadModel;
             _assetsReadModel = assetsReadModel;
             _historyClient = historyClient ?? throw new ArgumentNullException(nameof(historyClient));
+            _log = logFactory.CreateLog(this);
         }
 
         /// <summary>
@@ -81,7 +86,7 @@ namespace Lykke.Service.HFT.Controllers
                 ? new History.Contracts.Enums.OrderType[0]
                 : new[] { (History.Contracts.Enums.OrderType)orderType };
 
-            IEnumerable<OrderModel> orders = null;
+            IEnumerable<OrderModel> orders;
             switch (status)
             {
                 case OrderStatusQuery.All:
@@ -143,8 +148,9 @@ namespace Lykke.Service.HFT.Controllers
                         0,
                         toTake.Result);
                     break;
+                default:
+                    return BadRequest(ResponseModel.CreateInvalidFieldError("status", $"Invalid status: <{status}>"));
             }
-
 
             return Ok(orders.Select(ToModel));
         }
@@ -168,6 +174,10 @@ namespace Lykke.Service.HFT.Controllers
             }
 
             var order = await _historyClient.OrdersApi.GetOrderAsync(id);
+            if (order == null)
+            {
+                return NotFound();
+            }
 
             return Ok(ToModel(order));
         }
@@ -209,7 +219,7 @@ namespace Lykke.Service.HFT.Controllers
             var assetPair = _assetPairsReadModel.TryGetIfEnabled(order.AssetPairId);
             if (assetPair == null)
             {
-                return NotFound($"Assetpair {order.AssetPairId} could not be found or is disabled.");
+                return NotFound($"Asset-pair {order.AssetPairId} could not be found or is disabled.");
             }
 
             if (!_requestValidator.ValidateAssetPair(order.AssetPairId, assetPair, out var badRequestModel))
@@ -287,7 +297,7 @@ namespace Lykke.Service.HFT.Controllers
             var assetPair = _assetPairsReadModel.TryGetIfEnabled(order.AssetPairId);
             if (assetPair == null)
             {
-                return NotFound($"Assetpair {order.AssetPairId} could not be found or is disabled.");
+                return NotFound($"Asset-pair {order.AssetPairId} could not be found or is disabled.");
             }
 
             if (!_requestValidator.ValidateAssetPair(order.AssetPairId, assetPair, out var badRequestModel))
@@ -341,7 +351,7 @@ namespace Lykke.Service.HFT.Controllers
             var assetPair = _assetPairsReadModel.TryGetIfEnabled(order.AssetPairId);
             if (assetPair == null)
             {
-                return NotFound($"Assetpair {order.AssetPairId} could not be found or is disabled.");
+                return NotFound($"Asset-pair {order.AssetPairId} could not be found or is disabled.");
             }
 
             if (!_requestValidator.ValidateAssetPair(order.AssetPairId, assetPair, out var badRequestModel))
@@ -435,7 +445,7 @@ namespace Lykke.Service.HFT.Controllers
             var assetPair = _assetPairsReadModel.TryGetIfEnabled(order.AssetPairId);
             if (assetPair == null)
             {
-                return NotFound($"Assetpair {order.AssetPairId} could not be found or is disabled.");
+                return NotFound($"Asset-pair {order.AssetPairId} could not be found or is disabled.");
             }
 
             if (!_requestValidator.ValidateAssetPair(order.AssetPairId, assetPair, out var badRequestModel))
@@ -487,12 +497,12 @@ namespace Lykke.Service.HFT.Controllers
         /// Cancel a limit order.
         /// </summary>
         /// <param name="id">Limit order id</param>
-        /// <response code="200">Limit order has been cancelled.</response>
+        /// <response code="200">Limit order has been canceled.</response>
         /// <response code="403">You don't have permission to cancel that limit order.</response>
         /// <response code="404">Limit order could not be found.</response>
         [HttpPost("{id}/Cancel")]
         [SwaggerOperation(nameof(CancelLimitOrderOld))]
-        [Obsolete("Use http delete {id} instead.")]
+        [Obsolete("Use HTTP delete {id} instead.")]
         public Task<IActionResult> CancelLimitOrderOld(Guid id)
             => CancelLimitOrder(id);
 
@@ -500,7 +510,7 @@ namespace Lykke.Service.HFT.Controllers
         /// Cancel a limit order.
         /// </summary>
         /// <param name="id">Limit order id</param>
-        /// <response code="200">Limit order has been cancelled.</response>
+        /// <response code="200">Limit order has been canceled.</response>
         /// <response code="403">You don't have permission to cancel that limit order.</response>
         /// <response code="404">Limit order could not be found.</response>
         [HttpDelete("{id}")]
@@ -537,6 +547,11 @@ namespace Lykke.Service.HFT.Controllers
             var response = await _matchingEngineAdapter.CancelLimitOrderAsync(id);
             if (response.Error != null)
             {
+                _log.Warning("Cancel limit order", response.Error.Message);
+                if (response.Error.Message == "NotFound")
+                {
+                    return NotFound(response);
+                }
                 return BadRequest(response);
             }
             return Ok();
@@ -547,7 +562,7 @@ namespace Lykke.Service.HFT.Controllers
         /// </summary>
         /// <param name="assetPairId">[Optional] Cancel the orders of a specific asset pair</param>
         /// <param name="side">[Optional] Cancel the orders of a specific side (Buy or Sell)</param>
-        /// <response code="200">All open limit orders have been cancelled</response>
+        /// <response code="200">All open limit orders have been canceled</response>
         /// <response code="404">Requested asset pair could not be found or is disabled.</response>
         [HttpDelete]
         [SwaggerOperation(nameof(CancelAll))]
@@ -561,7 +576,7 @@ namespace Lykke.Service.HFT.Controllers
                 assetPair = _assetPairsReadModel.TryGetIfEnabled(assetPairId);
                 if (assetPair == null)
                 {
-                    return NotFound($"Assetpair '{assetPairId}' could not be found or is disabled.");
+                    return NotFound($"Asset-pair '{assetPairId}' could not be found or is disabled.");
                 }
             }
 
