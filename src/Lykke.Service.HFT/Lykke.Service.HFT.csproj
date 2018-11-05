@@ -20,7 +20,7 @@
     <PackageReference Include="AutoMapper" Version="7.0.1" />
     <PackageReference Include="Lykke.Cqrs" Version="5.2.0" />
     <PackageReference Include="Lykke.Http" Version="1.0.0" />
-    <PackageReference Include="Lykke.MatchingEngineConnector" Version="8.3.0" />
+    <PackageReference Include="Lykke.MatchingEngineConnector" Version="8.3.1" />
     <PackageReference Include="Lykke.Messaging" Version="6.2.0" />
     <PackageReference Include="Lykke.Messaging.RabbitMq" Version="2.1.0" />
     <PackageReference Include="Lykke.Sdk" Version="5.3.1" />
