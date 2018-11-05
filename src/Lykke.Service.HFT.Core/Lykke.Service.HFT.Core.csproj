@@ -7,7 +7,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="Lykke.MatchingEngineConnector" Version="7.4.0" />
+    <PackageReference Include="Lykke.MatchingEngineConnector" Version="8.3.1" />
     <PackageReference Include="Lykke.Sdk" Version="5.3.1" />
     <PackageReference Include="Lykke.Service.Assets.Client" Version="5.1.0" />
     <PackageReference Include="Lykke.Service.History.Client" Version="1.1.0" />
