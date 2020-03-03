@@ -14,6 +14,7 @@ using Lykke.Service.HFT.Services.Projections;
 using Lykke.SettingsReader;
 using Microsoft.Extensions.Caching.Distributed;
 using System.Collections.Generic;
+using Lykke.Cqrs.Middleware.Logging;
 
 namespace Lykke.Service.HFT.Modules
 {
@@ -69,7 +70,7 @@ namespace Lykke.Service.HFT.Modules
 
                 const string defaultRoute = "self";
 
-                return new CqrsEngine(logFactory,
+                var engine = new CqrsEngine(logFactory,
                     ctx.Resolve<IDependencyResolver>(),
                     messagingEngine,
                     new DefaultEndpointProvider(),
@@ -80,15 +81,23 @@ namespace Lykke.Service.HFT.Modules
                         environment: "lykke",
                         exclusiveQueuePostfix: _settings.QueuePostfix)),
 
-                Register.BoundedContext("hft-api")
-                    .ListeningEvents(
-                        typeof(ApiKeyUpdatedEvent))
-                        .From("api-key").On(defaultRoute)
-                        .WithProjection(typeof(ApiKeyProjection), "api-key")
-                    .WithAssetsReadModel(route: System.Environment.MachineName)
+                    Register.CommandInterceptors(new DefaultCommandLoggingInterceptor(logFactory)),
+                    Register.EventInterceptors(new DefaultEventLoggingInterceptor(logFactory)),
+
+                    Register.BoundedContext("hft-api")
+                        .ListeningEvents(
+                            typeof(ApiKeyUpdatedEvent))
+                            .From("api-key").On(defaultRoute)
+                            .WithProjection(typeof(ApiKeyProjection), "api-key")
+                        .WithAssetsReadModel(route: System.Environment.MachineName)
                 );
+
+                engine.StartPublishers();
+                return engine;
             })
-            .As<ICqrsEngine>().SingleInstance();
+            .As<ICqrsEngine>()
+            .AutoActivate()
+            .SingleInstance();
         }
     }
 }

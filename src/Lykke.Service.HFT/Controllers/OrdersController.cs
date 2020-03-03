@@ -9,10 +9,8 @@ using Lykke.Service.History.Client;
 using Lykke.Service.History.Contracts.Orders;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using Swashbuckle.AspNetCore.SwaggerGen;
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.Linq;
 using System.Net;
 using System.Threading.Tasks;
@@ -20,6 +18,7 @@ using Common.Log;
 using Lykke.Common.Log;
 using Lykke.Service.HFT.Infrastructure;
 using Microsoft.ApplicationInsights.DataContracts;
+using Swashbuckle.AspNetCore.Annotations;
 using OrderStatus = Lykke.Service.HFT.Contracts.Orders.OrderStatus;
 using OrderType = Lykke.Service.HFT.Contracts.Orders.OrderType;
 
@@ -339,7 +338,10 @@ namespace Lykke.Service.HFT.Controllers
             }
 
             if (response.Result != null)
-                TelemetryHelper.InitTelemetryOperation("Limit order placed", response.Result.Id.ToString());
+            {
+                var operation = TelemetryHelper.InitTelemetryOperation("Limit order placed", response.Result.Id.ToString("N"));
+                TelemetryHelper.SubmitOperationResult(operation);
+            }
 
             return Ok(response.Result);
         }
