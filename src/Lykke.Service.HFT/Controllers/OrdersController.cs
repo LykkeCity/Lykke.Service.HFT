@@ -12,11 +12,14 @@ using Microsoft.AspNetCore.Mvc;
 using Swashbuckle.AspNetCore.SwaggerGen;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Net;
 using System.Threading.Tasks;
 using Common.Log;
 using Lykke.Common.Log;
+using Lykke.Service.HFT.Infrastructure;
+using Microsoft.ApplicationInsights.DataContracts;
 using OrderStatus = Lykke.Service.HFT.Contracts.Orders.OrderStatus;
 using OrderType = Lykke.Service.HFT.Contracts.Orders.OrderType;
 
@@ -329,10 +332,14 @@ namespace Lykke.Service.HFT.Controllers
                 orderAction: order.OrderAction,
                 volume: volume,
                 price: price);
+
             if (response.Error != null)
             {
                 return BadRequest(response);
             }
+
+            if (response.Result != null)
+                TelemetryHelper.InitTelemetryOperation("Limit order placed", response.Result.Id.ToString());
 
             return Ok(response.Result);
         }

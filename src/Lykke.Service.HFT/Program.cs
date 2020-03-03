@@ -9,7 +9,7 @@ namespace Lykke.Service.HFT
     public static class Program
     {
         /// <summary>
-        /// Application entrypoint.
+        /// Application entry point.
         /// </summary>
         public static Task Main(string[] args)
         {
