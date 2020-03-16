@@ -18,5 +18,7 @@ namespace Lykke.Service.HFT.Core.Settings
         public string CqrsRabbitConnString { get; set; }
         [Optional]
         public ChaosSettings ChaosKitty { get; set; }
+        [Optional]
+        public bool CalculateOrderFees { get; set; }
     }
 }
