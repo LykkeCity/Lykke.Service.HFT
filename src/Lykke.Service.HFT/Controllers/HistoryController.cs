@@ -6,12 +6,12 @@ using Lykke.Service.History.Client;
 using Lykke.Service.History.Contracts.Enums;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using Swashbuckle.AspNetCore.SwaggerGen;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Net;
 using System.Threading.Tasks;
+using Swashbuckle.AspNetCore.Annotations;
 using FeeType = Lykke.Service.HFT.Contracts.History.FeeType;
 
 namespace Lykke.Service.HFT.Controllers

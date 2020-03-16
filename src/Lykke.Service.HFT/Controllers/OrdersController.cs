@@ -9,7 +9,6 @@ using Lykke.Service.History.Client;
 using Lykke.Service.History.Contracts.Orders;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using Swashbuckle.AspNetCore.SwaggerGen;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -19,6 +18,7 @@ using Common.Log;
 using Lykke.Common.Log;
 using OrderStatus = Lykke.Service.HFT.Contracts.Orders.OrderStatus;
 using OrderType = Lykke.Service.HFT.Contracts.Orders.OrderType;
+using Swashbuckle.AspNetCore.Annotations;
 
 namespace Lykke.Service.HFT.Controllers
 {
