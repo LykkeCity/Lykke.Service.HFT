@@ -13,9 +13,9 @@ HighFrequencyTradingService:
             settings-key: HFT-OrdersArchiveConnString
             types:
                 - AzureTableStorage
-    
+
     MaintenanceMode:
-        Enabled: 
+        Enabled:
             settings-key: HFT-MaintenanceMode
         Reason:
             settings-key: HFT-MaintenanceReason
@@ -56,18 +56,22 @@ HighFrequencyTradingService:
         settings-key: CqrsRabbitConnString
         types:
             - RabbitMq
+    CalculateOrderFees:
+        settings-key: HFT-CalculateOrderFees
+        types:
+            - Optional
 
 MatchingEngineClient:
     IpEndpoint:
-        Port: 
+        Port:
             settings-key: MatchingEngine-Port
         Host:
             settings-key: MatchingEngine-Host
 
 AssetsServiceClient:
-    ServiceUrl: 
+    ServiceUrl:
         settings-key: AssetsServiceUrl
-        
+
 BalancesServiceClient:
     ServiceUrl:
         settings-key: BalancesServiceUrl
@@ -80,10 +84,10 @@ FeeSettings:
     TargetClientId:
         HFT:
             settings-key: FeeSettings-TargetClientId-HFT
-    
+
 MonitoringServiceClient:
     MonitoringServiceUrl:
-        settings-key: MonitoringServiceUrl       
+        settings-key: MonitoringServiceUrl
 
 HistoryServiceClient:
     ServiceUrl:
@@ -95,5 +99,5 @@ SlackNotifications:
             settings-key: SlackNotificationsConnString
             types:
                 - AzureTableStorage
-        QueueName: 
+        QueueName:
             settings-key: SlackQueueName
