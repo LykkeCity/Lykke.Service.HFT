@@ -22,13 +22,16 @@ namespace Lykke.Service.HFT.Services
         private readonly ILog _log;
         private readonly IMatchingEngineClient _matchingEngineClient;
         private readonly IFeeCalculatorAdapter _feeCalculator;
+        private readonly bool _calculateOrderFees;
 
         public MatchingEngineAdapter(IMatchingEngineClient matchingEngineClient,
             IFeeCalculatorAdapter feeCalculator,
+            bool calculateOrderFees,
             ILogFactory logFactory)
         {
             _matchingEngineClient = matchingEngineClient ?? throw new ArgumentNullException(nameof(matchingEngineClient));
             _feeCalculator = feeCalculator ?? throw new ArgumentNullException(nameof(feeCalculator));
+            _calculateOrderFees = calculateOrderFees;
 
             if (logFactory == null)
                 throw new ArgumentNullException(nameof(logFactory));
@@ -63,6 +66,10 @@ namespace Lykke.Service.HFT.Services
         public async Task<ResponseModel<MarketOrderResponseModel>> PlaceMarketOrderAsync(string clientId, AssetPair assetPair, OrderAction orderAction, decimal volume,
             bool straight, double? reservedLimitVolume = null)
         {
+            var fees = _calculateOrderFees
+                ? await _feeCalculator.GetMarketOrderFees(clientId, assetPair, orderAction)
+                : Array.Empty<MarketOrderFeeModel>();
+
             var order = new MarketOrderModel
             {
                 Id = GetNextRequestId().ToString(),
@@ -72,7 +79,7 @@ namespace Lykke.Service.HFT.Services
                 Straight = straight,
                 Volume = (double)Math.Abs(volume),
                 OrderAction = orderAction.ToMeOrderAction(),
-                Fees = await _feeCalculator.GetMarketOrderFees(clientId, assetPair, orderAction)
+                Fees = fees
             };
 
             var response = await _matchingEngineClient.HandleMarketOrderAsync(order);
@@ -90,6 +97,9 @@ namespace Lykke.Service.HFT.Services
             decimal price, bool cancelPreviousOrders = false)
         {
             var requestId = GetNextRequestId();
+            var fees = _calculateOrderFees
+                ? await _feeCalculator.GetLimitOrderFees(clientId, assetPair, orderAction)
+                : Array.Empty<LimitOrderFeeModel>();
 
             var order = new LimitOrderModel
             {
@@ -100,7 +110,7 @@ namespace Lykke.Service.HFT.Services
                 CancelPreviousOrders = cancelPreviousOrders,
                 Volume = (double)Math.Abs(volume),
                 OrderAction = orderAction.ToMeOrderAction(),
-                Fees = await _feeCalculator.GetLimitOrderFees(clientId, assetPair, orderAction)
+                Fees = fees
             };
 
             var response = await _matchingEngineClient.PlaceLimitOrderAsync(order);
@@ -158,6 +168,10 @@ namespace Lykke.Service.HFT.Services
         {
             var requestId = GetNextRequestId();
 
+            var fees = _calculateOrderFees
+                ? await _feeCalculator.GetLimitOrderFees(clientId, assetPair, orderAction)
+                : Array.Empty<LimitOrderFeeModel>();
+
             var order = new StopLimitOrderModel
             {
                 Id = requestId.ToString(),
@@ -170,7 +184,7 @@ namespace Lykke.Service.HFT.Services
                 CancelPreviousOrders = cancelPreviousOrders,
                 Volume = (double)Math.Abs(volume),
                 OrderAction = orderAction.ToMeOrderAction(),
-                Fees = await _feeCalculator.GetLimitOrderFees(clientId, assetPair, orderAction)
+                Fees = fees
             };
 
             var response = await _matchingEngineClient.PlaceStopLimitOrderAsync(order);
@@ -200,7 +214,9 @@ namespace Lykke.Service.HFT.Services
         private async Task<MultiOrderItemModel> ToMultiOrderItemModel(string clientId, AssetPair assetPair, BulkOrderItemModel item)
         {
             var requestId = GetNextRequestId();
-            var fees = await _feeCalculator.GetLimitOrderFees(clientId, assetPair, item.OrderAction);
+            var fees = _calculateOrderFees
+                ? await _feeCalculator.GetLimitOrderFees(clientId, assetPair, item.OrderAction)
+                : Array.Empty<LimitOrderFeeModel>();
 
             var model = new MultiOrderItemModel
             {

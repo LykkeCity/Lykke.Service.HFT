@@ -5,12 +5,12 @@ using Lykke.Service.HFT.Contracts.Wallets;
 using Lykke.Service.HFT.Helpers;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using Swashbuckle.AspNetCore.SwaggerGen;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Net;
 using System.Threading.Tasks;
+using Swashbuckle.AspNetCore.Annotations;
 
 namespace Lykke.Service.HFT.Controllers
 {

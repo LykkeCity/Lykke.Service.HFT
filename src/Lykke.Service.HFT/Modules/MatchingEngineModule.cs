@@ -22,6 +22,7 @@ namespace Lykke.Service.HFT.Modules
 
             builder.RegisterType<MatchingEngineAdapter>()
                 .As<IMatchingEngineAdapter>()
+                .WithParameter(TypedParameter.From(_settings.CurrentValue.HighFrequencyTradingService.CalculateOrderFees))
                 .SingleInstance();
         }
     }
