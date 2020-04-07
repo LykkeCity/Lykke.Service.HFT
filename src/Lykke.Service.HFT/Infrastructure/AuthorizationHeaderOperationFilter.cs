@@ -7,29 +7,29 @@ using Swashbuckle.AspNetCore.SwaggerGen;
 
 namespace Lykke.Service.HFT.Infrastructure
 {
-    internal class ApiKeyHeaderOperationFilter : IOperationFilter
+    internal class AuthorizationHeaderOperationFilter : IOperationFilter
     {
         public void Apply(Operation operation, OperationFilterContext context)
         {
             var filterPipeline = context.ApiDescription.ActionDescriptor.FilterDescriptors;
-            var isAuthorized = filterPipeline.Select(filterInfo => filterInfo.Filter).Any(filter => filter is AuthorizeFilter authorizeFilter && authorizeFilter.Policy.AuthenticationSchemes.All(x => x != HmacAuthOptions.AuthenticationScheme));
+            var isAuthorized = filterPipeline.Select(filterInfo => filterInfo.Filter).Any(filter => filter is AuthorizeFilter authorizeFilter && authorizeFilter.Policy.AuthenticationSchemes.Any(x => x == HmacAuthOptions.AuthenticationScheme));
             var allowAnonymous = filterPipeline.Select(filterInfo => filterInfo.Filter).Any(filter => filter is IAllowAnonymousFilter);
-            if (isAuthorized && !allowAnonymous)
+             if (isAuthorized && !allowAnonymous)
             {
                 if (operation.Parameters == null)
                     operation.Parameters = new List<IParameter>();
                 operation.Parameters.Add(new NonBodyParameter
                 {
-                    Name = KeyAuthOptions.DefaultHeaderName,
+                    Name = HmacAuthOptions.DefaultHeaderName,
                     In = "header",
-                    Description = "access token",
+                    Description = "HMAC apiKey:timestamp:signature",
                     Required = true,
                     Type = "string"
                 });
 
                 operation.Responses.Add("401", new Response
                 {
-                    Description = "Not authorized or invalid api-key"
+                    Description = "Not authorized or invalid authorization header"
                 });
             }
         }

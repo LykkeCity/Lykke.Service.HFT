@@ -20,5 +20,7 @@ namespace Lykke.Service.HFT.Core.Settings
         public ChaosSettings ChaosKitty { get; set; }
         [Optional]
         public bool CalculateOrderFees { get; set; }
+        [Optional]
+        public RequestSettings RequestSettings { get; set; } = new RequestSettings();
     }
 }

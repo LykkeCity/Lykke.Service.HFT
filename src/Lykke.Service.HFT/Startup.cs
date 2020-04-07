@@ -15,17 +15,32 @@ using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.DependencyInjection;
 using System;
+using System.Collections.Generic;
 using System.IO;
+using System.Linq;
+using System.Security.Cryptography;
+using Microsoft.AspNetCore.Mvc;
+using Swashbuckle.AspNetCore.SwaggerGen;
 using WampSharp.V2;
 
 namespace Lykke.Service.HFT
 {
-    internal sealed class Startup
+    public sealed class Startup
     {
         private readonly LykkeSwaggerOptions _swaggerOptions = new LykkeSwaggerOptions
         {
             ApiVersion = "v1",
             ApiTitle = "High-frequency trading API"
+        };
+
+        private readonly IReadOnlyCollection<LykkeSwaggerOptions> _additionalSwaggerOptions = new []
+        {
+            new LykkeSwaggerOptions
+            {
+                ApiVersion = "v2",
+                ApiTitle = "Lykke trading API",
+
+            }
         };
 
         public IHostingEnvironment Environment { get; }
@@ -52,16 +67,30 @@ namespace Lykke.Service.HFT
                 };
 
                 options.SwaggerOptions = _swaggerOptions;
+                options.AdditionalSwaggerOptions = _additionalSwaggerOptions;
 
                 options.Swagger = swagger =>
                 {
                     swagger.OperationFilter<ApiKeyHeaderOperationFilter>();
+                    swagger.OperationFilter<AuthorizationHeaderOperationFilter>();
                     swagger.DescribeAllEnumsAsStrings();
 
                     // Include XML comments from contracts.
                     swagger.IncludeXmlComments(Path.Combine(Environment.ContentRootPath, typeof(ResponseModel).Assembly.GetName().Name + ".xml"));
 
                     swagger.DocumentFilter<DefaultFilter>();
+
+                    swagger.DocInclusionPredicate((docName, apiDesc) =>
+                    {
+                        if (docName == "v1")
+                            return !apiDesc.ControllerAttributes().OfType<ApiVersionAttribute>().Any();
+
+                        var versions = apiDesc.ControllerAttributes()
+                            .OfType<ApiVersionAttribute>()
+                            .SelectMany(attr => attr.Versions);
+
+                        return versions.Any(v => $"v{v.ToString()}" == docName);
+                    });
                 };
 
                 options.RegisterAdditionalModules = x =>
@@ -75,8 +104,8 @@ namespace Lykke.Service.HFT
                     sc
                         .AddOptions()
                         .AddAuthentication(KeyAuthOptions.AuthenticationScheme)
-                        .AddScheme<KeyAuthOptions, KeyAuthHandler>(KeyAuthOptions.AuthenticationScheme, null);
-
+                        .AddScheme<KeyAuthOptions, KeyAuthHandler>(KeyAuthOptions.AuthenticationScheme, null)
+                        .AddScheme<HmacAuthOptions, HmacAuthHandler>(HmacAuthOptions.AuthenticationScheme, null);
                 };
             });
         }
@@ -89,6 +118,7 @@ namespace Lykke.Service.HFT
             app.UseLykkeConfiguration(options =>
                 {
                     options.SwaggerOptions = _swaggerOptions;
+                    options.AdditionalSwaggerOptions = _additionalSwaggerOptions;
 
                     options.WithMiddleware = x =>
                     {
