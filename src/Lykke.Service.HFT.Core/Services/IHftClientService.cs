@@ -5,6 +5,7 @@ namespace Lykke.Service.HFT.Core.Services
     public interface IHftClientService
     {
         Task<string> GetWalletIdAsync(string apiKey);
+        Task<Domain.ApiKey> GetApiKey(string apiKey);
         Task<bool> IsHftWalletAsync(string walletId);
     }
 }

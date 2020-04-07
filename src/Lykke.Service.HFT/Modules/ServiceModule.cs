@@ -39,6 +39,12 @@ namespace Lykke.Service.HFT.Modules
                     .AsSelf();
             }
 
+            if (currentSettings.HighFrequencyTradingService.RequestSettings != null)
+            {
+                builder.RegisterInstance(currentSettings.HighFrequencyTradingService.RequestSettings)
+                    .AsSelf();
+            }
+
             builder.RegisterType<StartupManager>()
                 .As<IStartupManager>()
                 .SingleInstance();
