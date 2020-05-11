@@ -1,10 +1,8 @@
 ﻿using System;
-using System.IdentityModel.Tokens.Jwt;
 using System.Linq;
 using System.Security.Claims;
 using System.Text.Encodings.Web;
 using System.Threading.Tasks;
-using Common;
 using JetBrains.Annotations;
 using Lykke.Service.HFT.Core.Services;
 using Microsoft.AspNetCore.Authentication;
@@ -32,26 +30,7 @@ namespace Lykke.Service.HFT.Middleware
             }
 
             var apiKey = headerValue.First();
-            string walletId;
-
-            if (apiKey.IsGuid())
-            {
-                walletId = await _hftClientService.GetWalletIdAsync(apiKey);
-            }
-            else
-            {
-                var handler = new JwtSecurityTokenHandler();
-                try
-                {
-                    var jsonToken = handler.ReadJwtToken(apiKey);
-                    walletId = jsonToken.Claims.FirstOrDefault(c => c.Type == "wallet-id")?.Value;
-                }
-                catch (Exception)
-                {
-                    walletId = null;
-                }
-            }
-
+            var walletId = await _hftClientService.GetWalletIdAsync(apiKey);
             if (walletId == null)
             {
                 await Task.Delay(TimeSpan.FromSeconds(10)); // todo: ban requests from IPs with 401 response.
