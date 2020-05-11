@@ -19,13 +19,14 @@ namespace Lykke.Service.HFT.Services
         private readonly IEnumerable<IWampHostedRealm> _realms;
         private readonly ISessionRepository _sessionRepository;
         private readonly IApiKeyCacheInitializer _apiKeyCacheInitializer;
+        [NotNull] private readonly ICqrsEngine _cqrs;
 
         public StartupManager(
             ILogFactory logFactory,
             IEnumerable<IWampHostedRealm> realms,
             ISessionRepository sessionRepository,
             IApiKeyCacheInitializer apiKeyCacheInitializer,
-            [NotNull] ICqrsEngine cqrs)
+            ICqrsEngine cqrs)
         {
             if (logFactory == null)
                 throw new ArgumentNullException(nameof(logFactory));
@@ -34,12 +35,14 @@ namespace Lykke.Service.HFT.Services
             _realms = realms;
             _sessionRepository = sessionRepository;
             _apiKeyCacheInitializer = apiKeyCacheInitializer;
-
-            if (cqrs == null) throw new ArgumentNullException(nameof(cqrs)); // is needed for bootstrap
+            _cqrs = cqrs;
         }
 
         public async Task StartAsync()
         {
+            _cqrs.StartSubscribers();
+            _cqrs.StartProcesses();
+
             _log.Info("Subscribing to the realm sessions...");
 
             foreach (var realm in _realms)

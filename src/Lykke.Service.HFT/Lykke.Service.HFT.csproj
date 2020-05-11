@@ -37,12 +37,12 @@
     <PackageReference Include="Microsoft.Extensions.Caching.Redis" Version="2.2.0" />
     <PackageReference Include="Microsoft.Extensions.Logging.Debug" Version="2.2.0" />
     <PackageReference Include="protobuf-net" Version="2.4.4" />
-  </ItemGroup>  
-  
+  </ItemGroup>
+
   <ItemGroup>
     <DotNetCliToolReference Include="Microsoft.VisualStudio.Web.CodeGeneration.Tools" Version="1.0.1" />
   </ItemGroup>
-  
+
   <ItemGroup>
     <ProjectReference Include="..\Lykke.Service.HFT.AzureRepositories\Lykke.Service.HFT.AzureRepositories.csproj" />
     <ProjectReference Include="..\Lykke.Service.HFT.MongoRepositories\Lykke.Service.HFT.MongoRepositories.csproj" />
