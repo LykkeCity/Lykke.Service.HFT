@@ -23,7 +23,7 @@
     <PackageReference Include="Lykke.MatchingEngineConnector" Version="8.6.0" />
     <PackageReference Include="Lykke.Messaging" Version="6.3.1" />
     <PackageReference Include="Lykke.Messaging.RabbitMq" Version="2.2.1" />
-    <PackageReference Include="Lykke.Sdk" Version="5.17.0" />
+    <PackageReference Include="Lykke.Sdk" Version="5.18.0" />
     <PackageReference Include="Lykke.Service.Assets.Client" Version="5.2.1" />
     <PackageReference Include="Lykke.Service.Balances.Client" Version="2.3.2" />
     <PackageReference Include="Lykke.Service.FeeCalculator.Client" Version="2.2.0" />
