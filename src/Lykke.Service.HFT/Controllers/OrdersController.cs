@@ -14,6 +14,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Net;
 using System.Threading.Tasks;
+using Common;
 using Common.Log;
 using Lykke.Common.Log;
 using OrderStatus = Lykke.Service.HFT.Contracts.Orders.OrderStatus;
@@ -547,7 +548,8 @@ namespace Lykke.Service.HFT.Controllers
             var response = await _matchingEngineAdapter.CancelLimitOrderAsync(id);
             if (response.Error != null)
             {
-                _log.Warning("Cancel limit order", response.Error.Message);
+                _log.Warning("Cancel limit order", response.Error.Message, context: new { orderId = id.ToString()}.ToJson());
+
                 if (response.Error.Message == "NotFound")
                 {
                     return NotFound(response);
