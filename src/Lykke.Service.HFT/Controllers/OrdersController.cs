@@ -87,70 +87,80 @@ namespace Lykke.Service.HFT.Controllers
                 ? new History.Contracts.Enums.OrderType[0]
                 : new[] { (History.Contracts.Enums.OrderType)orderType };
 
-            IEnumerable<OrderModel> orders;
-            switch (status)
+            IEnumerable<OrderModel> orders = new List<OrderModel>();
+
+            try
             {
-                case OrderStatusQuery.All:
-                    orders = await _historyClient.OrdersApi.GetOrdersByWalletAsync(
-                        walletId,
-                        new History.Contracts.Enums.OrderStatus[0],
-                        orderTypes,
-                        0,
-                        toTake.Result);
-                    break;
-                case OrderStatusQuery.Open:
-                    orders = await _historyClient.OrdersApi.GetActiveOrdersByWalletAsync(walletId, 0, toTake.Result);
-                    break;
-                case OrderStatusQuery.InOrderBook:
-                    orders = await _historyClient.OrdersApi.GetOrdersByWalletAsync(
-                        walletId,
-                        new[] { History.Contracts.Enums.OrderStatus.Placed },
-                        orderTypes,
-                        0,
-                        toTake.Result);
-                    break;
-                case OrderStatusQuery.Processing:
-                    orders = await _historyClient.OrdersApi.GetOrdersByWalletAsync(
-                        walletId,
-                        new[] { History.Contracts.Enums.OrderStatus.PartiallyMatched },
-                        orderTypes,
-                        0,
-                        toTake.Result);
-                    break;
-                case OrderStatusQuery.Matched:
-                    orders = await _historyClient.OrdersApi.GetOrdersByWalletAsync(
-                        walletId,
-                        new[] { History.Contracts.Enums.OrderStatus.Matched },
-                        orderTypes,
-                        0,
-                        toTake.Result);
-                    break;
-                case OrderStatusQuery.Replaced:
-                    orders = await _historyClient.OrdersApi.GetOrdersByWalletAsync(
-                        walletId,
-                        new[] { History.Contracts.Enums.OrderStatus.Replaced },
-                        orderTypes,
-                        0,
-                        toTake.Result);
-                    break;
-                case OrderStatusQuery.Cancelled:
-                    orders = await _historyClient.OrdersApi.GetOrdersByWalletAsync(
-                        walletId,
-                        new[] { History.Contracts.Enums.OrderStatus.Cancelled },
-                        orderTypes,
-                        0,
-                        toTake.Result);
-                    break;
-                case OrderStatusQuery.Rejected:
-                    orders = await _historyClient.OrdersApi.GetOrdersByWalletAsync(
-                        walletId,
-                        new[] { History.Contracts.Enums.OrderStatus.Rejected },
-                        orderTypes,
-                        0,
-                        toTake.Result);
-                    break;
-                default:
-                    return BadRequest(ResponseModel.CreateInvalidFieldError("status", $"Invalid status: <{status}>"));
+                switch (status)
+                {
+                    case OrderStatusQuery.All:
+                        orders = await _historyClient.OrdersApi.GetOrdersByWalletAsync(
+                            walletId,
+                            new History.Contracts.Enums.OrderStatus[0],
+                            orderTypes,
+                            0,
+                            toTake.Result);
+                        break;
+                    case OrderStatusQuery.Open:
+                        orders = await _historyClient.OrdersApi.GetActiveOrdersByWalletAsync(walletId, 0,
+                            toTake.Result);
+                        break;
+                    case OrderStatusQuery.InOrderBook:
+                        orders = await _historyClient.OrdersApi.GetOrdersByWalletAsync(
+                            walletId,
+                            new[] {History.Contracts.Enums.OrderStatus.Placed},
+                            orderTypes,
+                            0,
+                            toTake.Result);
+                        break;
+                    case OrderStatusQuery.Processing:
+                        orders = await _historyClient.OrdersApi.GetOrdersByWalletAsync(
+                            walletId,
+                            new[] {History.Contracts.Enums.OrderStatus.PartiallyMatched},
+                            orderTypes,
+                            0,
+                            toTake.Result);
+                        break;
+                    case OrderStatusQuery.Matched:
+                        orders = await _historyClient.OrdersApi.GetOrdersByWalletAsync(
+                            walletId,
+                            new[] {History.Contracts.Enums.OrderStatus.Matched},
+                            orderTypes,
+                            0,
+                            toTake.Result);
+                        break;
+                    case OrderStatusQuery.Replaced:
+                        orders = await _historyClient.OrdersApi.GetOrdersByWalletAsync(
+                            walletId,
+                            new[] {History.Contracts.Enums.OrderStatus.Replaced},
+                            orderTypes,
+                            0,
+                            toTake.Result);
+                        break;
+                    case OrderStatusQuery.Cancelled:
+                        orders = await _historyClient.OrdersApi.GetOrdersByWalletAsync(
+                            walletId,
+                            new[] {History.Contracts.Enums.OrderStatus.Cancelled},
+                            orderTypes,
+                            0,
+                            toTake.Result);
+                        break;
+                    case OrderStatusQuery.Rejected:
+                        orders = await _historyClient.OrdersApi.GetOrdersByWalletAsync(
+                            walletId,
+                            new[] {History.Contracts.Enums.OrderStatus.Rejected},
+                            orderTypes,
+                            0,
+                            toTake.Result);
+                        break;
+                    default:
+                        return BadRequest(
+                            ResponseModel.CreateInvalidFieldError("status", $"Invalid status: <{status}>"));
+                }
+            }
+            catch (Exception ex)
+            {
+                _log.Warning("Error getting orders", ex, context: new {walletId = walletId, status, orderType, take = toTake.Result}.ToJson());
             }
 
             return Ok(orders.Select(ToModel));
