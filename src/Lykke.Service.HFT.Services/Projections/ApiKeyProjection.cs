@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Threading.Tasks;
 using Common.Log;
 using JetBrains.Annotations;
@@ -28,16 +29,20 @@ namespace Lykke.Service.HFT.Services.Projections
         public async Task Handle(ApiKeyUpdatedEvent evt)
         {
             _log.Info($"enabled: {evt.Enabled}", context: evt.ApiKey.Substring(0, 4));
-            if (evt.Enabled)
+            var tasks = new List<Task>();
+
+            if (evt.Enabled && !evt.Apiv2Only)
             {
-                await _distributedCache.SetStringAsync(Constants.GetKeyForApiKey(evt.ApiKey), evt.WalletId);
-                await _distributedCache.SetAsync(Constants.GetKeyForWalletId(evt.WalletId), new byte[] { 1 });
+                tasks.Add(_distributedCache.SetStringAsync(Constants.GetKeyForApiKey(evt.ApiKey), evt.WalletId));
+                tasks.Add(_distributedCache.SetAsync(Constants.GetKeyForWalletId(evt.WalletId), new byte[] { 1 }));
             }
             else
             {
-                await _distributedCache.RemoveAsync(Constants.GetKeyForApiKey(evt.ApiKey));
-                await _distributedCache.RemoveAsync(Constants.GetKeyForWalletId(evt.WalletId));
+                tasks.Add(_distributedCache.RemoveAsync(Constants.GetKeyForApiKey(evt.ApiKey)));
+                tasks.Add(_distributedCache.RemoveAsync(Constants.GetKeyForWalletId(evt.WalletId)));
             }
+
+            await Task.WhenAll(tasks);
         }
 
     }

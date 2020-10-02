@@ -9,5 +9,6 @@ namespace Lykke.Service.HFT.Core.Domain
         public string ClientId { get; set; }
         public string WalletId { get; set; }
         public DateTime? ValidTill { get; set; }
+        public bool Apiv2Only { get; set; }
     }
 }
