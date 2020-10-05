@@ -40,7 +40,7 @@ namespace Lykke.Service.HFT.Services
 
         private List<ApiKey> GetApiKeys()
         {
-            return _apiKeyRepository.FilterBy(x => x.ValidTill == null).ToList();
+            return _apiKeyRepository.FilterBy(x => x.ValidTill == null && !x.Apiv2Only).ToList();
         }
 
         private async Task InsertValues(List<ApiKey> keys)
