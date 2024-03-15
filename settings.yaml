@@ -92,6 +92,11 @@ MonitoringServiceClient:
 HistoryServiceClient:
     ServiceUrl:
         settings-key: HistoryServiceUrl
+        
+ClientAccountServiceClient:
+    ServiceUrl: 
+        settings-key: ClientAccountServiceUrl
+        
 
 SlackNotifications:
     AzureQueue:
