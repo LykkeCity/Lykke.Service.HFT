@@ -25,7 +25,7 @@ namespace Lykke.Service.HFT.Wamp.Consumers
         private readonly IWampSubject _subject;
 
         public LimitOrdersConsumer(ILogFactory logFactory,
-            RabbitMqSettings settings,
+            RabbitMqEndpointSettings settings,
             IWampHostedRealm realm,
             ISessionRepository sessionRepository)
         {
@@ -113,6 +113,7 @@ namespace Lykke.Service.HFT.Wamp.Consumers
         public void Dispose()
         {
             _subscriber?.Stop();
+            _subscriber?.Dispose();
         }
     }
 }

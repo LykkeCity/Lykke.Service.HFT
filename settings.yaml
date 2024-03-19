@@ -60,6 +60,11 @@ HighFrequencyTradingService:
         settings-key: HFT-CalculateOrderFees
         types:
             - Optional
+    RabbitMq:
+        ClientAccountFeedConnectionString:
+            settings-key: HFT-ClientAccountFeed
+            types:
+                - RabbitMq
 
 MatchingEngineClient:
     IpEndpoint:

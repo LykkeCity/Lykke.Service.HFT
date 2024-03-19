@@ -43,8 +43,8 @@ namespace Lykke.Service.HFT.Controllers
         [ProducesResponseType(typeof(IEnumerable<BalanceModel>), (int)HttpStatusCode.OK)]
         public async Task<IActionResult> GetBalances()
         {
-            var clientId = User.GetUserId();
-            var balances = await _balancesClient.GetClientBalances(clientId);
+            var walletId = User.GetWalletId();
+            var balances = await _balancesClient.GetClientBalances(walletId);
             var walletBalances = balances?.Select(x => new BalanceModel
             {
                 AssetId = x.AssetId,

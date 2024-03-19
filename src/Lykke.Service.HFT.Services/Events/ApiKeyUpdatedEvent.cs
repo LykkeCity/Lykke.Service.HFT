@@ -2,6 +2,7 @@
 
 namespace Lykke.Service.HFT.Services.Events
 {
+    // Owned by the Lykke.Service.HftInternalService
     [MessagePackObject(keyAsPropertyName: true)]
     public class ApiKeyUpdatedEvent
     {
@@ -9,5 +10,6 @@ namespace Lykke.Service.HFT.Services.Events
         public string WalletId { get; set; }
         public bool Enabled { get; set; }
         public bool Apiv2Only { get; set; }
+        public string ClientId { get; set; }
     }
 }

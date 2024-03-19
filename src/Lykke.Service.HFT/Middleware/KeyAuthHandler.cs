@@ -14,13 +14,13 @@ namespace Lykke.Service.HFT.Middleware
     [UsedImplicitly]
     internal class KeyAuthHandler : AuthenticationHandler<KeyAuthOptions>
     {
-        private readonly IHftClientService _hftClientService;
+        private readonly IApiKeysCacheService _apiKeysCacheService;
 
         public KeyAuthHandler(IOptionsMonitor<KeyAuthOptions> options, ILoggerFactory logger, UrlEncoder encoder, ISystemClock clock,
-            IHftClientService hftClientService)
+            IApiKeysCacheService apiKeysCacheService)
             : base(options, logger, encoder, clock)
         {
-            _hftClientService = hftClientService;
+            _apiKeysCacheService = apiKeysCacheService;
         }
         protected override async Task<AuthenticateResult> HandleAuthenticateAsync()
         {
@@ -30,7 +30,8 @@ namespace Lykke.Service.HFT.Middleware
             }
 
             var apiKey = headerValue.First();
-            var walletId = await _hftClientService.GetWalletIdAsync(apiKey);
+            var walletId = await _apiKeysCacheService.GetWalletIdAsync(apiKey);
+
             if (walletId == null)
             {
                 await Task.Delay(TimeSpan.FromSeconds(10)); // todo: ban requests from IPs with 401 response.

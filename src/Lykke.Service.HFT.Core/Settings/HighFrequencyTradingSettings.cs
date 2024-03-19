@@ -12,7 +12,8 @@ namespace Lykke.Service.HFT.Core.Settings
         public List<string> DisabledAssets { get; set; }
         public DbSettings Db { get; set; }
         public CacheSettings Cache { get; set; }
-        public RabbitMqSettings LimitOrdersFeed { get; set; }
+        public RabbitMqEndpointSettings LimitOrdersFeed { get; set; }
+        public RabbitMqSettings RabbitMq { get; set; }
         public string QueuePostfix { get; set; }
         [AmqpCheck]
         public string CqrsRabbitConnString { get; set; }

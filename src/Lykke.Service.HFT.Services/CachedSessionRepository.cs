@@ -9,13 +9,13 @@ namespace Lykke.Service.HFT.Services
     public class CachedSessionRepository : ISessionRepository
     {
         private readonly IMemoryCache _cache;
-        private readonly IHftClientService _hftClientService;
+        private readonly IApiKeysCacheService _apiKeysCacheService;
         private readonly MemoryCacheEntryOptions _sessionCacheOptions = new MemoryCacheEntryOptions().SetSlidingExpiration(TimeSpan.FromDays(14));
 
-        public CachedSessionRepository(IMemoryCache cache, IHftClientService hftClientService)
+        public CachedSessionRepository(IMemoryCache cache, IApiKeysCacheService hftClientService)
         {
             _cache = cache;
-            _hftClientService = hftClientService;
+            _apiKeysCacheService = hftClientService;
         }
 
         private static readonly long[] ZeroSessionsValue = new long[0];
@@ -31,7 +31,7 @@ namespace Lykke.Service.HFT.Services
 
         public void AddSessionId(string token, long sessionId)
         {
-            var walletId = _hftClientService.GetWalletIdAsync(token).GetAwaiter().GetResult();
+            var walletId = _apiKeysCacheService.GetWalletIdAsync(token).GetAwaiter().GetResult();
             _cache.Set(sessionId, walletId, _sessionCacheOptions);
 
             if (_cache.TryGetValue(walletId, out long[] sessionIds))
