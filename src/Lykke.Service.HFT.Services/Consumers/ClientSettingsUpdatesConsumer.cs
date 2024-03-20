@@ -29,21 +29,20 @@ namespace Lykke.Service.HFT.Services.Consumers
             _apiKeysCache = apiKeysCache;
             _log = logFactory.CreateLog(this);
 
-            var subscriptionSettings = new RabbitMqSubscriptionSettings
-            {
-                ConnectionString = connectionString,
-                QueueName = $"client-account.client-settings-updated.hft-api",
-                ExchangeName = $"client-account.client-settings-updated",
-                RoutingKey = nameof(ClientSettingsCashoutBlockUpdated),
-                IsDurable = false
-            };
+            var subscriptionSettings = RabbitMqSubscriptionSettings
+                .ForSubscriber(
+                    connectionString,
+                    "client-account.client-settings-updated", 
+                    "client-account.client-settings-updated.hft-api")
+                .UseRoutingKey(nameof(ClientSettingsCashoutBlockUpdated))
+                .MakeDurable();
 
             var strategy = new DefaultErrorHandlingStrategy(logFactory, subscriptionSettings);
 
             _subscriber = new RabbitMqSubscriber<ClientSettingsCashoutBlockUpdated>(logFactory, subscriptionSettings, strategy)
                 .SetMessageDeserializer(new JsonMessageDeserializer<ClientSettingsCashoutBlockUpdated>())
                 .SetMessageReadStrategy(new MessageReadWithTemporaryQueueStrategy())
-                .Subscribe(HandleMessage);           
+                .Subscribe(HandleMessage);
         }
 
         public async Task HandleMessage(ClientSettingsCashoutBlockUpdated evt)
