@@ -63,6 +63,7 @@ namespace Lykke.Service.HFT.Modules
             RegisterRedisCache(builder, instanceName);
 
             builder.RegisterType<ApiKeysCacheService>()
+                .WithParameter(TypedParameter.From(instanceName))
                 .WithParameter(
                     new ResolvedParameter(
                         (pi, ctx) => pi.ParameterType == typeof(IDistributedCache),
@@ -79,11 +80,6 @@ namespace Lykke.Service.HFT.Modules
                 .SingleInstance();
 
             builder.RegisterType<ApiKeyCacheInitializer>()
-                .WithParameter(TypedParameter.From(instanceName))
-                .WithParameter(
-                    new ResolvedParameter(
-                        (pi, ctx) => pi.ParameterType == typeof(IDistributedCache),
-                        (pi, ctx) => ctx.ResolveKeyed<IDistributedCache>(instanceName)))
                 .As<IApiKeyCacheInitializer>()
                 .SingleInstance();
 
