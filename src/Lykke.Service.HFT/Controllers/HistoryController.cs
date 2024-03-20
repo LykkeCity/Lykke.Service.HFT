@@ -80,7 +80,7 @@ namespace Lykke.Service.HFT.Controllers
                 return NotFound();
             }
 
-            var walletId = Guid.Parse(User.GetUserId());
+            var walletId = Guid.Parse(User.GetWalletId());
 
             var response = await _historyClient.HistoryApi.GetHistoryByWalletAsync(
                 walletId: walletId,

@@ -62,12 +62,12 @@ namespace Lykke.Service.HFT.Modules
             var instanceName = _settings.CurrentValue.HighFrequencyTradingService.Cache.ApiKeyCacheInstance;
             RegisterRedisCache(builder, instanceName);
 
-            builder.RegisterType<HftClientService>()
+            builder.RegisterType<ApiKeysCacheService>()
                 .WithParameter(
                     new ResolvedParameter(
                         (pi, ctx) => pi.ParameterType == typeof(IDistributedCache),
                         (pi, ctx) => ctx.ResolveKeyed<IDistributedCache>(instanceName)))
-                .As<IHftClientService>()
+                .As<IApiKeysCacheService>()
                 .SingleInstance();
 
             builder.RegisterType<CachedSessionRepository>()
@@ -90,6 +90,9 @@ namespace Lykke.Service.HFT.Modules
             builder.RegisterType<MongoRepository<ApiKey>>()
                 .As<IRepository<ApiKey>>()
                 .SingleInstance();
+
+            builder.RegisterType<BlockedClientsService>()
+                .As<IBlockedClientsService>();
         }
 
         private void RegisterFeeServices(ContainerBuilder builder)

@@ -5,6 +5,7 @@ using Lykke.Service.FeeCalculator.Client;
 using Lykke.Service.HFT.Core.Settings;
 using Lykke.Service.History.Client;
 using Lykke.SettingsReader;
+using Lykke.Service.ClientAccount.Client;
 
 namespace Lykke.Service.HFT.Modules
 {
@@ -28,6 +29,8 @@ namespace Lykke.Service.HFT.Modules
                 _settings.CurrentValue.HighFrequencyTradingService.Cache.CacheExpirationPeriod);
 
             builder.RegisterHistoryClient(_settings.CurrentValue.HistoryServiceClient);
+
+            builder.RegisterClientAccountClient(_settings.CurrentValue.ClientAccountServiceClient.ServiceUrl);
         }
     }
 }

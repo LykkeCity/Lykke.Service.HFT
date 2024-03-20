@@ -4,7 +4,7 @@ namespace Lykke.Service.HFT.Helpers
 {
     internal static class ClaimsPrincipalExtender
     {
-        public static string GetUserId(this ClaimsPrincipal user)
+        public static string GetWalletId(this ClaimsPrincipal user)
         {
             if (!user.Identity.IsAuthenticated)
                 return null;

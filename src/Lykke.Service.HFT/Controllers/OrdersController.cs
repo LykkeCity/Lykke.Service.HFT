@@ -82,7 +82,7 @@ namespace Lykke.Service.HFT.Controllers
                 status = OrderStatusQuery.All;
             }
 
-            var walletId = Guid.Parse(User.GetUserId());
+            var walletId = Guid.Parse(User.GetWalletId());
             var orderTypes = orderType == OrderType.Unknown
                 ? new History.Contracts.Enums.OrderType[0]
                 : new[] { (History.Contracts.Enums.OrderType)orderType };
@@ -254,9 +254,9 @@ namespace Lykke.Service.HFT.Controllers
                 return BadRequest(badRequestModel);
             }
 
-            var walletId = User.GetUserId();
+            var walletId = User.GetWalletId();
             var response = await _matchingEngineAdapter.PlaceMarketOrderAsync(
-                clientId: walletId,
+                walletId: walletId,
                 assetPair: assetPair,
                 orderAction: order.OrderAction,
                 volume: volume,
@@ -333,9 +333,9 @@ namespace Lykke.Service.HFT.Controllers
                 return BadRequest(badRequestModel);
             }
 
-            var walletId = User.GetUserId();
+            var walletId = User.GetWalletId();
             var response = await _matchingEngineAdapter.PlaceLimitOrderAsync(
-                clientId: walletId,
+                walletId: walletId,
                 assetPair: assetPair,
                 orderAction: order.OrderAction,
                 volume: volume,
@@ -424,9 +424,9 @@ namespace Lykke.Service.HFT.Controllers
                 return BadRequest(badRequestModel);
             }
 
-            var walletId = User.GetUserId();
+            var walletId = User.GetWalletId();
             var response = await _matchingEngineAdapter.PlaceStopLimitOrderAsync(
-                clientId: walletId,
+                walletId: walletId,
                 assetPair: assetPair,
                 orderAction: order.OrderAction,
                 volume: volume,
@@ -488,9 +488,9 @@ namespace Lykke.Service.HFT.Controllers
                 item.Volume = volume;
             }
 
-            var walletId = User.GetUserId();
+            var walletId = User.GetWalletId();
             var response = await _matchingEngineAdapter.PlaceBulkLimitOrderAsync(
-                clientId: walletId,
+                walletId: walletId,
                 assetPair: assetPair,
                 items: items,
                 cancelPrevious: order.CancelPreviousOrders,
@@ -536,7 +536,7 @@ namespace Lykke.Service.HFT.Controllers
                 return NotFound();
             }
 
-            var walletId = Guid.Parse(User.GetUserId());
+            var walletId = Guid.Parse(User.GetWalletId());
 
             var order = await _historyClient.OrdersApi.GetOrderAsync(id);
             if (order == null)
@@ -606,7 +606,7 @@ namespace Lykke.Service.HFT.Controllers
                     break;
             }
 
-            var response = await _matchingEngineAdapter.CancelAllAsync(User.GetUserId(), assetPair, isBuy);
+            var response = await _matchingEngineAdapter.CancelAllAsync(User.GetWalletId(), assetPair, isBuy);
             if (response.Error != null)
             {
                 return BadRequest(response);

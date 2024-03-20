@@ -5,6 +5,7 @@ using Lykke.Cqrs;
 using Lykke.Sdk;
 using Lykke.Service.HFT.Core.Services;
 using Lykke.Service.HFT.Core.Services.ApiKey;
+using Lykke.Service.HFT.Services.Consumers;
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
@@ -20,13 +21,15 @@ namespace Lykke.Service.HFT.Services
         private readonly ISessionRepository _sessionRepository;
         private readonly IApiKeyCacheInitializer _apiKeyCacheInitializer;
         [NotNull] private readonly ICqrsEngine _cqrs;
+        private readonly ClientSettingsUpdatesConsumer _clientSettingsUpdatesConsumer;
 
         public StartupManager(
             ILogFactory logFactory,
             IEnumerable<IWampHostedRealm> realms,
             ISessionRepository sessionRepository,
             IApiKeyCacheInitializer apiKeyCacheInitializer,
-            ICqrsEngine cqrs)
+            ICqrsEngine cqrs,
+            ClientSettingsUpdatesConsumer clientSettingsUpdatesConsumer)
         {
             if (logFactory == null)
                 throw new ArgumentNullException(nameof(logFactory));
@@ -36,10 +39,15 @@ namespace Lykke.Service.HFT.Services
             _sessionRepository = sessionRepository;
             _apiKeyCacheInitializer = apiKeyCacheInitializer;
             _cqrs = cqrs;
+            _clientSettingsUpdatesConsumer = clientSettingsUpdatesConsumer;
         }
 
         public async Task StartAsync()
         {
+#if !DEBUG
+            await _apiKeyCacheInitializer.InitApiKeyCache();
+#endif
+
             _cqrs.StartSubscribers();
             _cqrs.StartProcesses();
 
@@ -50,9 +58,7 @@ namespace Lykke.Service.HFT.Services
                 realm.SessionClosed += (sender, args) => { _sessionRepository.TryRemoveSessionId(args.SessionId); };
             }
 
-#if !DEBUG
-            await _apiKeyCacheInitializer.InitApiKeyCache();
-#endif
+            _clientSettingsUpdatesConsumer.Start();
         }
     }
 }

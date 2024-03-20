@@ -6,16 +6,16 @@ namespace Lykke.Service.HFT.Services
 {
     public class ApiKeyValidator : IApiKeyValidator
     {
-        private readonly IHftClientService _hftClientService;
+        private readonly IApiKeysCacheService _apiKeysCacheService;
 
-        public ApiKeyValidator(IHftClientService hftClientService)
+        public ApiKeyValidator(IApiKeysCacheService apiKeysCacheService)
         {
-            _hftClientService = hftClientService;
+            _apiKeysCacheService = apiKeysCacheService;
         }
 
         public async Task<bool> ValidateAsync(string apiKey)
         {
-            var walletId = await _hftClientService.GetWalletIdAsync(apiKey);
+            var walletId = await _apiKeysCacheService.GetWalletIdAsync(apiKey);
             return walletId != null;
         }
     }

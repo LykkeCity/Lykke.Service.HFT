@@ -1,59 +1,61 @@
-﻿using Lykke.Service.HFT.Core;
+﻿using Common.Log;
+using Lykke.Common.Log;
 using Lykke.Service.HFT.Core.Domain;
 using Lykke.Service.HFT.Core.Repositories;
+using Lykke.Service.HFT.Core.Services;
 using Lykke.Service.HFT.Core.Services.ApiKey;
-using StackExchange.Redis;
 using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Threading.Tasks;
 
 namespace Lykke.Service.HFT.Services
 {
     public class ApiKeyCacheInitializer : IApiKeyCacheInitializer
     {
+        private readonly ILog _log;
         private readonly IRepository<ApiKey> _apiKeyRepository;
-        private readonly IServer _redisServer;
-        private readonly IDatabase _redisDatabase;
-        private readonly string _instanceName;
+        private readonly IApiKeysCacheService _apiKeysCache;
+        private readonly IBlockedClientsService _blockedClients;
 
-        public ApiKeyCacheInitializer(IRepository<ApiKey> orderStateRepository, IServer redisServer, IDatabase redisDatabase, string instanceName)
+        public ApiKeyCacheInitializer(
+            ILogFactory logFactory,
+            IRepository<ApiKey> orderStateRepository, 
+            IApiKeysCacheService apiKeysCache, 
+            IBlockedClientsService blockedClients)
         {
+            _log = logFactory.CreateLog(this);
             _apiKeyRepository = orderStateRepository ?? throw new ArgumentNullException(nameof(orderStateRepository));
-            _redisServer = redisServer ?? throw new ArgumentNullException(nameof(redisServer));
-            _redisDatabase = redisDatabase ?? throw new ArgumentNullException(nameof(redisDatabase));
-            _instanceName = instanceName ?? throw new ArgumentNullException(nameof(instanceName));
+            _apiKeysCache = apiKeysCache;
+            _blockedClients = blockedClients;
         }
 
         public async Task InitApiKeyCache()
         {
-            var keys = GetApiKeys();
-            await ClearExistingRecords();
-            await InsertValues(keys);
+            _log.Info("API keys cache is being initialized");
+
+            var keys = await GetApiKeys();
+            await _apiKeysCache.Clear();
+            // Clients may get 401 between these two calls.
+            // It would be good to rework this.
+            await _apiKeysCache.AddApiKeys(keys);
+
+            _log.Info($"API keys cache has been initialized. {keys.Count} active keys were added to the cache");
         }
 
-        private async Task ClearExistingRecords()
+        private async Task<List<ApiKey>> GetApiKeys()
         {
-            var keys = _redisServer.Keys(pattern: _instanceName + "*", pageSize: 1000).ToArray();
-            await _redisDatabase.KeyDeleteAsync(keys);
-        }
+            var validV1ApiKeys = _apiKeyRepository.FilterBy(x => x.ValidTill == null && !x.Apiv2Only);
+            var enabledApiKeys = new List<ApiKey>();
 
-        private List<ApiKey> GetApiKeys()
-        {
-            return _apiKeyRepository.FilterBy(x => x.ValidTill == null && !x.Apiv2Only).ToList();
-        }
-
-        private async Task InsertValues(List<ApiKey> keys)
-        {
-            var tasks = new List<Task>();
-            var batch = _redisDatabase.CreateBatch();
-            foreach (var key in keys)
+            foreach(var key in validV1ApiKeys)
             {
-                tasks.Add(batch.HashSetAsync(_instanceName + Constants.GetKeyForApiKey(key.Token ?? key.Id.ToString()), "data", key.WalletId));
-                tasks.Add(batch.HashSetAsync(_instanceName + Constants.GetKeyForWalletId(key.WalletId), "data", new byte[] { 1 }));
+                if(!await _blockedClients.IsClientBlocked(key.ClientId))
+                {
+                    enabledApiKeys.Add(key);
+                }
             }
-            batch.Execute();
-            await Task.WhenAll(tasks);
+
+            return enabledApiKeys;
         }
     }
 }
